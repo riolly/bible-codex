@@ -33,11 +33,32 @@ A per-translation table reconciling that translation's Translation Verses to Can
 **Anchor**:
 The stable canonical address that any user mark or reading position attaches to: a Canonical Verse plus a word-index, optionally carrying an Original Word id. Never pixels.
 
+**Cross-reference**:
+An editorial, shipped link between two passages (e.g. from the Treasury of Scripture Knowledge) — read-only and authoritative; the app's own "this connects to that." Its user-authored sibling is the Connector. A Portal (see `WISHLIST.md`) is a Cross-reference gated by reading progress.
+_Avoid_: reference (a single address; a Cross-reference links two)
+
 ### User marks
 
 **Markup**:
-A semantic annotation that targets a Token range, a Verse, or an Original Word and is *re-rendered by the app* from `{target, style}` — underline, box, circle, arrow, highlight, strike. Reflows with layout and ports across translations because it stores a reference, not pixels.
-_Avoid_: highlight (only one kind of Markup), annotation (covers both Markup and Ink)
+The portable, data class of user marks — re-rendered by the app from references rather than stored as pixels, so it reflows and ports across translations. An umbrella over Mark, Note, and Connector. Contrast Ink.
+_Avoid_: annotation (covers both Markup and Ink)
+
+**Mark**:
+A decoration bound to a scripture Anchor — underline, highlight, box, circle, strike. Its position is derived from the targeted words; it has no independent location.
+_Avoid_: highlight (only one kind of Mark)
+
+**Note**:
+A free content object (the user's own text) pinned to a scripture Anchor plus an offset into the margin/whitespace. Has its own identity, so it can be a Connector target. Its content is translation-agnostic; its pin is canonical, so it ports.
+
+**Connector**:
+An arrow or line joining two Endpoints; it re-routes when either end moves. When it links two passages it is a user-authored cross-reference.
+_Avoid_: arrow (a Connector may be a plain line)
+
+**Endpoint**:
+One end of a Connector (or a Note's pin). Binds to either a scripture Anchor or another element's id — never to canvas coordinates.
+
+**Binding**:
+The stored relationship between an Endpoint and its target, kept as its own record so any element (Mark, Note, Token) can be a target.
 
 **Ink**:
 A freehand pen annotation captured as stroke points over one translation's rendered layout. Personal and expressive — the "physical Bible" feel — but bound to that layout and not portable across translations.
@@ -50,3 +71,4 @@ A named, toggleable group of user marks with a `visible` flag — the "notes on/
 
 - **Translations are spokes, never linked directly.** Cross-translation relations are transitive through two shared hubs only: the Canonical Verse (coarse, passage grain) and the Original Word (fine, word grain). There is no Token-to-Token edge between translations.
 - **Markup is portable; Ink is scoped.** Markup re-renders from its Anchor, so it reflows across fonts and travels across translations (verse grain always; word grain via the Original Word hub). Ink is bound to one translation's layout and is never transplanted.
+- **Annotations are a scene graph anchored to scripture, never to canvas coordinates.** Every element's position resolves from a scripture Anchor (plus an offset for free-placed Notes), computed at render; Connectors bind to elements/Anchors, never to pixels. This is what keeps marks alive through reflow, scroll-mode switches, and translation changes.

@@ -11,3 +11,5 @@ User marks split into two classes with opposite physics. **Markup** is a semanti
 
 - Desktop and web carry reading + Markup but **not** Ink; Ink is tablet-only (Android then iPad).
 - Ink reflow is honest only at the verse-block grain; Markup is the class that genuinely reflows and ports.
+
+_Refined by [ADR-0003](0003-annotations-are-a-scripture-anchored-scene-graph.md): Markup is an umbrella over a scene graph — the kinds named above map to **Mark** (underline/highlight/box/circle/strike) and **Connector** (arrow), plus a new **Note**._

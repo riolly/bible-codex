@@ -6,7 +6,7 @@
 **Status:** Draft for prototype
 **Scope:** Annotation subsystem — **Markup** (semantic) and **Ink** (freehand). Not the whole app.
 **Last updated:** 2026-06-17
-**Related:** [`CONTEXT.md`](./CONTEXT.md) (Token, Verse, Original Word, Anchor, Markup, Ink, Layer) · [ADR-0001](./docs/adr/0001-three-layer-anchor-model.md) · [ADR-0002](./docs/adr/0002-two-annotation-classes-markup-first.md)
+**Related:** [`CONTEXT.md`](./CONTEXT.md) (Token, Verse, Original Word, Anchor, Cross-reference, Markup, Mark, Note, Connector, Endpoint, Binding, Ink, Layer) · [ADR-0001](./docs/adr/0001-three-layer-anchor-model.md) · [ADR-0002](./docs/adr/0002-two-annotation-classes-markup-first.md) · [ADR-0003](./docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md)
 
 ---
 
@@ -14,7 +14,7 @@
 
 Annotation over scripture comes in **two classes with opposite physics**:
 
-- **Markup (semantic)** — underline, box, circle, arrow, highlight, strike — attached to a **Token range, Verse, or Original Word**. The app *re-renders* it from `{target, style}`. Reflows across font changes, ports across translations, runs on **web + tablet + desktop**. **Built first.**
+- **Markup (semantic)** — underline, box, circle, arrow, highlight, strike — attached to a **Token range, Verse, or Original Word**. The app *re-renders* it from `{target, style}`. Reflows across font changes, ports across translations, runs on **web + tablet + desktop**. **Built first.** Its sub-kinds — **Mark**, **Note**, **Connector** — are detailed in §3.1.
 - **Ink (freehand)** — pen annotation captured as **strokes over one translation's rendered layout**. The "physical Bible" feel and the product's emotional differentiator. Bound to that layout, **tablet-native**, not portable. **Later phase.**
 
 Both group into toggleable **Layers** ("notes on/off"). Ink handwriting → text (ML Kit) is a later sub-phase.
@@ -47,10 +47,27 @@ Both classes attach to the canonical **Anchor**, never to pixels — but they us
 
 ---
 
+## 3.1 The annotation scene graph (Mark / Note / Connector) — design now, build later
+
+Markup grows into a small **scene graph**, modeled on Excalidraw/tldraw bindings but with one inversion. See [ADR-0003](./docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md).
+
+- **Mark** — decoration bound to a scripture Anchor (underline/highlight/box/circle/strike); position derived from the words.
+- **Note** — free content object (user text) pinned to a scripture Anchor **+ offset**; has identity → can be a target.
+- **Connector** — arrow/line between two **Endpoints**; an `Endpoint` binds to a scripture Anchor **or** an element id. A connector across two passages is a user-authored cross-reference.
+- **Binding** — the relationship is its own record (tldraw-style), so any element can be a target.
+
+**Steal from Excalidraw/tldraw:** `boundElements` back-references for efficient re-route, normalized-anchor + gap, intentional binding (only on endpoint drag), bindings as first-class records.
+
+**The inversion — do NOT steal:** whiteboards store truth as absolute canvas coordinates because nothing reflows. Ours reflows (font), re-paginates (scroll mode), and is replaced (translation). So **no element stores absolute coords** — every position resolves from a scripture Anchor (+ offset), computed at render.
+
+**Build order (all post read + scroll):** Mark → Note → Connector. The seam (`Endpoint = Anchor | element`, separate `Binding` records) is designed in from day one; the editor is built in phases. In the POC, annotations are **mocked** (pre-placed, not persisted) — zero migration cost, full visual proof.
+
+---
+
 ## 4. Markup subsystem — build first
 
 - **Pure TS + Skia rendering, identical on RN and web (CanvasKit).** No pen hardware, no latency tricks, no ML Kit.
-- **Pipeline:** select Token(s)/Verse → choose kind + style → store a `MarkupAnnotation` → the renderer hit-tests the target's Token rects on each layout and paints the style (a rough/ink-like brush is optional, to keep the hand-drawn aesthetic).
+- **Pipeline:** select Token(s)/Verse → choose kind + style → store a `Mark` (or `Note` / `Connector`) → the renderer hit-tests the target's Token rects on each layout and paints the style (a rough/ink-like brush is optional, to keep the hand-drawn aesthetic).
 - **Portable & reflow-safe** because it stores a reference, not pixels. Syncs as tiny rows — fits the multi-device (tablet ↔ desktop) local-first requirement.
 - **Composes with research mode:** a circled Token is data → tap → interlinear / lexicon.
 - It is the part of "drawing" the **web POC can actually exercise**.
@@ -116,7 +133,7 @@ The original drawing plan said "Android first; desktop/web = non-goal." The app 
 
 ## 10. Phased roadmap (resequenced)
 
-- **Phase 0 — Foundations.** Lock the `Anchor` model (`CONTEXT.md`) + `MarkupAnnotation` schema + `Layer` model. Coordinate spaces: Markup = canonical Anchor; Ink = block-normalized strokes.
+- **Phase 0 — Foundations.** Lock the `Anchor` model (`CONTEXT.md`) + `Mark` / `Note` / `Connector` schema + `Layer` model. Coordinate spaces: Markup = canonical Anchor; Ink = block-normalized strokes.
 - **Phase 1 — Markup MVP.** Web POC + RN: underline / highlight (then box / circle), layers, multi-device sync, research-mode tap-through. Portable & reflow-safe.
 - **Phase 2 — Ink MVP (Android).** Skia surface implementing `DrawingSurface`: pen / highlighter / eraser, undo/redo, layer toggle, dual-canvas, engine-agnostic stroke persistence.
 - **Phase 3 — Ink on iPad.** Same Skia surface; evaluate pen feel vs PencilKit on-device.
@@ -177,17 +194,39 @@ interface Layer {
   visible: boolean;        // the notes on/off toggle
 }
 
-// ---- Markup (semantic, portable) ----
-type MarkupKind = 'underline' | 'highlight' | 'box' | 'circle' | 'arrow' | 'strike';
+// ---- Markup scene graph (semantic, portable) ----
+type MarkKind = 'underline' | 'highlight' | 'box' | 'circle' | 'strike';
 
-interface MarkupAnnotation {
+// an endpoint binds to scripture OR another element — never to canvas coords
+type Endpoint =
+  | { kind: 'scripture'; anchor: Anchor }
+  | { kind: 'element'; elementId: string };
+
+interface Mark {            // decoration ON the words
   id: string;
-  kind: MarkupKind;
-  target: Anchor;          // verse, Token, or Token-range; app renders style under current layout
-  toTarget?: Anchor;       // second endpoint, for arrows
+  kind: MarkKind;
+  target: Anchor;          // verse | Token | Token-range; rendered under current layout
   style: { color: string; weight?: number };
   layerId: string;
   createdAt: number;       // epoch ms
+}
+
+interface Note {           // free content, pinned to scripture
+  id: string;
+  pin: Anchor;             // canonical pin
+  offset: { dx: number; dy: number };  // into margin/whitespace, normalized
+  text: string;            // translation-agnostic
+  layerId: string;
+  createdAt: number;
+}
+
+interface Connector {      // arrow/line; a user cross-reference when it spans passages
+  id: string;
+  from: Endpoint;
+  to: Endpoint;
+  style: { color: string; weight?: number; arrowhead?: boolean };
+  layerId: string;
+  createdAt: number;
 }
 
 // ---- Ink (freehand, scoped) ----
