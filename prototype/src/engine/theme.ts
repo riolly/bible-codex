@@ -47,8 +47,8 @@ export const THEME: Theme = {
   margin: 56,
   marginTop: 108,
   marginBottom: 96,
-  maxMeasure: 600,
-  columnWidth: 360,
+  maxMeasure: 690,
+  columnWidth: 690,
   gutter: 72,
 
   bodySize: 25,

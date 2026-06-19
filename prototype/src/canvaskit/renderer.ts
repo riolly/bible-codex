@@ -1,14 +1,15 @@
 // Draws a Scene to a Skia canvas, in scene coordinates, offset by scroll. Fixed
 // layer order so annotations land behind/over text correctly. Skia-specific;
 // the Scene it consumes is framework-agnostic.
-import type { CanvasKit, Canvas, Paint } from "canvaskit-wasm";
-import type { Scene } from "../engine/scene";
+import type { CanvasKit, Canvas, Paint, Path } from "canvaskit-wasm";
+import type { Scene, DrawStroke } from "../engine/scene";
 import { CkText } from "./text";
 
 export class Renderer {
   private fill: Paint;
   private stroke: Paint;
   private glowPaint: Paint;
+  private inkPaint: Paint;
 
   constructor(
     private CK: CanvasKit,
@@ -23,6 +24,11 @@ export class Renderer {
     this.glowPaint = new CK.Paint();
     this.glowPaint.setAntiAlias(true);
     this.glowPaint.setStyle(CK.PaintStyle.Fill);
+    this.inkPaint = new CK.Paint();
+    this.inkPaint.setAntiAlias(true);
+    this.inkPaint.setStyle(CK.PaintStyle.Stroke);
+    this.inkPaint.setStrokeCap(CK.StrokeCap.Round);
+    this.inkPaint.setStrokeJoin(CK.StrokeJoin.Round);
   }
 
   paint(
@@ -66,8 +72,14 @@ export class Renderer {
       }
     }
 
+    // 2b — highlighter Ink (under the glyphs, so text stays crisp on top)
+    for (const s of scene.strokes) if (s.tool === "highlighter") this.drawStroke(canvas, s);
+
     // 3 — words (scripture)
     for (const w of scene.words) this.text.drawWord(canvas, w);
+
+    // 3b — pen Ink (over the glyphs — writing on the page)
+    for (const s of scene.strokes) if (s.tool === "pen") this.drawStroke(canvas, s);
 
     // 4 — note cards (drawn over body, words inside)
     for (const c of scene.cards) {
@@ -104,6 +116,46 @@ export class Renderer {
     this.stroke.setPathEffect(null);
 
     canvas.restore();
+  }
+
+  // Freehand Ink. Highlighter: wide + translucent + Multiply (sits under text);
+  // pen: opaque round-cap. A single tap renders as a dot.
+  private drawStroke(canvas: Canvas, s: DrawStroke) {
+    const { CK } = this;
+    const pts = s.points;
+    if (pts.length === 0) return;
+    const hl = s.tool === "highlighter";
+    const base = withAlpha(CK, s.color, hl ? 0.34 : 1);
+    if (pts.length === 1) {
+      // a dot
+      this.fill.setColor(base);
+      this.fill.setBlendMode(hl ? CK.BlendMode.Multiply : CK.BlendMode.SrcOver);
+      canvas.drawCircle(pts[0].x, pts[0].y, s.width / 2, this.fill);
+      this.fill.setBlendMode(CK.BlendMode.SrcOver);
+      return;
+    }
+    const path = this.smoothPath(pts);
+    this.inkPaint.setColor(base);
+    this.inkPaint.setStrokeWidth(s.width);
+    this.inkPaint.setBlendMode(hl ? CK.BlendMode.Multiply : CK.BlendMode.SrcOver);
+    canvas.drawPath(path, this.inkPaint);
+    this.inkPaint.setBlendMode(CK.BlendMode.SrcOver);
+    path.delete();
+  }
+
+  // Quadratic smoothing through point midpoints — the classic freehand curve
+  // that turns jittery pointer samples into a flowing line.
+  private smoothPath(pts: { x: number; y: number }[]): Path {
+    const path = new this.CK.Path();
+    path.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length - 1; i++) {
+      const mx = (pts[i].x + pts[i + 1].x) / 2;
+      const my = (pts[i].y + pts[i + 1].y) / 2;
+      path.quadTo(pts[i].x, pts[i].y, mx, my);
+    }
+    const last = pts[pts.length - 1];
+    path.lineTo(last.x, last.y);
+    return path;
   }
 
   private drawArrow(canvas: Canvas, x1: number, y1: number, x2: number, y2: number, color: string) {

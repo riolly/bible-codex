@@ -61,6 +61,17 @@ export interface PortalHit {
   crossRefId: string;
 }
 
+/** A freehand Ink stroke (pen or highlighter). Points are in scene/content
+ *  coordinates — Ink is glued to the layout it was drawn over (it does NOT
+ *  reflow or port across translations, unlike anchored Markup). The store tags
+ *  each stroke with the (scroll|translation|mode) it belongs to. */
+export interface DrawStroke {
+  tool: "pen" | "highlighter";
+  color: string;
+  width: number;
+  points: { x: number; y: number }[];
+}
+
 /** A resolved Note card (free text pinned near an Anchor in the margin). */
 export interface DrawCard {
   id: string;
@@ -76,12 +87,15 @@ export interface DrawCard {
 export interface Scene {
   contentWidth: number;
   contentHeight: number;
-  // layer order: glows → fills → words → cards → rules(connectors/underlines) → portal markers
+  // layer order: glows → fills → highlighter-ink → words → pen-ink → cards →
+  // rules(connectors/underlines) → portal markers
   glows: DrawGlow[];
   fills: DrawRect[];
   words: DrawWord[];
   cards: DrawCard[];
   rules: DrawRule[];
+  /** user Ink (freehand). Injected after layout(); not produced by the engine. */
+  strokes: DrawStroke[];
   // interaction
   hits: HitRect[];
   portals: PortalHit[];
@@ -96,6 +110,7 @@ export function emptyScene(): Scene {
     words: [],
     cards: [],
     rules: [],
+    strokes: [],
     hits: [],
     portals: [],
   };

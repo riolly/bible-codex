@@ -50,6 +50,10 @@ export function layout(input: LayoutInput): Scene {
   const { shaper, viewport, mode } = input;
   const scene = emptyScene();
   const placedByAnchor = new Map<string, Placed>();
+  // first placed word of each verse — lets an anchored Note survive a translation
+  // swap even when the exact word index doesn't line up (word counts differ).
+  const firstByVerse = new Map<string, Placed>();
+  const verseKey = (a: Anchor) => `${a.book} ${a.chapter}:${a.verse}`;
 
   const colWidth =
     mode === "columns" ? t.columnWidth : Math.min(t.maxMeasure, viewport.width - 2 * t.margin);
@@ -170,6 +174,8 @@ export function layout(input: LayoutInput): Scene {
         if (c.anchor) {
           const rect: Placed = { x: wx, top: y, w: c.width, h: lineH, baseline };
           placedByAnchor.set(anchorKey(c.anchor), rect);
+          const vk = verseKey(c.anchor);
+          if (!firstByVerse.has(vk)) firstByVerse.set(vk, rect);
           scene.hits.push({ x: wx, y, w: c.width, h: lineH, anchor: c.anchor, ow: c.ow });
         }
       }
@@ -333,7 +339,7 @@ export function layout(input: LayoutInput): Scene {
     // notes → cards in the margin
     const cardRects = new Map<string, { x: number; y: number; w: number; h: number }>();
     for (const note of study.notes) {
-      const r = placedByAnchor.get(anchorKey(note.anchor));
+      const r = placedByAnchor.get(anchorKey(note.anchor)) ?? firstByVerse.get(verseKey(note.anchor));
       if (!r) continue;
       const cardW = 196;
       const pad = 12;
