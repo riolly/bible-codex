@@ -131,7 +131,7 @@ Table versification_map {
 // keys (genre / role / book.slug / coordinate), NEVER token.id, NEVER pixels — so it
 // survives corpus re-ingest. Computed layout (line breaks / per-token rects) is a
 // DERIVED, rebuildable LOCAL cache, never synced, never truth — deferred until a
-// profiler demands it (engine re-typesets at ~120fps in the prototype).
+// profiler demands it (engine re-typesets at ~120fps in the prototype). See ADR-0004.
 //============================================================
 
 // Global, app-wide reading settings (one active row per user; synced).
