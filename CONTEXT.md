@@ -7,15 +7,15 @@ A local-first, literary Bible reader. This glossary fixes the language of the te
 ### Text units
 
 **Token**:
-A single word-occurrence in a *translation's* text (punctuation and whitespace are their own tokens). The unit of storage, rendering, and within-translation anchoring. Per-translation — a KJV token and a BSB token are never the same object.
-_Avoid_: word (ambiguous with Original Word)
+A single **word- or punctuation-occurrence** in a *translation's* text — the unit of storage, rendering, and within-translation hit-testing. Whitespace is **not** a Token: spacing is a render/layout concern owned by the presentation layer, never corpus data. Per-translation — a KJV Token and a BSB Token are never the same object.
+_Avoid_: word (ambiguous with Original Word); treating whitespace as a Token
 
 **Original Word**:
 A single word-occurrence in the original Greek/Hebrew text, identified by a stable word-id plus lemma and Strong's number. The shared hub that translation Tokens align to (N Tokens → 1 Original Word).
 _Avoid_: lemma (that is the dictionary form, not the occurrence), Strong's (that is the lexical id, not the occurrence)
 
 **Block**:
-A contiguous range of Tokens forming one literary unit — a prose paragraph, a poetry line, or a heading — carrying a genre and indent level. The unit of rendering. Derived from USFM markers (`\p`, `\q#`, …).
+A contiguous range of Tokens forming one literary unit — a prose paragraph, a poetry line, or a heading — carrying a genre and indent level. The unit of rendering. Derived from USFM markers (`\p`, `\q#`, …). Blocks **partition** the token stream (non-overlapping; every Token belongs to exactly one Block). Overlapping literary structures (chiasm, inclusio, parallelism) are a *separate* later layer, not Blocks.
 _Avoid_: paragraph (too narrow — poetry lines and headings are also Blocks), section
 
 ### Addressing
@@ -32,6 +32,7 @@ A per-translation table reconciling that translation's Translation Verses to Can
 
 **Anchor**:
 The stable canonical address that any user mark or reading position attaches to: a Canonical Verse plus a word-index, optionally carrying an Original Word id. Never pixels.
+The **word-index** is the 0-based ordinal of a *word* Token within the verse (**punctuation excluded**); a punctuation Token is addressed by the word-index of the word it follows.
 
 **Cross-reference**:
 An editorial, shipped link between two passages (e.g. from the Treasury of Scripture Knowledge) — read-only and authoritative; the app's own "this connects to that." Its user-authored sibling is the Connector. A Portal (see `WISHLIST.md`) is a Cross-reference gated by reading progress.

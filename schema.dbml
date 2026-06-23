@@ -1,0 +1,198 @@
+// BibleCodex — Phase 1 schema (Reading + Layout)
+// Format: DBML (https://dbml.dbdiagram.io). Visualize: paste into https://dbdiagram.io
+// or publish with https://dbdocs.io. (Your old BibleCodex.sql was a dbdiagram export.)
+//
+// SCOPE: Phase 1 only — the read-only reading corpus + the user layout-adjust table.
+// Phase 2 (annotations), Phase 3 (Original Word hub + lexicon), Phase 4 (progress)
+// are designed in data-structure-brainstorming.md and added later. The seams that let
+// them bolt on without migration are noted as `// SEAM Pn` comments.
+//
+// STATUS: Phase-1 table shapes resolved via grill Q1–Q6 (see `Qn RESOLVED` comments).
+// The token model mirrors the proven prototype (prototype/src/model/types.ts).
+
+//============================================================
+// Enums
+//============================================================
+
+Enum genre {
+  prose
+  poetry
+  heading
+  // Q4 RESOLVED: coarse genre = the typesetting BRANCH (prose flows / poetry sets as
+  // indented lines / heading sets apart). USFM subtype lives in block.role (varchar),
+  // mapped to typography by the presentation layer. Enum may grow richer later (TODO:
+  // research the full USFM marker set) — but additions are values, not migrations.
+}
+
+Enum token_kind {
+  word
+  punct
+  // Q1 RESOLVED: no `space` token. Whitespace is a render/layout concern (the
+  // presentation layer), never corpus data. Punct stays persisted (it is content).
+}
+
+Enum testament {
+  ot
+  nt
+}
+
+Enum scroll_mode {
+  horizontal
+  vertical
+}
+
+//============================================================
+// Corpus (read-only, bundled SQLite)
+//============================================================
+
+Table translation {
+  id           integer      [pk, increment]
+  name         varchar      [not null]            // "King James Version"
+  abbrev       varchar      [not null, unique]    // "KJV"
+  language     varchar      [not null]
+  year         integer
+  license      varchar
+  versification varchar     [not null]            // e.g. "av11n"; ties to versification_map
+}
+
+Table book {
+  id        integer   [pk, increment]
+  slug      varchar   [not null, unique]   // canonical id, e.g. "John" — used in Anchor
+  name      varchar   [not null]
+  testament testament [not null]
+  position  integer   [not null]           // canonical book order
+}
+
+Table block {
+  id             integer  [pk, increment]
+  translation_id integer  [not null]
+  book_id        integer  [not null]
+  genre          genre    [not null]               // typesetting branch
+  role           varchar                            // USFM subtype: section|psalm_title|book_title|acrostic|list_item… → presentation maps to typography
+  indent         integer  [not null, default: 0]  // poetry line depth; 0 for prose/heading
+  seq            integer  [not null]               // render order within the chapter (= seq of its first token)
+  // Q2 RESOLVED: membership — tokens FK to block via token.block_id (blocks partition
+  // the stream, non-overlapping). Token-range/spans are reserved for the OVERLAPPING
+  // scholarly structure layer (chiasm/inclusio), a separate Phase-3/4 concern.
+
+  indexes {
+    (translation_id, book_id, seq)
+  }
+}
+
+Table token {
+  id             integer    [pk, increment]   // storage id ONLY; anchors never FK to this
+  translation_id integer    [not null]
+  book_id        integer    [not null]
+  chapter        integer    [not null]
+  verse          integer    [not null]         // canonical verse (av11n); see versification_map
+  word_index     integer                       // word ordinal within verse (punct excluded); null on punct tokens
+  seq            integer    [not null]         // dense render order within chapter
+  kind           token_kind [not null]
+  text           varchar    [not null]         // surface text
+  block_id       integer    [not null]
+  verse_start    boolean    [not null, default: false]  // first word token of a verse → drives verse number
+  ow_id          varchar                        // SEAM P3: Original Word hub id; null until Phase 3
+
+  // The ANCHOR coordinate (migration-fatal, ADR-0001) is (translation, book, chapter,
+  // verse, word_index) — a coordinate, never token.id.
+  indexes {
+    (translation_id, book_id, chapter, verse, seq)
+    (translation_id, book_id, chapter, verse, word_index)
+  }
+}
+
+// versification_map reconciles a translation's NATIVE numbering to the canonical verse.
+// Q3 RESOLVED: SPARSE — store a row ONLY where native != canonical. Displayed verse
+// number = canonical unless a row overrides with the native number. No `verse` table:
+// a verse is an address (token columns), not an entity.
+// DEFERRED (Phase 3): this pair map handles renumber/shift but NOT clean splits/merges
+// (one canonical verse = two native, Psalm-title-as-v1, Hebrew/LXX divergence). Add
+// range/split support when the Original Word hub brings Hebrew/LXX in.
+Table versification_map {
+  id              integer [pk, increment]
+  translation_id  integer [not null]
+  book_id         integer [not null]
+  // translation's native address:
+  src_chapter     integer [not null]
+  src_verse       integer [not null]
+  // canonical address it maps to:
+  canon_chapter   integer [not null]
+  canon_verse     integer [not null]
+
+  indexes {
+    (translation_id, book_id, src_chapter, src_verse)
+  }
+}
+
+//============================================================
+// Presentation layer (user data, synced) — RULES, not pixels.
+// Q5 RESOLVED: this layer persists RULES only and joins the corpus by stable semantic
+// keys (genre / role / book.slug / coordinate), NEVER token.id, NEVER pixels — so it
+// survives corpus re-ingest. Computed layout (line breaks / per-token rects) is a
+// DERIVED, rebuildable LOCAL cache, never synced, never truth — deferred until a
+// profiler demands it (engine re-typesets at ~120fps in the prototype).
+//============================================================
+
+// Global, app-wide reading settings (one active row per user; synced).
+// Q5: scroll_mode + theme are GLOBAL — not per-preset, not per-scope.
+Table reading_settings {
+  id               integer     [pk, increment]
+  scroll_mode      scroll_mode [not null, default: 'vertical']
+  theme            varchar     [not null, default: 'light']
+  active_preset_id integer     // the currently selected typography preset
+}
+
+// A named typography bundle the user can switch between ("Reading", "Study", "Large
+// print"). Holds the GLOBAL typography defaults for the cascade base.
+Table layout_preset {
+  id                integer [pk, increment]
+  name              varchar [not null]
+  font_family       varchar
+  font_size         real
+  line_height       real
+  margin            real
+  paragraph_spacing real
+  indent_step       real     // multiplies block.indent
+  align             varchar  // "left" | "justify"
+}
+
+// Per-scope overrides on top of a preset. Q6 RESOLVED: typed nullable columns (null =
+// inherit); resolution precedence  base preset < genre < role < book  (most specific
+// wins). Scopes join the corpus by SEMANTIC KEYS (genre / role / book.slug), never
+// token.id. Per-book scope ships in v1 (e.g. a different author → a different
+// font_family for a more immersive read).
+// FUTURE: an 'author' / book-class scope (set Paul's books once) — folds into
+// scope_kind later; backed by a book-classification table (cf. old BibleCodex.sql
+// `Classes`/`Books_Classes`). Deferred, additive.
+Table layout_override {
+  id                integer [pk, increment]
+  preset_id         integer [not null]
+  scope_kind        varchar [not null]   // "genre" | "role" | "book"
+  scope_value       varchar [not null]   // "poetry" | "psalm_title" | "Romans" (book.slug)
+  // same knobs as layout_preset, all nullable = inherit:
+  font_family       varchar
+  font_size         real
+  line_height       real
+  margin            real
+  paragraph_spacing real
+  indent_step       real
+  align             varchar
+
+  indexes {
+    (preset_id, scope_kind, scope_value) [unique]
+  }
+}
+
+//============================================================
+// References
+//============================================================
+Ref: block.translation_id > translation.id
+Ref: block.book_id > book.id
+Ref: token.translation_id > translation.id
+Ref: token.book_id > book.id
+Ref: token.block_id > block.id
+Ref: versification_map.translation_id > translation.id
+Ref: versification_map.book_id > book.id
+Ref: reading_settings.active_preset_id > layout_preset.id
+Ref: layout_override.preset_id > layout_preset.id

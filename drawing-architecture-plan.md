@@ -133,6 +133,10 @@ The original drawing plan said "Android first; desktop/web = non-goal." The app 
 
 ## 10. Phased roadmap (resequenced)
 
+> **Naming:** these are **sub-steps inside product Phase 2** (Handwriting & notes) in
+> [OVERVIEW.md](OVERVIEW.md), *not* the top-level product phases. Read "Phase N" below as
+> "Phase 2 · step N."
+
 - **Phase 0 — Foundations.** Lock the `Anchor` model (`CONTEXT.md`) + `Mark` / `Note` / `Connector` schema + `Layer` model. Coordinate spaces: Markup = canonical Anchor; Ink = block-normalized strokes.
 - **Phase 1 — Markup MVP.** Web POC + RN: underline / highlight (then box / circle), layers, multi-device sync, research-mode tap-through. Portable & reflow-safe.
 - **Phase 2 — Ink MVP (Android).** Skia surface implementing `DrawingSurface`: pen / highlighter / eraser, undo/redo, layer toggle, dual-canvas, engine-agnostic stroke persistence.
@@ -183,7 +187,7 @@ interface Anchor {
   book: string;            // e.g. "John"
   chapter: number;
   verse: number;           // canonical versification
-  wordIndex?: number;      // 0-based Token index within the verse; omit = whole verse
+  wordIndex?: number;      // 0-based WORD ordinal within the verse (punctuation excluded); omit = whole verse
   wordCount?: number;      // span length in Tokens (Token-range targets)
   originalWord?: string;   // optional Original Word hub id (e.g. MACULA id) for cross-translation transfer
 }
