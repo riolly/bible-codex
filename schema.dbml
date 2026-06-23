@@ -67,6 +67,7 @@ Table block {
   id             integer  [pk, increment]
   translation_id integer  [not null]
   book_id        integer  [not null]
+  chapter        integer  [not null]               // added after prototype-usfm proved block.seq is per-chapter
   genre          genre    [not null]               // typesetting branch
   role           varchar                            // USFM subtype: section|psalm_title|book_title|acrostic|list_item… → presentation maps to typography
   indent         integer  [not null, default: 0]  // poetry line depth; 0 for prose/heading
@@ -85,7 +86,9 @@ Table token {
   translation_id integer    [not null]
   book_id        integer    [not null]
   chapter        integer    [not null]
-  verse          integer    [not null]         // canonical verse (av11n); see versification_map
+  verse          integer                       // canonical verse (av11n); NULL = non-verse content. see versification_map
+  // RESOLVED (prototype-usfm): nullable. Heading/title Tokens (\d \mt \ms) belong to no verse
+  // (1107 such in 3 books) and are addressed via their Block, not a verse word-index.
   word_index     integer                       // word ordinal within verse (punct excluded); null on punct tokens
   seq            integer    [not null]         // dense render order within chapter
   kind           token_kind [not null]

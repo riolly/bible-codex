@@ -15,7 +15,7 @@ A single word-occurrence in the original Greek/Hebrew text, identified by a stab
 _Avoid_: lemma (that is the dictionary form, not the occurrence), Strong's (that is the lexical id, not the occurrence)
 
 **Block**:
-A contiguous range of Tokens forming one literary unit — a prose paragraph, a poetry line, or a heading — carrying a genre and indent level. The unit of rendering. Derived from USFM markers (`\p`, `\q#`, …). Blocks **partition** the token stream (non-overlapping; every Token belongs to exactly one Block). Overlapping literary structures (chiasm, inclusio, parallelism) are a *separate* later layer, not Blocks.
+A contiguous range of Tokens forming one literary unit — a prose paragraph, a poetry line, or a heading — carrying a genre and indent level. The unit of rendering. Derived from USFM markers (`\p`, `\q#`, …). Blocks **partition** the token stream (non-overlapping; every Token belongs to exactly one Block). Overlapping literary structures (chiasm, inclusio, parallelism) are a *separate* later layer, not Blocks. Heading Blocks (titles, section headings) sit outside the verse sequence — their Tokens carry no Canonical Verse and are addressed via their Block, not a word-index.
 _Avoid_: paragraph (too narrow — poetry lines and headings are also Blocks), section
 
 ### Addressing
