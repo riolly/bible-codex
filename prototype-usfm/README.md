@@ -11,30 +11,44 @@ seam — and surface whatever the schema can't represent.
 **port across translations** (with verse-grain fallback), does the binding scene graph
 cascade, does ink round-trip + gate by layout, and do marks **survive a corpus re-ingest**?
 
+**Question 3 (Phase 3):** does the [`schema.dbml`](../schema.dbml) **Original Word hub +
+interlinear alignment + lexicon** hold — does the cross-tier **string-key join** (token →
+OW → Strong's/lemma/morphology) resolve, does the M:N junction + `token.ow_id` head work,
+does word-grain Markup **port across translations *correctly* via `ow_id`** where naive
+index-match fails, does Hebrew **morpheme-grain** segmentation model real morphology, and do
+the hub + seam **survive a corpus re-ingest and a lexicon re-source**? Plus: can the hub be
+derived from a reading translation's inline `\w strong=` tags (Q1)?
+
 **Branch:** logic prototype (data-shape question, not UI). Per `/prototype` skill.
 
 ## Run
 
 ```bash
 pnpm install
-pnpm ingest     # build scratch DB, print the Phase-1 report + the Phase-2 proofs
+pnpm ingest     # build scratch DB, print the Phase-1 report + Phase-2 + Phase-3 proofs
 pnpm repl       # same, then an interactive  ref>  lookup (e.g. "Psalms 3:1")
 ```
 
 Real text = World English Bible (public domain), `data/{GEN,PSA,JHN}.usfm`, plus a small
 public-domain **KJV** John slice `data/JHN.kjv.usfm` — a 2nd translation, so the
-cross-translation portability proof (Phase 2) has real divergent tokenization to test.
-Scratch DB = `PROTOTYPE-wipe-me.sqlite` (git-ignored, rebuilt each run).
+cross-translation portability proofs (Phase 2 + 3) have real divergent tokenization to test
+(John 1:3 genuinely differs in word count/order). The Phase-3 **Original Word hub** slice
+(John 1:3 Greek + Genesis 1:1 Hebrew, real Strong's/lemmas/morphology) is **hand-built but
+accurate** — a stand-in for a MACULA/OSHB corpus we don't ship yet — because the hub is
+reference data, not user data. Scratch DB = `PROTOTYPE-wipe-me.sqlite` (git-ignored, rebuilt
+each run).
 
 ## What's keepable vs throwaway
 
 - **Keep:** [`src/usfm.ts`](src/usfm.ts) — the pure USFM→rows ingester (lifts into the real app).
   From [`src/anno.ts`](src/anno.ts): `packPoints`/`unpackPoints` (the ink BLOB codec) and
   `resolveMark` (anchor→tokens with cross-translation verse-grain fallback). The coordinate-join
-  shape in [`src/ingest.ts`](src/ingest.ts). Partly [`src/render.ts`](src/render.ts) —
-  spacing-from-token-kind (proves Q1).
-- **Throwaway:** `src/main.ts`, `src/ingest.ts` + the proofs in `src/anno.ts` (harness wiring),
-  `schema.sql`, `data/`.
+  shape in [`src/ingest.ts`](src/ingest.ts). From [`src/phase3.ts`](src/phase3.ts): the
+  cross-tier string-key **join chain** and the `ow_id` **portability resolver** (`tokenByOw`) —
+  the shape the real reverse-interlinear + word-grain Markup port lifts from. Partly
+  [`src/render.ts`](src/render.ts) — spacing-from-token-kind (proves Q1).
+- **Throwaway:** `src/main.ts`, `src/ingest.ts` + the proofs in `src/anno.ts` / `src/phase3.ts`
+  (harness wiring + the hand-built hub fixture), `schema.sql`, `data/`.
 
 ## Phase-1 verdict
 
@@ -104,6 +118,47 @@ Phase 1, which forced `block.chapter` + nullable `token.verse`). The harness see
 - **Cross-translation fallback is resolver policy**, not schema — the schema only carries `ow_id`
   (null) + the coordinate. Confirms ADR-0005.
 
-**Next:** both phases validated. This prototype can be deleted once `src/usfm.ts` (+ the ink
-codec, `resolveMark`, and the coordinate-join shape) are lifted into the real RN ingester. The
-remaining real-world unknown is unchanged: **on-device pen feel** (a tablet job, not a schema job).
+## Phase-3 verdict (Original Word hub + lexicon)
+
+**The Phase-3 schema HOLDS — all 14 checks pass, no structural change needed** (like Phase 2;
+contrast Phase 1). The hub is reference data we don't ship yet, so the harness seeds a small
+**accurate hand-built slice** (John 1:3 Greek + Genesis 1:1 Hebrew, real Strong's / lemmas /
+morphology) plus interlinear alignment to the **real** WEB + KJV tokens, then proves:
+
+1. **Cross-tier join by string keys.** One query crosses corpus → hub → lexicon (`token →
+   interlinear_alignment → original_word → strongs + lemma + morphology`) entirely by **string
+   keys**, no cross-tier FK: WEB `through` → OW δι' → `G1223 διά`, preposition. (Q3)
+2. **Real inline Strong's are noise — can't BE the hub.** Meeting the real data: WEB tags Gen 1:1
+   `In|H8064` (H8064 = *heavens*, wrong) and the Greek article `the|G1722` (G1722 = *ἐν*, wrong).
+   The tags **exist but are systematically miscycled** → the hub must key off a dedicated aligned
+   corpus (MACULA/OSHB), exactly **ADR-0007 Q1**. (A finding, not a fix.)
+3. **M:N alignment + `token.ow_id` head (Q2).** WEB `All`+`things` both carry head OW πάντα
+   (N tokens → 1 OW); the junction resolves πάντα back to **both** tokens (many-to-many).
+4. **Hebrew morpheme grain (Q7).** The written word בְּרֵאשִׁית is **2 ordered segments** sharing
+   `segment_of` (preposition בְּ + noun רֵאשִׁית); tapping WEB `In` resolves to the preposition
+   morpheme's **own `ow_id`** (no Strong's — honest: inseparable prefixes lack one), *not* the
+   noun `H7225` — one uniform entity, no special path.
+5. **Cross-translation portability PAYOFF — the reason Phase 3 exists.** John 1:3 genuinely
+   diverges: the 2nd `him` is WEB word[7] but KJV word[8]. A word-grain mark ported by **index**
+   lands on KJV `without` (**wrong**); ported by **`ow_id`** it lands on KJV `him` (**correct**).
+   This is precisely what Phase 2 could only *fall back to verse grain* for.
+6. **Re-ingest + re-source survival (Q1/Q3).** Wiping + re-ingesting the corpus churns token ids
+   (`91616→91511`) yet the **OW hub is untouched** (no corpus FK into it) and the
+   `mark.target_ow_id` seam **still ports to KJV `him`** after re-deriving alignment; re-sourcing
+   the whole lexicon leaves OW→Strong's intact (string join, no FK weld).
+
+**Findings (no schema change — all confirmations):**
+- **Alignment is corpus-internal derived data**, regenerated each ingest (it FKs `token.id`, so it
+  must be wiped/rebuilt with the corpus) — while the hub + the annotation `ow_id` seam, keyed by
+  **opaque string ids**, survive untouched. This split is the whole point of Q3's tiering.
+- **The hub cannot be bootstrapped from the reading corpus's inline tags** (Proof 2) — a concrete,
+  real-data vindication of choosing an external word-id corpus (Q1). Sourcing a redistributable one
+  (MACULA / STEPBible / OSHB+MorphGNT) is the open **non-schema** risk.
+- **Portability is resolver policy over a `ow_id` schema column** — the schema carries the opaque
+  id + coordinate; the resolver does the rest. Confirms ADR-0005/0007.
+
+**Next:** all three phases validated. This prototype can be deleted once `src/usfm.ts` (+ the ink
+codec, `resolveMark`, the coordinate-join shape, and the Phase-3 string-key join + `ow_id`
+portability resolver) are lifted into the real RN ingester. The remaining real-world unknowns are
+unchanged and **non-schema**: **on-device pen feel** (a tablet job) and **sourcing a
+redistributable interlinear corpus** (a licensing job).

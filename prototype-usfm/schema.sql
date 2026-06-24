@@ -230,3 +230,78 @@ CREATE TABLE ink_stroke (
   deleted_at    INTEGER
 );
 CREATE INDEX ix_stroke_anno ON ink_stroke (annotation_id);
+
+-- ============================================================
+-- Phase 3 (Original Word hub + interlinear alignment + lexicon). Mirrors schema.dbml;
+-- see ADR-0007. THREE TIERS join by STABLE STRING KEYS across boundaries, FK only within
+-- a tier. The only real cross-table FK is corpus-internal (alignment.token_id → token.id,
+-- regenerated on ingest like block_id). ow_id is an opaque external per-occurrence id.
+-- original_word is MORPHEME grain (Greek word / Hebrew morpheme); segment_of groups a
+-- written word. Note: this DDL deliberately does NOT FK original_word_id / lemma_id /
+-- strong_id / parse_code — that is the separability the proofs exercise.
+-- ============================================================
+
+CREATE TABLE original_word (
+  id              TEXT PRIMARY KEY,              -- opaque external per-occurrence word-id (Q1)
+  language        TEXT NOT NULL CHECK (language IN ('hebrew','greek','aramaic')),
+  surface         TEXT NOT NULL,
+  transliteration TEXT,
+  canon_book_slug TEXT NOT NULL,                 -- canonical bridge address (av11n)
+  canon_chapter   INTEGER NOT NULL,
+  canon_verse     INTEGER NOT NULL,
+  position        INTEGER NOT NULL,              -- order within canonical verse
+  native_chapter  INTEGER,                       -- native original-language numbering
+  native_verse    INTEGER,
+  segment_of      TEXT,                          -- written-word GROUP id (string key)
+  segment_index   INTEGER NOT NULL DEFAULT 0,
+  lemma_id        TEXT,                          -- → lemma.id   (string, NO FK, cross-tier)
+  strong_id       TEXT,                          -- → strongs.id (string, NO FK, cross-tier)
+  parse_code      TEXT,                          -- → morphology.code (raw; truth)
+  gloss           TEXT,
+  gloss_prefix    TEXT,
+  gloss_suffix    TEXT
+);
+CREATE INDEX ix_ow_bridge  ON original_word (canon_book_slug, canon_chapter, canon_verse, position);
+CREATE INDEX ix_ow_segment ON original_word (segment_of, segment_index);
+CREATE INDEX ix_ow_lemma   ON original_word (lemma_id);
+CREATE INDEX ix_ow_strong  ON original_word (strong_id);
+
+CREATE TABLE interlinear_alignment (
+  id               INTEGER PRIMARY KEY,
+  token_id         INTEGER NOT NULL REFERENCES token(id),  -- corpus-internal FK (regenerated on ingest)
+  original_word_id TEXT NOT NULL,                          -- → original_word.id (string key, NO FK)
+  UNIQUE (token_id, original_word_id)
+);
+CREATE INDEX ix_align_ow  ON interlinear_alignment (original_word_id);
+CREATE INDEX ix_align_tok ON interlinear_alignment (token_id);
+
+CREATE TABLE lemma (
+  id              TEXT PRIMARY KEY,
+  language        TEXT NOT NULL CHECK (language IN ('hebrew','greek','aramaic')),
+  dictionary_form TEXT NOT NULL,
+  primary_gloss   TEXT
+);
+
+CREATE TABLE strongs (
+  id              TEXT PRIMARY KEY,              -- e.g. 'G3056', 'H7225'
+  language        TEXT NOT NULL CHECK (language IN ('hebrew','greek','aramaic')),
+  headword        TEXT NOT NULL,
+  transliteration TEXT,
+  short_def       TEXT,
+  full_def        TEXT
+);
+
+CREATE TABLE morphology (
+  code           TEXT PRIMARY KEY,               -- raw parse code, e.g. 'V-AAI-3S' / 'HR'
+  language       TEXT NOT NULL CHECK (language IN ('hebrew','greek','aramaic')),
+  part_of_speech TEXT,
+  tense          TEXT,
+  voice          TEXT,
+  mood           TEXT,
+  gram_case      TEXT,                           -- `case` is reserved → gram_case
+  stem           TEXT,
+  state          TEXT,
+  person         TEXT,
+  gender         TEXT,
+  number         TEXT
+);

@@ -8,6 +8,7 @@ import { type Stats } from "./usfm";
 import { renderLine, type RToken } from "./render";
 import { ingestCorpus } from "./ingest";
 import { runPhase2Proofs } from "./anno";
+import { runPhase3Proofs } from "./phase3";
 
 const ROOT = join(__dirname, "..");
 const DB_PATH = join(ROOT, "PROTOTYPE-wipe-me.sqlite");
@@ -153,5 +154,6 @@ function repl(db: Database.Database) {
 
 const { db, total } = build();
 report(db, total);
-runPhase2Proofs(db, ROOT);   // Phase-2 annotation-layer pressure-test (mutates corpus last, via re-ingest proof)
+runPhase2Proofs(db, ROOT);   // Phase-2 annotation-layer pressure-test
+runPhase3Proofs(db, ROOT);   // Phase-3 Original Word hub pressure-test (mutates corpus last, via re-ingest proof)
 if (process.argv.includes("--repl")) repl(db); else db.close();
