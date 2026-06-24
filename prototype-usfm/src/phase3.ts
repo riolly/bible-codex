@@ -167,11 +167,12 @@ function seedOwMark(db: Database.Database): string {
   db.prepare(`INSERT OR IGNORE INTO layer (id,name,visible,seq,created_at,updated_at) VALUES (?,?,1,0,?,?)`)
     .run(layer, "Word study", T, T);
   const tok = tokenAt(db, "WEB", "John", 1, 3, 7); // the 2nd "him"
+  // #5: single word → target_word_index=7, target_word_index_end=7 (end==start), verse_end NULL.
   db.prepare(
     `INSERT INTO mark (id,layer_id,kind,target_translation,target_book_slug,target_chapter,target_verse,
-       target_word_index,target_word_count,target_ow_id,color,created_at,updated_at)
+       target_word_index,target_word_index_end,target_ow_id,color,created_at,updated_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(mark, layer, "underline", "WEB", "John", 1, 3, 7, 1, tok.ow_id, "#4a90d9", T, T);
+    .run(mark, layer, "underline", "WEB", "John", 1, 3, 7, 7, tok.ow_id, "#4a90d9", T, T);
   return mark;
 }
 

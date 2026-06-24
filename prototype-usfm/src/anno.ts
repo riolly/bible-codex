@@ -58,7 +58,7 @@ function qWordRange(db: Database.Database, tx: string, slug: string, ch: number,
     `SELECT t.text, t.word_index, t.block_id
      FROM token t JOIN translation tr ON tr.id=t.translation_id JOIN book b ON b.id=t.book_id
      WHERE tr.abbrev=? AND b.slug=? AND t.chapter=? AND t.verse=? AND t.kind='word'
-       AND t.word_index>=? AND t.word_index<?
+       AND t.word_index>=? AND t.word_index<=?
      ORDER BY t.word_index`, tx, slug, ch, vs, lo, hi);
 }
 type Resolved = { grain: string; translation: string; tokens: any[] };
@@ -66,10 +66,14 @@ function resolveMark(db: Database.Database, m: any, current: string): Resolved {
   const sameTx = m.target_translation === current;
   const wordWanted = m.target_word_index != null;
   const canWord = sameTx || m.target_ow_id != null;
-  if (wordWanted && canWord) {
-    const cnt = m.target_word_count ?? 1;
-    const toks = qWordRange(db, current, m.target_book_slug, m.target_chapter, m.target_verse,
-      m.target_word_index, m.target_word_index + cnt);
+  // #5: range = [word_index, word_index_end] INCLUSIVE within a single verse. Cross-verse ranges
+  // (target_verse_end set) fall back to verse grain here — resolving them is resolver policy the
+  // prototype doesn't exercise (no cross-verse fixture yet).
+  const crossVerse = m.target_verse_end != null && m.target_verse_end !== m.target_verse;
+  if (wordWanted && canWord && !crossVerse) {
+    const lo = m.target_word_index;
+    const hi = m.target_word_index_end ?? lo; // null end = single word
+    const toks = qWordRange(db, current, m.target_book_slug, m.target_chapter, m.target_verse, lo, hi);
     if (toks.length) return { grain: "word", translation: current, tokens: toks };
   }
   const toks = qVerseWords(db, current, m.target_book_slug, m.target_chapter, m.target_verse);
@@ -93,16 +97,18 @@ export function seedAnnotations(db: Database.Database): Ids {
   db.prepare(`INSERT INTO layer (id,name,visible,seq,created_at,updated_at) VALUES (?,?,1,0,?,?)`)
     .run(ids.layer, "Study", L.created_at, L.updated_at);
 
+  // #5: RANGE anchor = (word_index start, verse_end, word_index_end inclusive). Columns:
+  //   target_word_index, target_verse_end, target_word_index_end (replaces old target_word_count).
   const insMark = db.prepare(
     `INSERT INTO mark (id,layer_id,kind,target_translation,target_book_slug,target_chapter,target_verse,
-       target_word_index,target_word_count,target_ow_id,color,weight,created_at,updated_at)
-     VALUES (?,?,?,?,?,?,?,?,?,NULL,?,?,?,?)`);
-  // verse-grain highlight on John 1:1 (no word_index)
-  insMark.run(ids.mVerse, ids.layer, "highlight", "WEB", "John", 1, 1, null, null, "#ffd54a", null, L.created_at, L.updated_at);
-  // word-grain underline on John 3:16 word[10]
-  insMark.run(ids.mWord, ids.layer, "underline", "WEB", "John", 3, 16, 10, 1, "#4a90d9", null, L.created_at, L.updated_at);
-  // word-RANGE highlight over Psalms 3:1 (a verse that spans >1 poetry block)
-  insMark.run(ids.mRange, ids.layer, "highlight", "WEB", "Psalms", 3, 1, 0, 50, "#7ed957", null, L.created_at, L.updated_at);
+       target_word_index,target_verse_end,target_word_index_end,target_ow_id,color,weight,created_at,updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,NULL,?,?,?,?)`);
+  // verse-grain highlight on John 1:1 (whole verse: word_index NULL, no end)
+  insMark.run(ids.mVerse, ids.layer, "highlight", "WEB", "John", 1, 1, null, null, null, "#ffd54a", null, L.created_at, L.updated_at);
+  // word-grain underline on John 3:16 word[10] (single word: end == start)
+  insMark.run(ids.mWord, ids.layer, "underline", "WEB", "John", 3, 16, 10, null, 10, "#4a90d9", null, L.created_at, L.updated_at);
+  // word-RANGE highlight over Psalms 3:1 words[0..49] (a verse that spans >1 poetry block)
+  insMark.run(ids.mRange, ids.layer, "highlight", "WEB", "Psalms", 3, 1, 0, null, 49, "#7ed957", null, L.created_at, L.updated_at);
 
   db.prepare(
     `INSERT INTO note (id,layer_id,pin_translation,pin_book_slug,pin_chapter,pin_verse,pin_word_index,pin_ow_id,
@@ -112,13 +118,14 @@ export function seedAnnotations(db: Database.Database): Ids {
 
   db.prepare(`INSERT INTO connector (id,layer_id,color,weight,arrowhead,created_at,updated_at) VALUES (?,?,?,?,1,?,?)`)
     .run(ids.connector, ids.layer, "#888", 1.0, L.created_at, L.updated_at);
+  // #5/#8: a binding endpoint is a POINT (no anchor_word_count / range fields).
   const insBind = db.prepare(
     `INSERT INTO binding (id,connector_id,role,target_kind,anchor_translation,anchor_book_slug,anchor_chapter,
-       anchor_verse,anchor_word_index,anchor_word_count,anchor_ow_id,target_element_id,created_at,updated_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,NULL,?,?,?)`);
+       anchor_verse,anchor_word_index,anchor_ow_id,target_element_id,created_at,updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?,NULL,?,?,?)`);
   // from = scripture (John 1:1 word 0); to = the Note element
-  insBind.run(randomUUID(), ids.connector, "from", "scripture", "WEB", "John", 1, 1, 0, 1, null, L.created_at, L.updated_at);
-  insBind.run(randomUUID(), ids.connector, "to", "note", null, null, null, null, null, null, ids.note, L.created_at, L.updated_at);
+  insBind.run(randomUUID(), ids.connector, "from", "scripture", "WEB", "John", 1, 1, 0, null, L.created_at, L.updated_at);
+  insBind.run(randomUUID(), ids.connector, "to", "note", null, null, null, null, null, ids.note, L.created_at, L.updated_at);
 
   // ink over John 1:1 in the (WEB, vertical) layout
   const inkId = randomUUID();

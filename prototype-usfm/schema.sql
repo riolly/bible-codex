@@ -36,8 +36,8 @@ CREATE TABLE token (
   translation_id INTEGER NOT NULL REFERENCES translation(id),
   book_id        INTEGER NOT NULL REFERENCES book(id),
   chapter        INTEGER NOT NULL,
-  verse          INTEGER NOT NULL,            -- canonical; 0 = pre-verse (heading/title)
-  word_index     INTEGER,                     -- word ordinal in verse, punct excluded
+  verse          INTEGER,                     -- canonical (av11n); NULL = non-verse content (#1: NULL, not 0)
+  word_index     INTEGER,                     -- word ordinal in verse, punct excluded; NULL on punct + heading words (#1/#3)
   seq            INTEGER NOT NULL,
   kind           TEXT NOT NULL CHECK (kind IN ('word','punct')),
   text           TEXT NOT NULL,
@@ -59,10 +59,12 @@ CREATE TABLE versification_map (
   canon_verse    INTEGER NOT NULL
 );
 
--- Presentation layer (user data). Not filled by ingestion; seeded with a demo to
+-- Presentation layer (user data, SYNCED). Not filled by ingestion; seeded with a demo to
 -- prove the cascade resolves by SEMANTIC KEY (genre/role/book), never token.id.
+-- IDS + LIFECYCLE (#4): synced offline-editable user data, so TEXT UUIDv7 PKs (autoincrement
+-- collides across devices) + created_at/updated_at/deleted_at — same rules as the Phase-2 layer.
 CREATE TABLE layout_preset (
-  id                INTEGER PRIMARY KEY,
+  id                TEXT PRIMARY KEY,           -- UUIDv7 (#4)
   name              TEXT NOT NULL,
   font_family       TEXT,
   font_size         REAL,
@@ -70,14 +72,17 @@ CREATE TABLE layout_preset (
   margin            REAL,
   paragraph_spacing REAL,
   indent_step       REAL,
-  align             TEXT
+  align             TEXT,
+  created_at        INTEGER NOT NULL,
+  updated_at        INTEGER NOT NULL,
+  deleted_at        INTEGER
 );
 
 CREATE TABLE layout_override (
-  id                INTEGER PRIMARY KEY,
-  preset_id         INTEGER NOT NULL REFERENCES layout_preset(id),
+  id                TEXT PRIMARY KEY,           -- UUIDv7 (#4)
+  preset_id         TEXT NOT NULL REFERENCES layout_preset(id),
   scope_kind        TEXT NOT NULL CHECK (scope_kind IN ('genre','role','book')),
-  scope_value       TEXT NOT NULL,
+  scope_value       TEXT NOT NULL,             -- see ROLE VOCABULARY in schema.dbml (#7)
   font_family       TEXT,
   font_size         REAL,
   line_height       REAL,
@@ -85,14 +90,20 @@ CREATE TABLE layout_override (
   paragraph_spacing REAL,
   indent_step       REAL,
   align             TEXT,
+  created_at        INTEGER NOT NULL,
+  updated_at        INTEGER NOT NULL,
+  deleted_at        INTEGER,
   UNIQUE (preset_id, scope_kind, scope_value)
 );
 
 CREATE TABLE reading_settings (
-  id               INTEGER PRIMARY KEY,
+  id               TEXT PRIMARY KEY,            -- UUIDv7 (#4; per-user singleton, still UUID for uniform sync)
   scroll_mode      TEXT NOT NULL DEFAULT 'vertical' CHECK (scroll_mode IN ('horizontal','vertical')),
   theme            TEXT NOT NULL DEFAULT 'light',
-  active_preset_id INTEGER REFERENCES layout_preset(id)
+  active_preset_id TEXT REFERENCES layout_preset(id),
+  created_at       INTEGER NOT NULL,
+  updated_at       INTEGER NOT NULL,
+  deleted_at       INTEGER
 );
 
 -- ============================================================
@@ -121,11 +132,12 @@ CREATE TABLE mark (
   kind               TEXT NOT NULL CHECK (kind IN ('underline','highlight','box','circle','strike')),
   target_translation TEXT NOT NULL,                 -- abbrev, e.g. 'WEB'
   target_book_slug   TEXT NOT NULL,
-  target_chapter     INTEGER NOT NULL,
-  target_verse       INTEGER NOT NULL,
-  target_word_index  INTEGER,                        -- null = whole verse
-  target_word_count  INTEGER,                        -- span length in words
-  target_ow_id       TEXT,                           -- SEAM P3
+  target_chapter        INTEGER NOT NULL,
+  target_verse          INTEGER NOT NULL,            -- start verse (canonical)
+  target_word_index     INTEGER,                     -- start word; NULL = whole verse
+  target_verse_end      INTEGER,                     -- end verse; NULL = single verse (cross-verse marks, #5)
+  target_word_index_end INTEGER,                     -- end word INCLUSIVE in end verse; NULL = through end of verse
+  target_ow_id       TEXT,                           -- SEAM P3 (head OW of start word)
   color              TEXT NOT NULL,
   weight             REAL,
   created_at         INTEGER NOT NULL,
@@ -172,12 +184,11 @@ CREATE TABLE binding (
   connector_id       TEXT NOT NULL REFERENCES connector(id),
   role               TEXT NOT NULL CHECK (role IN ('from','to')),
   target_kind        TEXT NOT NULL CHECK (target_kind IN ('scripture','mark','note')),
-  anchor_translation TEXT,
+  anchor_translation TEXT,                            -- POINT anchor only (endpoints are points, #5/#8)
   anchor_book_slug   TEXT,
   anchor_chapter     INTEGER,
   anchor_verse       INTEGER,
   anchor_word_index  INTEGER,
-  anchor_word_count  INTEGER,
   anchor_ow_id       TEXT,
   target_element_id  TEXT,
   created_at         INTEGER NOT NULL,
@@ -261,7 +272,7 @@ CREATE TABLE original_word (
   gloss_prefix    TEXT,
   gloss_suffix    TEXT
 );
-CREATE INDEX ix_ow_bridge  ON original_word (canon_book_slug, canon_chapter, canon_verse, position);
+CREATE INDEX ix_ow_bridge  ON original_word (canon_book_slug, canon_chapter, canon_verse, position, segment_index); -- segment_index for total order (#9)
 CREATE INDEX ix_ow_segment ON original_word (segment_of, segment_index);
 CREATE INDEX ix_ow_lemma   ON original_word (lemma_id);
 CREATE INDEX ix_ow_strong  ON original_word (strong_id);

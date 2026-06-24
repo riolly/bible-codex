@@ -11,3 +11,4 @@ We store scripture as a per-translation **token stream** with **verse** and lite
 
 - A word-level user mark ports across translations only where interlinear alignment exists (route through the original word); otherwise it falls back to verse grain.
 - Requires shipping a canonical versification + per-translation versification maps before "same verse across translations" works.
+- **The versification map is reversible, not a locked seam (#6).** Anchors store the *canonical* verse directly and the map is read-only corpus data rebuilt on every ingest, so re-shaping it later for clean splits/merges (one canonical verse ↔ two native, Psalm-title-as-v1, Hebrew/LXX) touches no user data and no anchor — it is corpus-internal, like `block_id`. **But it is UNVALIDATED:** in the prototype WEB & KJV ≈ canonical → the map was empty, so the native↔canonical round-trip an Anchor depends on was never exercised. Build a divergent-translation fixture and test it before bundling one.

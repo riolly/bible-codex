@@ -63,7 +63,9 @@ back to correctly-typeset prose + poetry from the rows alone.
   span >1 verse (prose). The membership partition handles both; verse-as-storage-unit would die
   here. (Psalms 3:1 = `poetry/indent1 + poetry/indent2`.)
 - **Q3 (sparse versification):** `versification_map` = **0 rows** for WEB — English ≈ canonical;
-  the real divergence is Hebrew/LXX, correctly deferred to Phase 3.
+  the real divergence is Hebrew/LXX, correctly deferred to Phase 3. ⚠️ **Caveat (#6):** *because*
+  the map is empty, the native↔canonical round-trip an Anchor relies on is **UNVALIDATED** — needs
+  a divergent-translation fixture before that path can be claimed proven.
 - **ADR-0004 (presentation by semantic key):** a poetry block in Psalms resolves
   `font=Gentium Plus` (book scope) + `indent_step=1.5` (genre scope) using **only** genre/book
   keys, never `token.id`.
@@ -74,9 +76,15 @@ back to correctly-typeset prose + poetry from the rows alone.
 **Findings folded back / needing a decision:**
 1. **FIXED — `block` needed a `chapter` column** (`block.seq` is per-chapter). Added to
    `../schema.dbml`.
-2. **RESOLVED — pre-verse content** (psalm titles `\d`, book titles `\mt`, sections `\ms`):
-   1,107 word tokens with no verse. **`token.verse` is now nullable** (NULL = non-verse content;
-   addressed via Block). Folded into `../schema.dbml` + `../CONTEXT.md`.
+2. **RESOLVED (#1) — pre-verse content** (psalm titles `\d`, book titles `\mt`, sections `\ms`/`\s`):
+   **`token.verse` is now nullable, set to NULL (never a 0-sentinel)**; heading word tokens also get
+   `word_index = NULL` (no verse → no word ordinal). Headings are addressed via their Block, and are
+   **not anchorable** in v1 (#2). Folded into `../schema.dbml` + `../CONTEXT.md`.
+2b. **FIXED (#3) — mid-chapter headings inherited the preceding verse.** The ingester reset `verse`
+   only on `\c`/`\v`, so a `\s`/`\ms` heading between verses tokenized as the *previous* verse with
+   continuing word indices — heading words masquerading as verse words (contradicting CONTEXT). The
+   ingester now sets `verse = NULL` on entering *any* heading block; verse=NULL word tokens rose
+   1107 → 1130 once the absorbed heading words surfaced. (`src/usfm.ts` `inHeading` flag.)
 3. **Phase-2/3 — character-style spans** with no schema slot: words-of-Jesus `\wj` (459),
    Selah `\qs` (71). Inline styles over a token range — likely a later token-style attribute or
    a Markup-like span, not Phase 1.

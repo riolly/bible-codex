@@ -15,7 +15,7 @@ A single lexical **segment-occurrence** in the original text — a whole word in
 _Avoid_: lemma (that is the dictionary form, not the occurrence), Strong's (that is the lexical id, not the occurrence); assuming one written word = one Original Word (true for Greek, not Hebrew)
 
 **Block**:
-A contiguous range of Tokens forming one literary unit — a prose paragraph, a poetry line, or a heading — carrying a genre and indent level. The unit of rendering. Derived from USFM markers (`\p`, `\q#`, …). Blocks **partition** the token stream (non-overlapping; every Token belongs to exactly one Block). Overlapping literary structures (chiasm, inclusio, parallelism) are a *separate* later layer, not Blocks. Heading Blocks (titles, section headings) sit outside the verse sequence — their Tokens carry no Canonical Verse and are addressed via their Block, not a word-index.
+A contiguous range of Tokens forming one literary unit — a prose paragraph, a poetry line, or a heading — carrying a genre and indent level. The unit of rendering. Derived from USFM markers (`\p`, `\q#`, …). Blocks **partition** the token stream (non-overlapping; every Token belongs to exactly one Block). Overlapping literary structures (chiasm, inclusio, parallelism) are a *separate* later layer, not Blocks. Heading Blocks (titles, section headings) sit outside the verse sequence — their Tokens carry no Canonical Verse (verse is NULL, not 0) and no word-index, and are addressed via their Block. This holds for **mid-chapter** section headings too: a heading never inherits the preceding verse's number.
 _Avoid_: paragraph (too narrow — poetry lines and headings are also Blocks), section
 
 ### Addressing
@@ -33,6 +33,8 @@ A per-translation table reconciling that translation's Translation Verses to Can
 **Anchor**:
 The stable canonical address that any user mark or reading position attaches to: a Canonical Verse plus a word-index, optionally carrying an Original Word id. Never pixels.
 The **word-index** is the 0-based ordinal of a *word* Token within the verse (**punctuation excluded**); a punctuation Token is addressed by the word-index of the word it follows.
+There is no shared anchor table — the coordinate is a **column-group** inlined on each anchored entity and reused verbatim by later ones (cross_reference, tag). It comes in two shapes: a **point** anchor (a Note pin, a Connector endpoint — a single word or whole verse) and a **range** anchor (a Mark — a span that may cross a verse boundary, carrying an end verse + end word-index). User-mark anchors are **translation-bound** (they carry the translation they were drawn in and port from there); **editorial** anchors (the Original Word hub, a Cross-reference) are **canonical-only** — no translation — because they relate passages, not one translation's words.
+**Headings are not anchorable** (v1): heading Tokens carry no Canonical Verse, and an Anchor requires a verse — so titles/section headings cannot be marked, noted, or connected. A block-grain heading anchor is a deferred, additive extension.
 
 **Cross-reference**:
 An editorial, shipped link between two passages (e.g. from the Treasury of Scripture Knowledge) — read-only and authoritative; the app's own "this connects to that." Its user-authored sibling is the Connector. A Portal (see `WISHLIST.md`) is a Cross-reference gated by reading progress.
@@ -45,7 +47,7 @@ The portable, data class of user marks — re-rendered by the app from reference
 _Avoid_: annotation (covers both Markup and Ink)
 
 **Mark**:
-A decoration bound to a scripture Anchor — underline, highlight, box, circle, strike. Its position is derived from the targeted words; it has no independent location.
+A decoration bound to a scripture Anchor — underline, highlight, box, circle, strike. Its position is derived from the targeted words; it has no independent location. A Mark uses the **range** Anchor: it can span a single word, a phrase within a verse, or a phrase **across a verse boundary** (start verse/word → end verse/word). A Note pin and a Connector endpoint, by contrast, are points.
 _Avoid_: highlight (only one kind of Mark)
 
 **Note**:

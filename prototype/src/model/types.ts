@@ -1,6 +1,14 @@
 // Framework-agnostic domain model. NO CanvasKit, NO DOM. This is the data the
 // layout engine consumes; it ports verbatim to the RN-Skia build.
 //
+// ⚠️ STALE re: the schema (#12). This file PREDATES the Phase-1/2/3 grills and is NOT the shape of
+// record — the schema of record is `schema.dbml` (+ the validated ingester
+// prototype-usfm/src/usfm.ts). Known divergences kept here only because this prototype still runs
+// on them: TokenKind includes `"space"` (the schema DROPPED space tokens — spacing is a render
+// concern); `Anchor.word` is required + has no range/originalWord fields (the schema Anchor is a
+// point-or-range column-group with an optional ow id); `OriginalWord` is a single non-morpheme
+// record (the hub is morpheme-grained with a separate lexicon tier). Do not port THESE shapes.
+//
 // Vocabulary follows CONTEXT.md: Token, Block, Canonical Verse, Anchor,
 // Original Word, Cross-reference. The migration-fatal rule is honoured here:
 // every addressable thing keys off CANONICAL COORDINATES (book/chapter/verse/

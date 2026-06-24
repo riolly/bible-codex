@@ -23,8 +23,8 @@ export interface PToken {
   localId: number;
   blockLocalId: number;
   chapter: number;
-  verse: number; // canonical; 0 = pre-verse content (titles/headings) — a FINDING
-  wordIndex: number | null; // word ordinal within verse, punct excluded
+  verse: number | null; // canonical; NULL = non-verse content (titles/headings) — #1 (NULL, not a 0-sentinel)
+  wordIndex: number | null; // word ordinal within verse, punct excluded; NULL on punct + heading words (#1/#3)
   seq: number; // dense render order within chapter
   kind: TokenKind;
   text: string;
@@ -38,7 +38,7 @@ export interface Stats {
   selah: number; // \qs..\qs* spans (NOT modelled in Phase-1)
   strongAttrs: number; // strong="..." available in source (Phase-3 ow_id seam data)
   wWrapped: number; // \w-wrapped word occurrences
-  preVerseWordTokens: number; // word tokens with verse=0 (heading/title) — a FINDING
+  preVerseWordTokens: number; // word tokens with verse=NULL (heading/title, incl. mid-chapter \s) — #1/#3
 }
 
 export interface ParseResult {
@@ -80,11 +80,13 @@ export function parseUsfm(usfm: string): ParseResult {
     strongAttrs: 0, wWrapped: 0, preVerseWordTokens: 0,
   };
 
-  let chapter = 0, verse = 0;
+  let chapter = 0, verse: number | null = null;
   let seqInChapter = 0, wordIndexInVerse = 0;
   let blockLocal = 0, tokenLocal = 0;
   let cur: PBlock | null = null;
   let pendingVerseStart = false;
+  let inHeading = false; // #3: heading tokens carry NO verse, even mid-chapter (\s) — they must
+                         // not inherit the preceding verse number.
 
   const openBlock = (genre: Genre, role: string | null, indent: number) => {
     cur = { localId: blockLocal++, genre, role, indent, seq: seqInChapter, chapter };
@@ -95,20 +97,25 @@ export function parseUsfm(usfm: string): ParseResult {
     const clean$ = clean(text, stats);
     if (!clean$) return;
     if (!cur) openBlock("prose", "implicit", 0); // guard: text with no block marker
+    // #1/#3: a token is "in a verse" only outside a heading AND once a \v has set the verse.
+    // Heading / pre-verse content → verse=NULL, word_index=NULL.
+    const inVerse = !inHeading && verse != null;
     for (const m of clean$.matchAll(TOKENIZER)) {
       const isWord = m[1] !== undefined;
       if (isWord) {
-        const t: PToken = {
-          localId: tokenLocal++, blockLocalId: cur!.localId, chapter, verse,
-          wordIndex: wordIndexInVerse++, seq: seqInChapter++, kind: "word",
-          text: m[1], verseStart: pendingVerseStart,
-        };
-        if (verse === 0) stats.preVerseWordTokens++;
-        pendingVerseStart = false;
-        tokens.push(t);
+        tokens.push({
+          localId: tokenLocal++, blockLocalId: cur!.localId, chapter,
+          verse: inVerse ? verse : null,
+          wordIndex: inVerse ? wordIndexInVerse++ : null,
+          seq: seqInChapter++, kind: "word",
+          text: m[1], verseStart: inVerse ? pendingVerseStart : false,
+        });
+        if (!inVerse) stats.preVerseWordTokens++;
+        if (inVerse) pendingVerseStart = false;
       } else {
         tokens.push({
-          localId: tokenLocal++, blockLocalId: cur!.localId, chapter, verse,
+          localId: tokenLocal++, blockLocalId: cur!.localId, chapter,
+          verse: inVerse ? verse : null,
           wordIndex: null, seq: seqInChapter++, kind: "punct",
           text: m[2], verseStart: false,
         });
@@ -129,22 +136,34 @@ export function parseUsfm(usfm: string): ParseResult {
       if (tag === "c") {
         const n = parseInt(line, 10); line = "";
         chapter = isNaN(n) ? chapter + 1 : n;
-        verse = 0; seqInChapter = 0; wordIndexInVerse = 0; cur = null;
+        verse = null; seqInChapter = 0; wordIndexInVerse = 0; cur = null; inHeading = false; // #1/#3
       } else if (tag === "v") {
         const vm = line.match(/^(\d+)[ab]? ?/);
         if (vm) { verse = parseInt(vm[1], 10); line = line.slice(vm[0].length); }
-        wordIndexInVerse = 0; pendingVerseStart = true;
+        wordIndexInVerse = 0; pendingVerseStart = true; inHeading = false; // #3: a verse ends any heading
       } else if (/^q[1-4]$/.test(tag)) {
+        inHeading = false;
         openBlock("poetry", null, parseInt(tag[1], 10));
       } else if (tag === "p" || tag === "m" || tag === "nb" || tag === "pi" || tag === "li") {
-        openBlock("prose", tag === "p" ? null : tag, 0);
+        // #7 ROLE VOCABULARY: emit the registered canonical role string, not the raw USFM tag.
+        const role = tag === "p" ? null
+          : tag === "m" ? "margin"
+          : tag === "nb" ? "no_break"
+          : tag === "pi" ? "indented"
+          : "list_item"; // li
+        inHeading = false;
+        openBlock("prose", role, 0);
       } else if (tag === "d") {
+        inHeading = true; // #3
         openBlock("heading", "psalm_title", 0);
       } else if (/^mt/.test(tag)) {
+        inHeading = true; // #3
         openBlock("heading", "book_title", 0);
       } else if (/^ms/.test(tag)) {
+        inHeading = true; // #3
         openBlock("heading", "major_section", 0);
       } else if (/^s/.test(tag)) {
+        inHeading = true; // #3: mid-chapter section heading — must NOT inherit the preceding verse
         openBlock("heading", "section", 0);
       } else if (tag === "b") {
         cur = null; // stanza break → next marker opens a fresh block

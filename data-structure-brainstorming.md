@@ -62,12 +62,17 @@ freely re-ingestable.
 
 ```ts
 interface Anchor {
-  translation: string;   // the translation it was created in (e.g. "KJV")
+  // translation present on USER-mark anchors (the translation a mark was drawn in + ports from);
+  // OMITTED on EDITORIAL anchors (Original Word hub, Cross-reference) — those are canonical-only,
+  // because they relate passages, not one translation's words (#8).
+  translation?: string;  // the translation it was created in (e.g. "KJV")
   book: string;          // canonical book id
   chapter: number;
   verse: number;         // CANONICAL versification (av11n), not the translation's native number
-  wordIndex?: number;    // 0-based Token index within the verse; omit = whole verse
-  wordCount?: number;    // span length in Tokens (Token-range targets)
+  wordIndex?: number;    // 0-based word-Token index within the verse; omit = whole verse
+  // RANGE (a Mark only; Note pin + Connector endpoint are POINTS, so they stop at wordIndex) — #5:
+  verseEnd?: number;     // end verse; omit = single verse. Enables CROSS-VERSE phrase marks.
+  wordIndexEnd?: number; // end word-Token index INCLUSIVE in the end verse; omit = through end of verse
   originalWord?: string; // OPTIONAL hub id — the Phase-3 seam; null until Phase 3 populates it
 }
 ```
@@ -76,6 +81,12 @@ The `originalWord` field is the **cross-phase seam**: it exists in the schema fr
 empty through Phase 2, and is filled in Phase 3. Word-grain Markup created in Phase 2 therefore
 ports across translations **by verse grain only** until Phase 3 lights up the hub — exactly the
 "verse-first-word fallback" the prototype already validated.
+
+Two **non-migration-fatal** notes carried in the schema (`schema.dbml`): (a) the older
+`prototype/src/model/types.ts` `Anchor` predates the grills (`word` required, no range/ow fields);
+the shape of record is this interface + `schema.dbml`. (b) **Headings are not anchorable** in v1 —
+heading Tokens carry `verse = NULL`, so no Anchor resolves to them; a block-grain heading anchor is
+deferred-additive (#2).
 
 ---
 
@@ -244,6 +255,12 @@ the half it was missing.
   over-built?
 - Block model for nested poetry (stanza vs line) — one `block` table with indent level, or a
   parent/child?
+- **Versification round-trip is UNVALIDATED (#6).** WEB & KJV ≈ canonical, so `versification_map`
+  was empty in the prototype — the native↔canonical conversion an Anchor depends on was never
+  exercised. Build a fixture with a genuinely-divergent translation (Psalm titles, Joel/Mal,
+  Rev 12/13) and test the round-trip before bundling one. Deferral is safe (anchors store
+  canonical directly; the map is rebuildable corpus data — reshaping it for splits/merges touches
+  no user data), but "validated" must not be claimed until this runs.
 
 **Phase 3** — _table shapes RESOLVED (grill Q1–Q9 → [ADR-0007](docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md)):_
 - ~~Hebrew segmentation: sibling `original_word` rows vs child `morpheme` table~~ → sibling rows at
@@ -254,6 +271,13 @@ the half it was missing.
   code-keyed `morphology` decode table (Q6).
 - _Still open (not table-shape):_ sourcing the actual interlinear corpus (MACULA / STEPBible /
   OSHB+MorphGNT) and confirming its license is redistributable — same discipline as the NASB lesson.
+  Confirm too that the chosen source supplies a **lemma id per occurrence** (#11) — "lemma is the
+  spine" assumes it; if a source ships Strong's but no lemma, `original_word.lemma_id` is null at
+  launch and occurrence stats hang off `strong_id` until a lemma source is added (additive).
+- _Still open (not table-shape):_ `token.ow_id` "head" is set by the ingester out-of-band — the
+  bare alignment junction has no `is_primary` flag (#10). The ingest-time validation pass must
+  assert `token.ow_id ∈ interlinear_alignment(token)`. Add `is_primary` to the junction if/when a
+  source provides it (additive).
 
 **Cross-phase**
 - Sync backend (PowerSync vs Electric); Markup (tiny rows) and Ink (heavy blobs) likely differ.

@@ -182,13 +182,17 @@ interface DrawingSurface {
 
 ```ts
 // ---- Shared canonical anchor (see CONTEXT.md) ----
+// A reused column-group, not a table; two shapes — a Mark is a RANGE, a Note pin / Connector
+// endpoint is a POINT (stops at wordIndex). `translation` is present on user marks (translation-
+// bound) and OMITTED on editorial anchors (OW hub, Cross-reference — canonical-only). #5/#8.
 interface Anchor {
-  translation: string;     // translation it was created in (e.g. "KJV", "BSB")
+  translation?: string;    // translation it was created in (e.g. "KJV", "BSB"); omit on editorial anchors
   book: string;            // e.g. "John"
   chapter: number;
-  verse: number;           // canonical versification
+  verse: number;           // canonical versification (start verse)
   wordIndex?: number;      // 0-based WORD ordinal within the verse (punctuation excluded); omit = whole verse
-  wordCount?: number;      // span length in Tokens (Token-range targets)
+  verseEnd?: number;       // RANGE (Mark only): end verse; omit = single verse. Enables cross-verse marks.
+  wordIndexEnd?: number;   // RANGE (Mark only): end WORD ordinal INCLUSIVE in end verse; omit = through end of verse
   originalWord?: string;   // optional Original Word hub id (e.g. MACULA id) for cross-translation transfer
 }
 
