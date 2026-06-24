@@ -2,13 +2,15 @@
 // Format: DBML (https://dbml.dbdiagram.io). Visualize: paste into https://dbdiagram.io
 // or publish with https://dbdocs.io. (Your old BibleCodex.sql was a dbdiagram export.)
 //
-// SCOPE: Phase 1 only — the read-only reading corpus + the user layout-adjust table.
-// Phase 2 (annotations), Phase 3 (Original Word hub + lexicon), Phase 4 (progress)
-// are designed in data-structure-brainstorming.md and added later. The seams that let
+// SCOPE: Phase 1 (reading corpus + layout-adjust) + Phase 2 (annotation layer:
+// Markup + Ink). Phase 3 (Original Word hub + lexicon) and Phase 4 (progress) are
+// designed in data-structure-brainstorming.md and added later. The seams that let
 // them bolt on without migration are noted as `// SEAM Pn` comments.
 //
-// STATUS: Phase-1 table shapes resolved via grill Q1–Q6 (see `Qn RESOLVED` comments).
-// The token model mirrors the proven prototype (prototype/src/model/types.ts).
+// STATUS: Phase-1 shapes resolved via grill Q1–Q6 (see `Qn RESOLVED` comments); the
+// token model mirrors the proven prototype (prototype/src/model/types.ts). Phase-2
+// shapes resolved via a second grill (Q1 ids · Q2 inline anchor · Q3 binding ·
+// Q4 lifecycle · Q5 ink blob · Q6 ink layout · Q7 enums/style) → see ADR-0006.
 
 //============================================================
 // Enums
@@ -39,6 +41,28 @@ Enum testament {
 Enum scroll_mode {
   horizontal
   vertical
+}
+
+//---- Phase 2 (annotations) ----
+
+Enum mark_kind {
+  underline
+  highlight
+  box
+  circle
+  strike
+}
+
+Enum binding_target {
+  scripture   // endpoint binds to a coordinate Anchor (a Token target = scripture + word_index)
+  mark        // endpoint binds to a Mark element
+  note        // endpoint binds to a Note element
+}
+
+Enum ink_tool {
+  pen
+  highlighter
+  // no `eraser`: erasing is an ACTION that tombstones strokes (deleted_at), never a stored stroke
 }
 
 //============================================================
@@ -188,6 +212,171 @@ Table layout_override {
 }
 
 //============================================================
+// Annotation layer (Phase 2) — user data, synced. Markup + Ink. See ADR-0006.
+//
+// IDS: text UUIDv7 (client-generated, sync-safe, time-sortable) — NOT `increment` (Q1).
+//   Offline creation on multiple devices can't collide; a row owns its identity before
+//   it ever reaches a server.
+// ANCHORS join the corpus BY COORDINATE — translation abbrev + book.slug + chapter +
+//   verse + word_index — NEVER by corpus integer id (Q2, ADR-0004 extended). So there
+//   is NO foreign key from this layer into the corpus; only within-layer FKs (layer /
+//   connector / annotation) are real. A corpus re-ingest orphans nothing.
+// LIFECYCLE: every table carries created_at / updated_at / deleted_at (epoch ms);
+//   deleted_at = soft-delete tombstone — sync-safe deletes + free undo (Q4).
+// SEAM P3: every anchor carries *_ow_id (Original Word hub), null until Phase 3 —
+//   word-target marks port by verse grain now, by Original Word later, no migration.
+//============================================================
+
+// A named, toggleable group of marks — the "notes on/off" feature. Spans Markup + Ink.
+Table layer {
+  id         varchar [pk]                      // UUIDv7
+  name       varchar [not null]
+  visible    boolean [not null, default: true] // notes on/off toggle
+  seq        integer [not null]                // stack / draw order
+  created_at integer [not null]
+  updated_at integer [not null]
+  deleted_at integer                            // soft-delete tombstone; null = live
+}
+
+// Mark — decoration ON words (underline/highlight/box/circle/strike). Target is
+// ALWAYS scripture → inline Anchor (Q2). A Mark never targets an element.
+Table mark {
+  id                 varchar   [pk]
+  layer_id           varchar   [not null]
+  kind               mark_kind [not null]
+  // target Anchor (inline, by coordinate):
+  target_translation varchar   [not null]   // translation abbrev, e.g. "KJV"
+  target_book_slug   varchar   [not null]   // e.g. "John"
+  target_chapter     integer   [not null]
+  target_verse       integer   [not null]
+  target_word_index  integer                // 0-based word ordinal; null = whole verse
+  target_word_count  integer                // span length in words; null = single word / whole verse
+  target_ow_id       varchar                // SEAM P3
+  // style:
+  color              varchar   [not null]   // sRGB hex
+  weight             real
+  created_at         integer   [not null]
+  updated_at         integer   [not null]
+  deleted_at         integer
+  indexes {
+    (target_translation, target_book_slug, target_chapter, target_verse)  // load marks for visible range
+    (layer_id)
+  }
+}
+
+// Note — free user text pinned to a scripture Anchor + an offset into the margin.
+Table note {
+  id              varchar [pk]
+  layer_id        varchar [not null]
+  // pin Anchor (inline, by coordinate):
+  pin_translation varchar [not null]
+  pin_book_slug   varchar [not null]
+  pin_chapter     integer [not null]
+  pin_verse       integer [not null]
+  pin_word_index  integer                  // null = whole verse
+  pin_ow_id       varchar                  // SEAM P3
+  offset_dx       real    [not null]       // normalized into margin/whitespace
+  offset_dy       real    [not null]
+  text            varchar [not null]       // translation-agnostic content
+  created_at      integer [not null]
+  updated_at      integer [not null]
+  deleted_at      integer
+  indexes {
+    (pin_translation, pin_book_slug, pin_chapter, pin_verse)
+    (layer_id)
+  }
+}
+
+// Connector — arrow/line between two Endpoints (a user cross-reference when it spans
+// passages). Endpoints live in `binding` (Q3).
+Table connector {
+  id         varchar [pk]
+  layer_id   varchar [not null]
+  color      varchar [not null]   // sRGB hex
+  weight     real
+  arrowhead  boolean [not null, default: true]  // single head at the `to` end
+  created_at integer [not null]
+  updated_at integer [not null]
+  deleted_at integer
+  indexes {
+    (layer_id)
+  }
+}
+
+// Binding — ONE row per connector endpoint (endpoint = binding, 1:1, Q3). First-class
+// record (ADR-0003). Polymorphic target: a scripture coordinate OR an element (mark|
+// note). The (target_kind, target_element_id) index is the back-reference — element
+// delete/cascade finds every connector bound to it in one hit.
+// CHECK (carry to DDL; DBML can't express): exactly one target populated —
+//   target_kind='scripture'    ⇒ anchor_* set,          target_element_id null
+//   target_kind in (mark,note) ⇒ target_element_id set,  anchor_* null
+Table binding {
+  id                 varchar        [pk]
+  connector_id       varchar        [not null]
+  role               varchar        [not null]   // 'from' | 'to'
+  target_kind        binding_target [not null]
+  // when target_kind='scripture' — inline Anchor by coordinate:
+  anchor_translation varchar
+  anchor_book_slug   varchar
+  anchor_chapter     integer
+  anchor_verse       integer
+  anchor_word_index  integer
+  anchor_word_count  integer
+  anchor_ow_id       varchar                       // SEAM P3
+  // when target is an element:
+  target_element_id  varchar                       // → mark.id | note.id
+  created_at         integer        [not null]
+  updated_at         integer        [not null]
+  deleted_at         integer
+  indexes {
+    (connector_id, role) [unique]
+    (target_kind, target_element_id)               // back-reference: who points at element X
+  }
+}
+
+// InkAnnotation — freehand strokes over one passage in ONE layout. Bound to a layout,
+// never ports (ADR-0002). Anchor by coordinate (no block_id FK, ADR-0004);
+// (translation, scroll_mode) gate visibility; layout_hash mismatch → re-place at block
+// grain or hide (Q6). v1 treats the inked passage as one coarse box.
+Table ink_annotation {
+  id                 varchar     [pk]
+  layer_id           varchar     [not null]
+  anchor_translation varchar     [not null]   // Ink is translation-bound; this IS the layout's translation
+  anchor_book_slug   varchar     [not null]
+  anchor_chapter     integer     [not null]
+  anchor_verse       integer     [not null]
+  anchor_verse_end   integer                  // null = single verse
+  scroll_mode        scroll_mode [not null]   // layout context (match key)
+  layout_hash        varchar     [not null]   // fine invalidation
+  created_at         integer     [not null]
+  updated_at         integer     [not null]
+  deleted_at         integer
+  indexes {
+    (anchor_translation, anchor_book_slug, anchor_chapter, anchor_verse)
+    (layer_id)
+  }
+}
+
+// InkStroke — one committed stroke. points = packed Float32 BLOB (heavy, opaque, never
+// queried per-point, Q5). Eraser/undo = soft-delete (deleted_at).
+Table ink_stroke {
+  id            varchar  [pk]
+  annotation_id varchar  [not null]
+  tool          ink_tool [not null]
+  color         varchar  [not null]   // sRGB hex
+  width         real     [not null]
+  points        blob     [not null]   // packed Float32, stride per point_format
+  point_count   integer  [not null]   // stats without decoding the blob
+  point_format  varchar  [not null]   // e.g. "f32:x,y,p,t" or "f32:x,y,p,tx,ty,t"
+  created_at    integer  [not null]
+  updated_at    integer  [not null]
+  deleted_at    integer
+  indexes {
+    (annotation_id)
+  }
+}
+
+//============================================================
 // References
 //============================================================
 Ref: block.translation_id > translation.id
@@ -199,3 +388,11 @@ Ref: versification_map.translation_id > translation.id
 Ref: versification_map.book_id > book.id
 Ref: reading_settings.active_preset_id > layout_preset.id
 Ref: layout_override.preset_id > layout_preset.id
+
+// Phase 2 — within-layer FKs ONLY. The corpus is referenced by coordinate, never FK.
+Ref: mark.layer_id > layer.id
+Ref: note.layer_id > layer.id
+Ref: connector.layer_id > layer.id
+Ref: binding.connector_id > connector.id
+Ref: ink_annotation.layer_id > layer.id
+Ref: ink_stroke.annotation_id > ink_annotation.id

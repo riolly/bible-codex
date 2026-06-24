@@ -4,8 +4,10 @@ import Database from "better-sqlite3";
 import { readFileSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
-import { parseUsfm, type Stats } from "./usfm";
+import { type Stats } from "./usfm";
 import { renderLine, type RToken } from "./render";
+import { ingestCorpus } from "./ingest";
+import { runPhase2Proofs } from "./anno";
 
 const ROOT = join(__dirname, "..");
 const DB_PATH = join(ROOT, "PROTOTYPE-wipe-me.sqlite");
@@ -15,51 +17,13 @@ const G = (s: string) => `\x1b[32m${s}\x1b[0m`;
 const Y = (s: string) => `\x1b[33m${s}\x1b[0m`;
 const hr = (t: string) => console.log("\n" + B(`━━ ${t} ` + "━".repeat(Math.max(0, 56 - t.length))));
 
-const BOOKS = [
-  { file: "GEN.usfm", slug: "Genesis", name: "Genesis", testament: "ot", position: 1 },
-  { file: "PSA.usfm", slug: "Psalms", name: "Psalms", testament: "ot", position: 19 },
-  { file: "JHN.usfm", slug: "John", name: "John", testament: "nt", position: 43 },
-];
-
 function build() {
   if (existsSync(DB_PATH)) rmSync(DB_PATH);
   const db = new Database(DB_PATH);
   db.pragma("foreign_keys = ON");
   db.exec(readFileSync(join(ROOT, "schema.sql"), "utf8"));
 
-  const tx = db.prepare(
-    `INSERT INTO translation (id,name,abbrev,language,year,license,versification)
-     VALUES (1,'World English Bible','WEB','english',2000,'Public Domain','av11n')`
-  );
-  tx.run();
-
-  const insBook = db.prepare(
-    `INSERT INTO book (slug,name,testament,position) VALUES (?,?,?,?)`
-  );
-  const insBlock = db.prepare(
-    `INSERT INTO block (translation_id,book_id,chapter,genre,role,indent,seq)
-     VALUES (1,?,?,?,?,?,?)`
-  );
-  const insTok = db.prepare(
-    `INSERT INTO token (translation_id,book_id,chapter,verse,word_index,seq,kind,text,block_id,verse_start,ow_id)
-     VALUES (1,?,?,?,?,?,?,?,?,?,NULL)`
-  );
-
-  const total: Stats = { footnotes: 0, xrefs: 0, wordsOfJesus: 0, selah: 0, strongAttrs: 0, wWrapped: 0, preVerseWordTokens: 0 };
-
-  const ingest = db.transaction(() => {
-    for (const b of BOOKS) {
-      const { blocks, tokens, stats } = parseUsfm(readFileSync(join(ROOT, "data", b.file), "utf8"));
-      const bookId = insBook.run(b.slug, b.name, b.testament, b.position).lastInsertRowid as number;
-      const blockId = new Map<number, number>();
-      for (const bl of blocks)
-        blockId.set(bl.localId, insBlock.run(bookId, bl.chapter, bl.genre, bl.role, bl.indent, bl.seq).lastInsertRowid as number);
-      for (const t of tokens)
-        insTok.run(bookId, t.chapter, t.verse, t.wordIndex, t.seq, t.kind, t.text, blockId.get(t.blockLocalId), t.verseStart ? 1 : 0);
-      for (const k of Object.keys(total) as (keyof Stats)[]) total[k] += stats[k];
-    }
-  });
-  ingest();
+  const total = ingestCorpus(db, ROOT);  // WEB (Gen/Psa/Jhn) + a small KJV John slice (Phase-2 fixture)
 
   // seed presentation demo (proves the cascade resolves by semantic key, not token.id)
   db.prepare(`INSERT INTO layout_preset (id,name,font_family,font_size,line_height,margin,paragraph_spacing,indent_step,align)
@@ -83,7 +47,7 @@ function report(db: Database.Database, total: Stats) {
   console.log("tokens by kind:  " + all(`SELECT kind,count(*) c FROM token GROUP BY kind`).map(r => `${r.kind}=${r.c}`).join("  "));
 
   hr("SCHEMA STRESS — verse ⇄ block independence (Q2)");
-  const vcb = all(`SELECT book_id,chapter,verse, count(distinct block_id) c FROM token WHERE verse>0 GROUP BY book_id,chapter,verse HAVING c>1`);
+  const vcb = all(`SELECT translation_id,book_id,chapter,verse, count(distinct block_id) c FROM token WHERE verse>0 GROUP BY translation_id,book_id,chapter,verse HAVING c>1`);
   const bcv = all(`SELECT block_id, count(distinct verse) c FROM token WHERE verse>0 GROUP BY block_id HAVING c>1`);
   console.log(`${G("✓")} verses spanning >1 block : ${B(String(vcb.length))}  ${D("(poetry — verse crosses block)")}`);
   console.log(`${G("✓")} blocks spanning >1 verse : ${B(String(bcv.length))}  ${D("(prose — block crosses verse)")}`);
@@ -189,4 +153,5 @@ function repl(db: Database.Database) {
 
 const { db, total } = build();
 report(db, total);
+runPhase2Proofs(db, ROOT);   // Phase-2 annotation-layer pressure-test (mutates corpus last, via re-ingest proof)
 if (process.argv.includes("--repl")) repl(db); else db.close();

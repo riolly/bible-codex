@@ -118,9 +118,16 @@ until a real need appears — that was over-design in the earlier draft.
 
 ## 4. Phase 2 — Annotations (Markup + Ink)
 
-Data models already specified in
-[drawing-architecture-plan.md Appendix B](drawing-architecture-plan.md); summarized here for the
-map. All user data, synced; Markup = tiny rows, Ink = heavy blobs.
+> **Canonical schema: [`schema.dbml`](schema.dbml)** — the Phase-2 tables are now built
+> (`layer`, `mark`, `note`, `connector`, `binding`, `ink_annotation`, `ink_stroke`). Table
+> shapes resolved via a second grill (Q1–Q7); the storage decisions are pinned in
+> [ADR-0006](docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md).
+> The table below is the narrative overview; `schema.dbml` is the source of truth.
+
+Conceptual models in
+[drawing-architecture-plan.md Appendix B](drawing-architecture-plan.md). All user data, synced
+(client UUIDv7 ids, soft-delete tombstones, **no FK into the corpus** — anchors join by
+coordinate); Markup = tiny rows, Ink = heavy blobs.
 
 | Class | Tables | Anchoring |
 |---|---|---|

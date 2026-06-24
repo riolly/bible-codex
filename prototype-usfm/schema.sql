@@ -94,3 +94,139 @@ CREATE TABLE reading_settings (
   theme            TEXT NOT NULL DEFAULT 'light',
   active_preset_id INTEGER REFERENCES layout_preset(id)
 );
+
+-- ============================================================
+-- Annotation layer (Phase 2) — user data. Mirrors schema.dbml; see ADR-0006.
+-- IDs: TEXT (UUID, client-generated). NO FK INTO THE CORPUS — anchors join by
+-- coordinate (translation abbrev + book slug + chapter + verse + word_index), so a
+-- corpus re-ingest that renumbers integer ids orphans nothing. Only within-layer FKs
+-- (layer / connector / ink_annotation) are real. Lifecycle on every table:
+-- created_at/updated_at/deleted_at (epoch ms); deleted_at = soft-delete tombstone.
+-- ============================================================
+
+CREATE TABLE layer (
+  id         TEXT PRIMARY KEY,
+  name       TEXT NOT NULL,
+  visible    INTEGER NOT NULL DEFAULT 1,
+  seq        INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER
+);
+
+-- Mark — decoration ON words; target ALWAYS scripture → inline anchor.
+CREATE TABLE mark (
+  id                 TEXT PRIMARY KEY,
+  layer_id           TEXT NOT NULL REFERENCES layer(id),
+  kind               TEXT NOT NULL CHECK (kind IN ('underline','highlight','box','circle','strike')),
+  target_translation TEXT NOT NULL,                 -- abbrev, e.g. 'WEB'
+  target_book_slug   TEXT NOT NULL,
+  target_chapter     INTEGER NOT NULL,
+  target_verse       INTEGER NOT NULL,
+  target_word_index  INTEGER,                        -- null = whole verse
+  target_word_count  INTEGER,                        -- span length in words
+  target_ow_id       TEXT,                           -- SEAM P3
+  color              TEXT NOT NULL,
+  weight             REAL,
+  created_at         INTEGER NOT NULL,
+  updated_at         INTEGER NOT NULL,
+  deleted_at         INTEGER
+);
+CREATE INDEX ix_mark_anchor ON mark (target_translation, target_book_slug, target_chapter, target_verse);
+CREATE INDEX ix_mark_layer  ON mark (layer_id);
+
+CREATE TABLE note (
+  id              TEXT PRIMARY KEY,
+  layer_id        TEXT NOT NULL REFERENCES layer(id),
+  pin_translation TEXT NOT NULL,
+  pin_book_slug   TEXT NOT NULL,
+  pin_chapter     INTEGER NOT NULL,
+  pin_verse       INTEGER NOT NULL,
+  pin_word_index  INTEGER,
+  pin_ow_id       TEXT,
+  offset_dx       REAL NOT NULL,
+  offset_dy       REAL NOT NULL,
+  text            TEXT NOT NULL,
+  created_at      INTEGER NOT NULL,
+  updated_at      INTEGER NOT NULL,
+  deleted_at      INTEGER
+);
+CREATE INDEX ix_note_anchor ON note (pin_translation, pin_book_slug, pin_chapter, pin_verse);
+
+CREATE TABLE connector (
+  id         TEXT PRIMARY KEY,
+  layer_id   TEXT NOT NULL REFERENCES layer(id),
+  color      TEXT NOT NULL,
+  weight     REAL,
+  arrowhead  INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  deleted_at INTEGER
+);
+
+-- Binding — ONE row per connector endpoint (endpoint = binding, 1:1). Polymorphic
+-- target: a scripture coordinate OR an element (mark|note). The CHECK is the real
+-- guard DBML cannot express; ix_binding_backref is the tldraw-style back-reference.
+CREATE TABLE binding (
+  id                 TEXT PRIMARY KEY,
+  connector_id       TEXT NOT NULL REFERENCES connector(id),
+  role               TEXT NOT NULL CHECK (role IN ('from','to')),
+  target_kind        TEXT NOT NULL CHECK (target_kind IN ('scripture','mark','note')),
+  anchor_translation TEXT,
+  anchor_book_slug   TEXT,
+  anchor_chapter     INTEGER,
+  anchor_verse       INTEGER,
+  anchor_word_index  INTEGER,
+  anchor_word_count  INTEGER,
+  anchor_ow_id       TEXT,
+  target_element_id  TEXT,
+  created_at         INTEGER NOT NULL,
+  updated_at         INTEGER NOT NULL,
+  deleted_at         INTEGER,
+  CHECK (
+    (target_kind = 'scripture'
+       AND anchor_translation IS NOT NULL AND anchor_chapter IS NOT NULL AND anchor_verse IS NOT NULL
+       AND target_element_id IS NULL)
+    OR
+    (target_kind IN ('mark','note')
+       AND target_element_id IS NOT NULL
+       AND anchor_translation IS NULL AND anchor_chapter IS NULL AND anchor_verse IS NULL)
+  ),
+  UNIQUE (connector_id, role)
+);
+CREATE INDEX ix_binding_backref ON binding (target_kind, target_element_id);
+
+-- InkAnnotation — strokes over one passage in ONE layout. Anchor by coordinate (no
+-- block_id FK); (translation, scroll_mode) gate visibility; layout_hash → re-place/hide.
+CREATE TABLE ink_annotation (
+  id                 TEXT PRIMARY KEY,
+  layer_id           TEXT NOT NULL REFERENCES layer(id),
+  anchor_translation TEXT NOT NULL,
+  anchor_book_slug   TEXT NOT NULL,
+  anchor_chapter     INTEGER NOT NULL,
+  anchor_verse       INTEGER NOT NULL,
+  anchor_verse_end   INTEGER,
+  scroll_mode        TEXT NOT NULL CHECK (scroll_mode IN ('horizontal','vertical')),
+  layout_hash        TEXT NOT NULL,
+  created_at         INTEGER NOT NULL,
+  updated_at         INTEGER NOT NULL,
+  deleted_at         INTEGER
+);
+CREATE INDEX ix_ink_anchor ON ink_annotation (anchor_translation, anchor_book_slug, anchor_chapter, anchor_verse);
+
+-- InkStroke — one committed stroke; points = packed Float32 BLOB (opaque, never
+-- queried per-point). Eraser/undo = soft-delete (deleted_at).
+CREATE TABLE ink_stroke (
+  id            TEXT PRIMARY KEY,
+  annotation_id TEXT NOT NULL REFERENCES ink_annotation(id),
+  tool          TEXT NOT NULL CHECK (tool IN ('pen','highlighter')),
+  color         TEXT NOT NULL,
+  width         REAL NOT NULL,
+  points        BLOB NOT NULL,
+  point_count   INTEGER NOT NULL,
+  point_format  TEXT NOT NULL,
+  created_at    INTEGER NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  deleted_at    INTEGER
+);
+CREATE INDEX ix_stroke_anno ON ink_stroke (annotation_id);

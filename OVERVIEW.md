@@ -194,7 +194,8 @@ product, these are the live threads to re-interrogate:
 | [docs/adr/0003](docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md) | Annotations as a scripture-anchored scene graph |
 | [docs/adr/0004](docs/adr/0004-presentation-is-a-rules-layer-computed-layout-is-ephemeral.md) | Presentation = rules layer (semantic-key join); computed layout is ephemeral |
 | [docs/adr/0005](docs/adr/0005-four-product-phases-design-all-build-in-order.md) | Four product phases; design the data model for all, build in order |
-| [schema.dbml](schema.dbml) | Phase-1 corpus + presentation tables (DBML, dbdiagram-visualizable) |
+| [docs/adr/0006](docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md) | Phase-2 annotation layer: client UUIDs, coordinate joins (no corpus FK), soft-delete |
+| [schema.dbml](schema.dbml) | Phase-1 corpus + presentation **and Phase-2 annotation** tables (DBML, dbdiagram-visualizable) |
 | [drawing-architecture-plan.md](drawing-architecture-plan.md) | Annotation subsystem design, data models, roadmap |
 | [ink-app-comparison.md](ink-app-comparison.md) | Competitive landscape for cross-platform ink |
 | [WISHLIST.md](WISHLIST.md) | Post-POC ideas (Portal, Journey, Themes, Research mode) |

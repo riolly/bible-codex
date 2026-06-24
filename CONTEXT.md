@@ -59,7 +59,7 @@ _Avoid_: arrow (a Connector may be a plain line)
 One end of a Connector (or a Note's pin). Binds to either a scripture Anchor or another element's id — never to canvas coordinates.
 
 **Binding**:
-The stored relationship between an Endpoint and its target, kept as its own record so any element (Mark, Note, Token) can be a target.
+The stored relationship between an Endpoint and its target, kept as its own record so any element can be a target. A Mark or Note is targeted as an element (by its id); a Token is targeted as a scripture Anchor with a word-index, not a distinct element kind.
 
 **Ink**:
 A freehand pen annotation captured as stroke points over one translation's rendered layout. Personal and expressive — the "physical Bible" feel — but bound to that layout and not portable across translations.
