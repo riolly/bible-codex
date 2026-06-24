@@ -143,6 +143,16 @@ already there.
 
 ## 5. Phase 3 — Original Word hub + interlinear + lexicon
 
+> **Canonical schema: [`schema.dbml`](schema.dbml)** — the Phase-3 tables are now built
+> (`original_word`, `interlinear_alignment`, `lemma`, `strongs`, `morphology`). Table shapes
+> resolved via a third grill (Q1–Q9); the decisions are pinned in
+> [ADR-0007](docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md).
+> Headlines: the hub is **morpheme-grained** and keyed by an **opaque external word-id**; three
+> tiers (corpus → hub → lexicon) join by **string keys**, FK only within a tier, so the lexicon
+> re-sources without touching the corpus; `token.ow_id` is the denormalized head, alignment is the
+> M:N truth; gloss is **inline** on the hub (per-translation gloss rejected as derivable). The
+> table below is the narrative overview; `schema.dbml` is the source of truth.
+
 This is where the **old `BibleCodex.sql` belongs** — it was an interlinear-only model with no
 reading corpus. Mapped and cleaned:
 
@@ -184,11 +194,13 @@ translation rendering — split them.
 ### 5.3 The Hebrew segmentation problem (`Prefixes` / `Word_Prefix`)
 
 One written Hebrew word = several morphemes (conjunction + article + preposition + stem +
-pronominal suffix). The old SQL handled this with `Prefixes` + `Word_Prefix`. Open decision for
-Phase 3: model sub-morphemes either as **multiple `original_word` rows linked by a `segment_of`
-parent**, or as a **child `morpheme` table** under one `original_word`. This affects how a word-tap
-in research mode highlights "the preposition on this word" — defer the choice, but know it's
-coming.
+pronominal suffix). The old SQL handled this with `Prefixes` + `Word_Prefix`. **RESOLVED (grill
+Q7): sibling `original_word` rows at morpheme grain**, grouped by `segment_of` + ordered by
+`segment_index` — *not* a child `morpheme` table. The hub's grain **is** the morpheme because the
+external word-id corpora (MACULA/OSHB) mint ids at morpheme grain, and alignment targets morphemes
+(English "in" → the Hebrew preposition). One uniform entity → alignment, gloss, mark, and
+morphology all target an `ow_id` whether it's a Greek word or a Hebrew morpheme, so a word-tap on
+"the preposition" resolves with no special path. Greek words are trivially single-segment.
 
 ---
 
@@ -233,10 +245,15 @@ the half it was missing.
 - Block model for nested poetry (stanza vs line) — one `block` table with indent level, or a
   parent/child?
 
-**Phase 3**
-- Hebrew segmentation: sibling `original_word` rows vs child `morpheme` table (§5.3).
-- One lexicon at launch (Strong's) vs the multi-lexicon `lexicon_entry` shape from day one.
-- Morphology: ship raw parse codes, decoded enums, or both materialized.
+**Phase 3** — _table shapes RESOLVED (grill Q1–Q9 → [ADR-0007](docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md)):_
+- ~~Hebrew segmentation: sibling `original_word` rows vs child `morpheme` table~~ → sibling rows at
+  morpheme grain, `segment_of` + `segment_index` (Q7, §5.3).
+- ~~One lexicon at launch vs multi-lexicon `lexicon_entry` from day one~~ → `lemma` + `strongs` now;
+  `lexicon_entry`/`root`/`semantic_domain` deferred-additive (Q5).
+- ~~Morphology: raw codes, decoded enums, or both~~ → raw `parse_code` on the word (truth) + a
+  code-keyed `morphology` decode table (Q6).
+- _Still open (not table-shape):_ sourcing the actual interlinear corpus (MACULA / STEPBible /
+  OSHB+MorphGNT) and confirming its license is redistributable — same discipline as the NASB lesson.
 
 **Cross-phase**
 - Sync backend (PowerSync vs Electric); Markup (tiny rows) and Ink (heavy blobs) likely differ.

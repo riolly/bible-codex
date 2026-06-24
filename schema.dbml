@@ -3,14 +3,18 @@
 // or publish with https://dbdocs.io. (Your old BibleCodex.sql was a dbdiagram export.)
 //
 // SCOPE: Phase 1 (reading corpus + layout-adjust) + Phase 2 (annotation layer:
-// Markup + Ink). Phase 3 (Original Word hub + lexicon) and Phase 4 (progress) are
-// designed in data-structure-brainstorming.md and added later. The seams that let
-// them bolt on without migration are noted as `// SEAM Pn` comments.
+// Markup + Ink) + Phase 3 (Original Word hub + interlinear alignment + lexicon).
+// Phase 4 (progress) is designed in data-structure-brainstorming.md and added later.
+// The seams that let them bolt on without migration are noted as `// SEAM Pn` comments.
 //
 // STATUS: Phase-1 shapes resolved via grill Q1–Q6 (see `Qn RESOLVED` comments); the
 // token model mirrors the proven prototype (prototype/src/model/types.ts). Phase-2
 // shapes resolved via a second grill (Q1 ids · Q2 inline anchor · Q3 binding ·
 // Q4 lifecycle · Q5 ink blob · Q6 ink layout · Q7 enums/style) → see ADR-0006.
+// Phase-3 shapes resolved via a third grill (Q1 external ow_id · Q2 token.ow_id head +
+// M:N alignment · Q3 string keys across tiers · Q4 dual-address hub · Q5 lemma+strongs ·
+// Q6 morphology decode table · Q7 morpheme-grain segments · Q8 inline gloss ·
+// Q9 bare alignment) → see ADR-0007.
 
 //============================================================
 // Enums
@@ -63,6 +67,14 @@ Enum ink_tool {
   pen
   highlighter
   // no `eraser`: erasing is an ACTION that tombstones strokes (deleted_at), never a stored stroke
+}
+
+//---- Phase 3 (Original Word hub + lexicon) ----
+
+Enum original_language {
+  hebrew
+  greek
+  aramaic
 }
 
 //============================================================
@@ -119,7 +131,10 @@ Table token {
   text           varchar    [not null]         // surface text
   block_id       integer    [not null]
   verse_start    boolean    [not null, default: false]  // first word token of a verse → drives verse number
-  ow_id          varchar                        // SEAM P3: Original Word hub id; null until Phase 3
+  ow_id          varchar                        // SEAM P3 (now wired): the PRIMARY/head Original Word
+                                                 // for this token, by string key → original_word.id (no
+                                                 // FK, cross-tier). Denormalized fast-path; full M:N is
+                                                 // interlinear_alignment. Null where unaligned. (Q2)
 
   // The ANCHOR coordinate (migration-fatal, ADR-0001) is (translation, book, chapter,
   // verse, word_index) — a coordinate, never token.id.
@@ -377,6 +392,117 @@ Table ink_stroke {
 }
 
 //============================================================
+// Phase 3 — Original Word hub + interlinear alignment + lexicon. See ADR-0007.
+//
+// THREE TIERS, joined by STABLE STRING KEYS across boundaries, FK only within a tier (Q3):
+//   corpus (per-translation tokens)  →  OW hub (shared occurrences)  →  lexicon (reference).
+// So the lexicon/hub re-source or version WITHOUT touching the corpus; physical packaging
+// (one bundled .sqlite vs separate attachable files) stays reversible — the shapes don't change.
+// Cross-tier integrity is an ingest-time validation pass, not a runtime FK.
+//
+// GRAIN: original_word is a lexical SEGMENT-occurrence — a whole word in Greek, a MORPHEME in
+//   Hebrew (the source corpora segment agglutinated words). Written words are regrouped via
+//   segment_of + segment_index (Q7).
+// IDS: original_word.id is the OPAQUE external per-occurrence word-id (MACULA/STEPBible/OSHB
+//   class), never parsed — remappable via a translation table if we ever swap corpora (Q1).
+//============================================================
+
+// The shared hub: one original-language lexical occurrence (Greek word / Hebrew morpheme).
+// Read-only reference data — so addresses are denormalized inline (both canonical + native).
+Table original_word {
+  id              varchar          [pk]          // opaque external per-occurrence word-id (Q1)
+  language        original_language [not null]
+  surface         varchar          [not null]    // original form, e.g. "λόγος" / "בְּ"
+  transliteration varchar
+  // canonical address — the BRIDGE to the reading corpus (av11n) (Q4):
+  canon_book_slug varchar          [not null]
+  canon_chapter   integer          [not null]
+  canon_verse     integer          [not null]
+  position        integer          [not null]    // order within the canonical verse → interlinear render order
+  // native original-language address — fidelity (Hebrew/LXX numbering differs from av11n) (Q4):
+  native_chapter  integer
+  native_verse    integer
+  // segmentation (Q7) — Greek words are single-segment:
+  segment_of      varchar                        // written-word GROUP id (string key); shared by a word's morphemes
+  segment_index   integer          [not null, default: 0]  // order within the written word
+  // lexicon keys (string, cross-tier, NO FK — Q3/Q5):
+  lemma_id        varchar                        // → lemma.id
+  strong_id       varchar                        // → strongs.id (a join key, never an anchor)
+  parse_code      varchar                        // raw morphology code (truth); → morphology.code (Q6)
+  // editorial interlinear gloss (Q8) — distinct from reverse-interlinear (derived via alignment):
+  gloss           varchar
+  gloss_prefix    varchar                        // helper words, e.g. "of" before a genitive
+  gloss_suffix    varchar
+  indexes {
+    (canon_book_slug, canon_chapter, canon_verse, position)  // bridge lookup + ordered render
+    (segment_of, segment_index)                              // reconstruct a written word
+    (lemma_id)
+    (strong_id)
+  }
+}
+
+// Interlinear alignment — M:N between corpus Tokens and Original Words (Q2/Q9). Bare junction:
+// ordering is derived (token.seq / original_word.position); the head is the denormalized
+// token.ow_id. Corpus-internal storage id; token_id is a real FK (regenerated on ingest, like
+// block_id), original_word_id is a string key into the hub tier (no FK, Q3). Metadata
+// (relation_type / confidence / is_primary) is additive later — no source for it yet.
+Table interlinear_alignment {
+  id               integer [pk, increment]
+  token_id         integer [not null]            // FK → token.id (within corpus tier)
+  original_word_id varchar [not null]            // → original_word.id (string key, cross-tier)
+  indexes {
+    (token_id, original_word_id) [unique]
+    (original_word_id)                           // reverse: tokens aligned to an OW
+    (token_id)
+  }
+}
+
+//---- Lexicon tier (reference data, re-sourceable / versionable) ----
+
+// Lemma — the dictionary/citation form; the lexicon SPINE (occurrence stats + future lexicons
+// hang off this). Separate identifier space from Strong's (Q5).
+Table lemma {
+  id              varchar          [pk]          // opaque lemma id (string key)
+  language        original_language [not null]
+  dictionary_form varchar          [not null]    // citation form
+  primary_gloss   varchar                        // short default gloss
+  // FUTURE (additive, zero migration): root_id (Hebrew), semantic_domain (Louw–Nida),
+  // lexicon_entry(source, lemma_id) for BDB/Thayer/multi-lexicon.
+}
+
+// Strong's — the launch DICTIONARY, keyed by its own number (G####/H####). A reference join
+// key only, never an anchor (Q5). original_word.strong_id references this by string.
+Table strongs {
+  id              varchar          [pk]          // e.g. "G3056", "H7225"
+  language        original_language [not null]
+  headword        varchar          [not null]
+  transliteration varchar
+  short_def       varchar
+  full_def        varchar
+}
+
+// Morphology — code→features DECODE table (Q6). The raw code on original_word.parse_code is the
+// source of truth; this is the queryable decoded VIEW, keyed by code (small: a few thousand
+// distinct codes), not per-word flat columns. Columns are nullable / language-dependent.
+Table morphology {
+  code           varchar          [pk]           // raw parse code, e.g. "V-AAI-3S" / "HVqp3ms"
+  language       original_language [not null]
+  part_of_speech varchar
+  // Greek-leaning:
+  tense          varchar
+  voice          varchar
+  mood           varchar
+  gram_case      varchar                         // `case` is reserved in SQL → gram_case
+  // Hebrew-leaning:
+  stem           varchar
+  state          varchar
+  // shared:
+  person         varchar
+  gender         varchar
+  number         varchar
+}
+
+//============================================================
 // References
 //============================================================
 Ref: block.translation_id > translation.id
@@ -396,3 +522,8 @@ Ref: connector.layer_id > layer.id
 Ref: binding.connector_id > connector.id
 Ref: ink_annotation.layer_id > layer.id
 Ref: ink_stroke.annotation_id > ink_annotation.id
+
+// Phase 3 — the ONLY cross-table FK is corpus-internal (alignment→token, like block_id).
+// Everything crossing a tier boundary (token.ow_id, alignment.original_word_id,
+// original_word.lemma_id/strong_id/parse_code/segment_of) is a string key, NO FK (Q3).
+Ref: interlinear_alignment.token_id > token.id

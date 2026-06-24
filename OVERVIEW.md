@@ -4,7 +4,7 @@
 > been decided, what's been proven, and what's still open to grill. Every section
 > links to the detailed doc that owns it — this file stays a map, not a duplicate.
 >
-> **Last updated:** 2026-06-23
+> **Last updated:** 2026-06-24
 
 ---
 
@@ -76,7 +76,11 @@ Full prototype verdict + caveats → [prototype/README.md](prototype/README.md).
 - **Phase 3 — Lexicon / Strong's.** The **Original Word** hub + interlinear alignment, and the
   Strong's Exhaustive Concordance **lexicon** as a *separate reference schema joined by
   relation* (lemma, root, morphology, semantic domains). Unlocks word study, reverse-interlinear,
-  and deep research mode.
+  and deep research mode. **Table shapes resolved** (third grill, Q1–Q9) → tables in
+  [schema.dbml](schema.dbml), decisions in
+  [ADR-0007](docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md):
+  morpheme-grain hub keyed by opaque external word-id, three tiers joined by string keys, lexicon
+  re-sourceable without touching the corpus.
 - **Phase 4 — Advanced.** Portal, Journey, Themes & tags, research-mode deepening — each rides
   primitives already shipped in P1–P3 at near-zero migration cost; broken down later. →
   [WISHLIST.md](WISHLIST.md).
@@ -195,7 +199,8 @@ product, these are the live threads to re-interrogate:
 | [docs/adr/0004](docs/adr/0004-presentation-is-a-rules-layer-computed-layout-is-ephemeral.md) | Presentation = rules layer (semantic-key join); computed layout is ephemeral |
 | [docs/adr/0005](docs/adr/0005-four-product-phases-design-all-build-in-order.md) | Four product phases; design the data model for all, build in order |
 | [docs/adr/0006](docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md) | Phase-2 annotation layer: client UUIDs, coordinate joins (no corpus FK), soft-delete |
-| [schema.dbml](schema.dbml) | Phase-1 corpus + presentation **and Phase-2 annotation** tables (DBML, dbdiagram-visualizable) |
+| [docs/adr/0007](docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md) | Phase-3 Original Word hub: morpheme grain, external opaque ids, three string-keyed tiers, re-sourceable lexicon |
+| [schema.dbml](schema.dbml) | Phase-1 corpus + presentation, Phase-2 annotation, **and Phase-3 Original Word hub + lexicon** tables (DBML, dbdiagram-visualizable) |
 | [drawing-architecture-plan.md](drawing-architecture-plan.md) | Annotation subsystem design, data models, roadmap |
 | [ink-app-comparison.md](ink-app-comparison.md) | Competitive landscape for cross-platform ink |
 | [WISHLIST.md](WISHLIST.md) | Post-POC ideas (Portal, Journey, Themes, Research mode) |

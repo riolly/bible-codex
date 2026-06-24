@@ -11,8 +11,8 @@ A single **word- or punctuation-occurrence** in a *translation's* text — the u
 _Avoid_: word (ambiguous with Original Word); treating whitespace as a Token
 
 **Original Word**:
-A single word-occurrence in the original Greek/Hebrew text, identified by a stable word-id plus lemma and Strong's number. The shared hub that translation Tokens align to (N Tokens → 1 Original Word).
-_Avoid_: lemma (that is the dictionary form, not the occurrence), Strong's (that is the lexical id, not the occurrence)
+A single lexical **segment-occurrence** in the original text — a whole word in Greek, a **morpheme** in Hebrew (the source corpora segment agglutinated Hebrew words into conjunction / article / preposition / stem / suffix, each carrying its own Strong's, Lemma, and Gloss). Identified by a stable external word-id. The shared hub that translation Tokens align to (N Tokens → M Original Words). A **Written Word** is the morpheme group reconstructed by ordering an Original Word's sibling Segments.
+_Avoid_: lemma (that is the dictionary form, not the occurrence), Strong's (that is the lexical id, not the occurrence); assuming one written word = one Original Word (true for Greek, not Hebrew)
 
 **Block**:
 A contiguous range of Tokens forming one literary unit — a prose paragraph, a poetry line, or a heading — carrying a genre and indent level. The unit of rendering. Derived from USFM markers (`\p`, `\q#`, …). Blocks **partition** the token stream (non-overlapping; every Token belongs to exactly one Block). Overlapping literary structures (chiasm, inclusio, parallelism) are a *separate* later layer, not Blocks. Heading Blocks (titles, section headings) sit outside the verse sequence — their Tokens carry no Canonical Verse and are addressed via their Block, not a word-index.
@@ -67,6 +67,32 @@ _Avoid_: drawing (Markup also draws), stroke (one component of an Ink mark)
 
 **Layer**:
 A named, toggleable group of user marks with a `visible` flag — the "notes on/off" feature. Spans both Markup and Ink.
+
+### Original language & lexicon (Phase 3)
+
+**Segment**:
+The grain of an Original Word — one morpheme-occurrence. A Greek word is a single Segment; a Hebrew word is several. Siblings in order reconstruct the Written Word.
+_Avoid_: prefix (only some Segments are prefixes), affix
+
+**Alignment**:
+The interlinear mapping from a translation's Tokens to Original Words — many-to-many (N Tokens → 1 Original Word, and 1 Token → N Original Words for compounds). The fine, word-grain bridge between a translation and the original. **Reverse-interlinear** (the translation's words shown under the original) is *derived* by walking Alignment, not stored.
+_Avoid_: interlinear (the view; Alignment is the data behind it)
+
+**Lemma**:
+The dictionary / citation form of a word — the lexicon's spine, the thing occurrence statistics and dictionary entries hang off. Distinct from the Original Word (an occurrence) and from Strong's (a numbered lexical id).
+_Avoid_: root (a deeper Hebrew grouping, an attribute of a Lemma, not a Lemma)
+
+**Strong's**:
+A numbered lexical id (G#### / H####) and its dictionary entry. A reference **join key only** — it identifies a word's lexeme but is never an Anchor; occurrences are addressed by coordinate, never by Strong's.
+_Avoid_: lemma (a separate identifier space — Strong's conflates and splits differently)
+
+**Morphology**:
+A word's grammatical parse (part of speech, tense / voice / mood / case for Greek; stem / state for Hebrew; person / gender / number). Stored as a raw parse **code** that is the source of truth, decoded to features for display and filtering.
+_Avoid_: part of speech (only one feature of the parse)
+
+**Gloss**:
+The editorial word-level rendering shown under an Original Word in interlinear mode (e.g. "Word" under λόγος), optionally with helper words. Translation-agnostic; distinct from a Token (a translation's actual surface text) and from reverse-interlinear (derived from Alignment).
+_Avoid_: translation (a Gloss is an editorial under-the-original cue, not a reading rendering)
 
 ## Rules
 
