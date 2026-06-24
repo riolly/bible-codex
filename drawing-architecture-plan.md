@@ -180,92 +180,15 @@ interface DrawingSurface {
 
 ## Appendix B — Data models (persisted)
 
-```ts
-// ---- Shared canonical anchor (see CONTEXT.md) ----
-// A reused column-group, not a table; two shapes — a Mark is a RANGE, a Note pin / Connector
-// endpoint is a POINT (stops at wordIndex). `translation` is present on user marks (translation-
-// bound) and OMITTED on editorial anchors (OW hub, Cross-reference — canonical-only). #5/#8.
-interface Anchor {
-  translation?: string;    // translation it was created in (e.g. "KJV", "BSB"); omit on editorial anchors
-  book: string;            // e.g. "John"
-  chapter: number;
-  verse: number;           // canonical versification (start verse)
-  wordIndex?: number;      // 0-based WORD ordinal within the verse (punctuation excluded); omit = whole verse
-  verseEnd?: number;       // RANGE (Mark only): end verse; omit = single verse. Enables cross-verse marks.
-  wordIndexEnd?: number;   // RANGE (Mark only): end WORD ordinal INCLUSIVE in end verse; omit = through end of verse
-  originalWord?: string;   // optional Original Word hub id (e.g. MACULA id) for cross-translation transfer
-}
-
-interface Layer {
-  id: string;
-  name: string;
-  visible: boolean;        // the notes on/off toggle
-}
-
-// ---- Markup scene graph (semantic, portable) ----
-type MarkKind = 'underline' | 'highlight' | 'box' | 'circle' | 'strike';
-
-// an endpoint binds to scripture OR another element — never to canvas coords
-type Endpoint =
-  | { kind: 'scripture'; anchor: Anchor }
-  | { kind: 'element'; elementId: string };
-
-interface Mark {            // decoration ON the words
-  id: string;
-  kind: MarkKind;
-  target: Anchor;          // verse | Token | Token-range; rendered under current layout
-  style: { color: string; weight?: number };
-  layerId: string;
-  createdAt: number;       // epoch ms
-}
-
-interface Note {           // free content, pinned to scripture
-  id: string;
-  pin: Anchor;             // canonical pin
-  offset: { dx: number; dy: number };  // into margin/whitespace, normalized
-  text: string;            // translation-agnostic
-  layerId: string;
-  createdAt: number;
-}
-
-interface Connector {      // arrow/line; a user cross-reference when it spans passages
-  id: string;
-  from: Endpoint;
-  to: Endpoint;
-  style: { color: string; weight?: number; arrowhead?: boolean };
-  layerId: string;
-  createdAt: number;
-}
-
-// ---- Ink (freehand, scoped) ----
-type InkTool = 'pen' | 'highlighter' | 'eraser';
-
-interface InputPoint {
-  x: number;        // 0..1 of the LAID-OUT PASSAGE BLOCK width (NOT pixels, NOT screen)
-  y: number;        // 0..1 of the laid-out passage block height
-  p: number;        // pressure 0..1 (default 1 if unsupported)
-  tx?: number;      // tilt X, radians (optional)
-  ty?: number;      // tilt Y, radians (optional)
-  t: number;        // ms since stroke start
-}
-
-interface InkStroke {
-  id: string;
-  tool: InkTool;
-  color: string;    // sRGB hex
-  width: number;    // base width, normalized units
-  points: InputPoint[];
-  createdAt: number;
-}
-
-interface InkAnnotation {
-  id: string;
-  anchor: Anchor;          // coarse: the verse/passage the strokes sit over (translation-bound)
-  layoutHash: string;      // layout the strokes were captured against; on change, re-place best-effort at block grain
-  layerId: string;
-  strokes: InkStroke[];
-}
-```
+The persisted shapes for `layer` / `mark` / `note` / `connector` / `binding` / `ink_annotation` /
+`ink_stroke` — and the `Anchor` coordinate they hang on — are **owned by
+[`schema.dbml`](schema.dbml)** (Phase-2 section), with the storage decisions in
+[ADR-0006](docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md) and the
+scene-graph rationale in
+[ADR-0003](docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md). The `Anchor`
+column-group itself is defined once in [CONTEXT.md](CONTEXT.md) (vocabulary) +
+[`schema.dbml`](schema.dbml) (columns). This doc deliberately no longer restates them — the only TS
+contract it owns is the runtime `DrawingSurface` in Appendix A (which is not a persisted shape).
 
 ## Appendix C — Key libraries & references
 
