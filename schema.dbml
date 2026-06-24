@@ -1,6 +1,7 @@
 // BibleCodex — Phase 1 schema (Reading + Layout)
 // Format: DBML (https://dbml.dbdiagram.io). Visualize: paste into https://dbdiagram.io
-// or publish with https://dbdocs.io. (Your old BibleCodex.sql was a dbdiagram export.)
+// or publish with https://dbdocs.io. (The legacy interlinear-only schema is archived at
+// archive/BibleCodex.legacy.sql — superseded by this file.)
 //
 // SCOPE: Phase 1 (reading corpus + layout-adjust) + Phase 2 (annotation layer:
 // Markup + Ink) + Phase 3 (Original Word hub + interlinear alignment + lexicon).
@@ -246,8 +247,8 @@ Table layout_preset {
 // token.id. Per-book scope ships in v1 (e.g. a different author → a different
 // font_family for a more immersive read).
 // FUTURE: an 'author' / book-class scope (set Paul's books once) — folds into
-// scope_kind later; backed by a book-classification table (cf. old BibleCodex.sql
-// `Classes`/`Books_Classes`). Deferred, additive.
+// scope_kind later; backed by a book-classification table (cf. archived legacy
+// `Classes`/`Books_Classes`, archive/BibleCodex.legacy.sql). Deferred, additive.
 Table layout_override {
   id                varchar [pk]                    // UUIDv7 (#4)
   preset_id         varchar [not null]              // → layout_preset.id
