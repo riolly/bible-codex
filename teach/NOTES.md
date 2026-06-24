@@ -36,6 +36,14 @@ Use games for checks, not just MCQ. Reusable components in `assets/games.js`:
 - **sequence** — tap chips into the correct order (e.g. the four phases; later: word-tap reveal rungs).
 Build new game types here as components when a module needs them; never inline.
 
+## Tooling decision (2026-06-25)
+Workspace will move from static HTML → **Astro + Preact (full)**: shared `<Layout>` (fixes nav
+drift), MDX lessons, Preact island games, and progress/completion → unlock-next. Decided by the
+owner, but **deferred** — the work is specced for the next agent in [`HANDOFF.md`](HANDOFF.md)
+(Job A = the rewrite, Job B = author the Phase 1 module). Until then the static workspace stands,
+with 3 known issues (non-clickable module cards, no next-CTA after the sequence game, inconsistent
+nav) left unfixed because the rewrite subsumes them.
+
 ## Environment quirks
 - A repo session hook ("caveman mode") compresses chat replies. **Lessons and teaching prose
   stay in full clear English** — terseness would defeat a beginner's comprehension.
