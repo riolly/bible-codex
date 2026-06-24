@@ -5,7 +5,7 @@
 //
 // SCOPE: Phase 1 (reading corpus + layout-adjust) + Phase 2 (annotation layer:
 // Markup + Ink) + Phase 3 (Original Word hub + interlinear alignment + lexicon).
-// Phase 4 (progress) is designed in data-structure-brainstorming.md and added later.
+// Phase 4 (progress) is designed in data-architecture.md and added later.
 // The seams that let them bolt on without migration are noted as `// SEAM Pn` comments.
 //
 // STATUS: Phase-1 shapes resolved via grill Q1–Q6 (see `Qn RESOLVED` comments); the

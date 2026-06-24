@@ -61,7 +61,7 @@ Full prototype verdict + caveats → [prototype/README.md](prototype/README.md).
 > The data model is architected for **all four phases now**; only the three migration-fatal
 > seams (§4) are locked, everything else is built when its phase arrives. Rationale →
 > [ADR-0005](docs/adr/0005-four-product-phases-design-all-build-in-order.md). Full data
-> architecture → [data-structure-brainstorming.md](data-structure-brainstorming.md).
+> architecture → [data-architecture.md](data-architecture.md).
 
 - **Phase 1 — Beautiful text + layout-adjust table.** *(most important)* Genre-aware literary
   typesetting (prose / poetry / headings, driven by USFM **Blocks**), horizontal + vertical
@@ -192,7 +192,7 @@ product, these are the live threads to re-interrogate:
 |---|---|
 | [VISION.md](VISION.md) | Philosophy and principles (the "why") |
 | [CONTEXT.md](CONTEXT.md) | Glossary — every domain term + the rules that bind them |
-| [data-structure-brainstorming.md](data-structure-brainstorming.md) | Phase-aware data architecture — schemas + seams per phase, old-SQL mapping |
+| [data-architecture.md](data-architecture.md) | Data architecture **map** — four schemas + two bridges + seams (pointers to schema.dbml/ADRs, not a restatement) |
 | [docs/adr/0001](docs/adr/0001-three-layer-anchor-model.md) | Three-layer anchor model (text + the two hubs) |
 | [docs/adr/0002](docs/adr/0002-two-annotation-classes-markup-first.md) | Markup vs. Ink split, Markup first |
 | [docs/adr/0003](docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md) | Annotations as a scripture-anchored scene graph |
