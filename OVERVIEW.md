@@ -176,6 +176,16 @@ product, these are the live threads to re-interrogate:
 - Backend choice (PowerSync vs. Electric); do Markup (tiny rows) and Ink (heavy blobs) get
   different treatment?
 
+**Data / corpus (Phase 1 + Phase 3)** _(folded in from the old data-doc open-questions)_
+- **Versification round-trip is UNVALIDATED.** WEB & KJV ≈ canonical, so `versification_map` was
+  empty in the prototype — the native↔canonical conversion an Anchor depends on was never
+  exercised. Build a divergent-translation fixture (Psalm titles, Joel/Mal, Rev 12/13) and test it
+  before bundling one. Safe to defer (anchors store canonical directly; the map is rebuildable
+  corpus data), but not yet "proven."
+- **Phase-3 corpus sourcing** (the open non-schema risk): pick + license-check a redistributable
+  interlinear corpus (MACULA / STEPBible / OSHB+MorphGNT), and confirm it supplies a **lemma id per
+  occurrence** ("lemma is the spine" assumes it; else stats hang off Strong's at launch).
+
 **Product / vision (post-POC, captured in [WISHLIST.md](WISHLIST.md))**
 - **Portal** mechanic — earned cross-references that glow; rides existing primitives, zero
   migration cost.
