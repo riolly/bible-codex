@@ -1,0 +1,603 @@
+// BibleCodex — Phase 1 schema (Reading + Layout)
+// Format: DBML (https://dbml.dbdiagram.io). Visualize: paste into https://dbdiagram.io
+// or publish with https://dbdocs.io. (The legacy interlinear-only schema is archived at
+// archive/BibleCodex.legacy.sql — superseded by this file.)
+//
+// SCOPE: Phase 1 (reading corpus + layout-adjust) + Phase 2 (annotation layer:
+// Markup + Ink) + Phase 3 (Original Word hub + interlinear alignment + lexicon).
+// Phase 4 (progress) is designed in data-architecture.md and added later.
+// The seams that let them bolt on without migration are noted as `// SEAM Pn` comments.
+//
+// STATUS: Phase-1 shapes resolved via grill Q1–Q6 (see `Qn RESOLVED` comments); the
+// token model mirrors the validated ingester (prototype-usfm/src/usfm.ts).
+// (The older prototype/src/model/types.ts predates the grills — it still carries `space`
+//  tokens and a non-morpheme OriginalWord; it is NOT the shape of record.) Phase-2
+// shapes resolved via a second grill (Q1 ids · Q2 inline anchor · Q3 binding ·
+// Q4 lifecycle · Q5 ink blob · Q6 ink layout · Q7 enums/style) → see ADR-0006.
+// Phase-3 shapes resolved via a third grill (Q1 external ow_id · Q2 token.ow_id head +
+// M:N alignment · Q3 string keys across tiers · Q4 dual-address hub · Q5 lemma+strongs ·
+// Q6 morphology decode table · Q7 morpheme-grain segments · Q8 inline gloss ·
+// Q9 bare alignment) → see ADR-0007.
+
+//============================================================
+// Enums
+//============================================================
+
+Enum genre {
+  prose
+  poetry
+  heading
+  // Q4 RESOLVED: coarse genre = the typesetting BRANCH (prose flows / poetry sets as
+  // indented lines / heading sets apart). USFM subtype lives in block.role (varchar),
+  // mapped to typography by the presentation layer. Enum may grow richer later (TODO:
+  // research the full USFM marker set) — but additions are values, not migrations.
+}
+
+Enum token_kind {
+  word
+  punct
+  // Q1 RESOLVED: no `space` token. Whitespace is a render/layout concern (the
+  // presentation layer), never corpus data. Punct stays persisted (it is content).
+}
+
+Enum testament {
+  ot
+  nt
+}
+
+Enum scroll_mode {
+  horizontal
+  vertical
+}
+
+//---- Phase 2 (annotations) ----
+
+Enum mark_kind {
+  underline
+  highlight
+  box
+  circle
+  strike
+}
+
+Enum binding_target {
+  scripture   // endpoint binds to a coordinate Anchor (a Token target = scripture + word_index)
+  mark        // endpoint binds to a Mark element
+  note        // endpoint binds to a Note element
+}
+
+Enum ink_tool {
+  pen
+  highlighter
+  // no `eraser`: erasing is an ACTION that tombstones strokes (deleted_at), never a stored stroke
+}
+
+//---- Phase 3 (Original Word hub + lexicon) ----
+
+Enum original_language {
+  hebrew
+  greek
+  aramaic
+}
+
+//============================================================
+// Corpus (read-only, bundled SQLite)
+//============================================================
+
+Table translation {
+  id           integer      [pk, increment]
+  name         varchar      [not null]            // "King James Version"
+  abbrev       varchar      [not null, unique]    // "KJV"
+  language     varchar      [not null]
+  year         integer
+  license      varchar
+  versification varchar     [not null]            // e.g. "av11n"; ties to versification_map
+}
+
+Table book {
+  id        integer   [pk, increment]
+  slug      varchar   [not null, unique]   // canonical id, e.g. "John" — used in Anchor
+  name      varchar   [not null]
+  testament testament [not null]
+  position  integer   [not null]           // canonical book order
+}
+
+Table block {
+  id             integer  [pk, increment]
+  translation_id integer  [not null]
+  book_id        integer  [not null]
+  chapter        integer  [not null]               // added after prototype-usfm proved block.seq is per-chapter
+  genre          genre    [not null]               // typesetting branch
+  role           varchar                            // USFM subtype → presentation maps to typography. See ROLE VOCABULARY below.
+  // ROLE VOCABULARY (#7) — the CONTRACT between the ingester (prototype-usfm/src/usfm.ts) and the
+  // presentation cascade (layout_override.scope_value when scope_kind='role'). varchar, not an enum,
+  // so it can grow without migration — but the value set is REGISTERED here and the ingester MUST
+  // emit exactly these strings (else a role override silently misses):
+  //   heading: "book_title" (\mt) · "major_section" (\ms) · "section" (\s) · "psalm_title" (\d)
+  //   prose:   null (\p plain paragraph) · "margin" (\m) · "no_break" (\nb) · "indented" (\pi) · "list_item" (\li)
+  //   poetry:  null (role unused; block.indent carries line depth)
+  //   guard:   "implicit" (text seen with no block marker)
+  // RESERVED (not yet emitted — additive when detection lands): "acrostic" (e.g. Psalm 119).
+  indent         integer  [not null, default: 0]  // poetry line depth; 0 for prose/heading
+  seq            integer  [not null]               // render order within the chapter (= seq of its first token)
+  // Q2 RESOLVED: membership — tokens FK to block via token.block_id (blocks partition
+  // the stream, non-overlapping). Token-range/spans are reserved for the OVERLAPPING
+  // scholarly structure layer (chiasm/inclusio), a separate Phase-3/4 concern.
+
+  indexes {
+    (translation_id, book_id, seq)
+  }
+}
+
+Table token {
+  id             integer    [pk, increment]   // storage id ONLY; anchors never FK to this
+  translation_id integer    [not null]
+  book_id        integer    [not null]
+  chapter        integer    [not null]
+  verse          integer                       // canonical verse (av11n); NULL = non-verse content. see versification_map
+  // RESOLVED (#1, NULL not a 0-sentinel): nullable. Heading/title Tokens belong to no verse and
+  // are addressed via their Block, not a verse word-index. This covers BOTH chapter-initial
+  // headings (\mt book title, \ms major section, \d psalm title) AND mid-chapter section
+  // headings (\s) — the ingester (#3) sets verse=NULL on EVERY heading token, so a section
+  // heading does NOT inherit the preceding verse. NULL (never 0) so heading content can never
+  // be mistaken for verse 0 nor collide in the anchor index.
+  word_index     integer                       // word ordinal within verse (punct excluded);
+                                                 // NULL on punct tokens AND on heading/non-verse
+                                                 // word tokens (no verse → no word ordinal; #1/#3)
+  seq            integer    [not null]         // dense render order within chapter
+  kind           token_kind [not null]
+  text           varchar    [not null]         // surface text
+  block_id       integer    [not null]
+  verse_start    boolean    [not null, default: false]  // first word token of a verse → drives verse number
+  ow_id          varchar                        // SEAM P3 (now wired): the PRIMARY/head Original Word
+                                                 // for this token, by string key → original_word.id (no
+                                                 // FK, cross-tier). Denormalized fast-path; full M:N is
+                                                 // interlinear_alignment. Null where unaligned. (Q2)
+  // INTEGRITY (#10): the "head" is NOT derivable from the bare alignment junction (no is_primary
+  // flag yet — deferred, ADR-0007). The ingester SETS token.ow_id out-of-band from the source
+  // corpus's primary mapping; the ingest-time validation pass MUST assert
+  // token.ow_id IS NULL OR token.ow_id ∈ interlinear_alignment(token_id). Not a runtime FK.
+
+  // The ANCHOR coordinate (migration-fatal, ADR-0001) is (translation, book, chapter,
+  // verse, word_index) — a coordinate, never token.id.
+  indexes {
+    (translation_id, book_id, chapter, verse, seq)
+    (translation_id, book_id, chapter, verse, word_index)
+  }
+}
+
+// versification_map reconciles a translation's NATIVE numbering to the canonical verse.
+// Q3 RESOLVED: SPARSE — store a row ONLY where native != canonical. Displayed verse
+// number = canonical unless a row overrides with the native number. No `verse` table:
+// a verse is an address (token columns), not an entity.
+// DEFERRED (Phase 3): this pair map handles renumber/shift but NOT clean splits/merges
+// (one canonical verse = two native, Psalm-title-as-v1, Hebrew/LXX divergence). Add
+// range/split support when the Original Word hub brings Hebrew/LXX in.
+// WHY THE DEFERRAL IS MIGRATION-SAFE (#6): anchors store the CANONICAL verse directly, and this
+// map is read-only corpus reference data rebuilt on every ingest. Re-shaping it for splits/merges
+// touches NO user data and NO anchor — it is corpus-internal, like block_id. So it is genuinely
+// reversible, not a locked seam.
+// UNVALIDATED (#6): in the prototype WEB & KJV ≈ canonical → versification_map = 0 rows, so the
+// native↔canonical round-trip (the whole reason this table exists) is NOT yet exercised. Before
+// bundling a genuinely-divergent translation (Psalm titles, Joel/Mal, Rev 12/13, Hebrew/LXX),
+// build a fixture that actually populates this map and test the round-trip through an anchor.
+Table versification_map {
+  id              integer [pk, increment]
+  translation_id  integer [not null]
+  book_id         integer [not null]
+  // translation's native address:
+  src_chapter     integer [not null]
+  src_verse       integer [not null]
+  // canonical address it maps to:
+  canon_chapter   integer [not null]
+  canon_verse     integer [not null]
+
+  indexes {
+    (translation_id, book_id, src_chapter, src_verse)
+  }
+}
+
+//============================================================
+// Presentation layer (user data, synced) — RULES, not pixels.
+// Q5 RESOLVED: this layer persists RULES only and joins the corpus by stable semantic
+// keys (genre / role / book.slug / coordinate), NEVER token.id, NEVER pixels — so it
+// survives corpus re-ingest. Computed layout (line breaks / per-token rects) is a
+// DERIVED, rebuildable LOCAL cache, never synced, never truth — deferred until a
+// profiler demands it (engine re-typesets at ~120fps in the prototype). See ADR-0004.
+//
+// IDS + LIFECYCLE (#4): these are SYNCED, offline-editable USER tables, so they obey the SAME
+// rules as the Phase-2 annotation layer (ADR-0006): client-generated text UUIDv7 PKs (NOT
+// autoincrement — it collides across offline devices) + created_at/updated_at/deleted_at epoch-ms
+// lifecycle (deleted_at = soft-delete tombstone). reading_settings is a per-user singleton but
+// still carries a UUID + lifecycle for uniform sync. This closes the gap ADR-0006 flagged.
+//============================================================
+
+// Global, app-wide reading settings (one active row per user; synced).
+// Q5: scroll_mode + theme are GLOBAL — not per-preset, not per-scope.
+Table reading_settings {
+  id               varchar     [pk]               // UUIDv7 (#4)
+  scroll_mode      scroll_mode [not null, default: 'vertical']
+  theme            varchar     [not null, default: 'light']
+  active_preset_id varchar     // → layout_preset.id (the currently selected typography preset)
+  created_at       integer     [not null]
+  updated_at       integer     [not null]
+  deleted_at       integer                          // soft-delete tombstone; null = live
+}
+
+// A named typography bundle the user can switch between ("Reading", "Study", "Large
+// print"). Holds the GLOBAL typography defaults for the cascade base.
+Table layout_preset {
+  id                varchar [pk]                    // UUIDv7 (#4)
+  name              varchar [not null]
+  font_family       varchar
+  font_size         real
+  line_height       real
+  margin            real
+  paragraph_spacing real
+  indent_step       real     // multiplies block.indent
+  align             varchar  // "left" | "justify"
+  created_at        integer [not null]
+  updated_at        integer [not null]
+  deleted_at        integer
+}
+
+// Per-scope overrides on top of a preset. Q6 RESOLVED: typed nullable columns (null =
+// inherit); resolution precedence  base preset < genre < role < book  (most specific
+// wins). Scopes join the corpus by SEMANTIC KEYS (genre / role / book.slug), never
+// token.id. Per-book scope ships in v1 (e.g. a different author → a different
+// font_family for a more immersive read).
+// FUTURE: an 'author' / book-class scope (set Paul's books once) — folds into
+// scope_kind later; backed by a book-classification table (cf. archived legacy
+// `Classes`/`Books_Classes`, archive/BibleCodex.legacy.sql). Deferred, additive.
+Table layout_override {
+  id                varchar [pk]                    // UUIDv7 (#4)
+  preset_id         varchar [not null]              // → layout_preset.id
+  scope_kind        varchar [not null]   // "genre" | "role" | "book"
+  scope_value       varchar [not null]   // "poetry" | "psalm_title" | "Romans" (book.slug); see ROLE VOCABULARY (#7)
+  // same knobs as layout_preset, all nullable = inherit:
+  font_family       varchar
+  font_size         real
+  line_height       real
+  margin            real
+  paragraph_spacing real
+  indent_step       real
+  align             varchar
+  created_at        integer [not null]
+  updated_at        integer [not null]
+  deleted_at        integer
+
+  indexes {
+    (preset_id, scope_kind, scope_value) [unique]
+  }
+}
+
+//============================================================
+// Annotation layer (Phase 2) — user data, synced. Markup + Ink. See ADR-0006.
+//
+// IDS: text UUIDv7 (client-generated, sync-safe, time-sortable) — NOT `increment` (Q1).
+//   Offline creation on multiple devices can't collide; a row owns its identity before
+//   it ever reaches a server.
+// ANCHORS join the corpus BY COORDINATE — translation abbrev + book.slug + chapter +
+//   verse + word_index — NEVER by corpus integer id (Q2, ADR-0004 extended). So there
+//   is NO foreign key from this layer into the corpus; only within-layer FKs (layer /
+//   connector / annotation) are real. A corpus re-ingest orphans nothing.
+// LIFECYCLE: every table carries created_at / updated_at / deleted_at (epoch ms);
+//   deleted_at = soft-delete tombstone — sync-safe deletes + free undo (Q4).
+// SEAM P3: every anchor carries *_ow_id (Original Word hub), null until Phase 3 —
+//   word-target marks port by verse grain now, by Original Word later, no migration.
+//
+// THE ANCHOR (#8) — there is no shared `anchor` table; the coordinate is a COLUMN-GROUP inlined
+// onto each anchored entity (and re-used verbatim by any Phase-4 anchored entity, e.g.
+// cross_reference / tag_target). Two shapes, deliberately:
+//   • POINT anchor (note pin, connector endpoint): {translation, book_slug, chapter, verse,
+//       word_index?, ow_id?}. word_index null = whole verse.
+//   • RANGE anchor (mark): the point fields PLUS {verse_end?, word_index_end?} so a mark can span
+//       a phrase — within a verse OR across a verse boundary (#5). See `mark` for exact semantics.
+// Naming convention per host: mark.target_*, note.pin_*, binding.anchor_*.
+// TRANSLATION-BOUND vs CANONICAL-ONLY (#8): user marks carry a `translation` (they were drawn in
+//   one translation and port from there). EDITORIAL anchors (the Original Word hub's canon_*, and
+//   the Phase-4 cross_reference) are CANONICAL-ONLY — no translation column — because they relate
+//   passages, not one translation's words. Phase-4 cross_reference MUST NOT bolt `translation` on.
+// HEADINGS ARE NOT ANCHORABLE in v1 (#2): heading/title tokens carry verse=NULL (see token), and
+//   the anchor coordinate requires a verse, so headings cannot be marked/noted/connected. This is
+//   a deliberate v1 scope decision, not an accident. A block-grain heading anchor is a
+//   DEFERRED-ADDITIVE seam (new nullable columns keyed by a stable per-chapter heading ordinal) —
+//   no migration when it lands, exactly like the ow_id seam.
+//============================================================
+
+// A named, toggleable group of marks — the "notes on/off" feature. Spans Markup + Ink.
+Table layer {
+  id         varchar [pk]                      // UUIDv7
+  name       varchar [not null]
+  visible    boolean [not null, default: true] // notes on/off toggle
+  seq        integer [not null]                // stack / draw order
+  created_at integer [not null]
+  updated_at integer [not null]
+  deleted_at integer                            // soft-delete tombstone; null = live
+}
+
+// Mark — decoration ON words (underline/highlight/box/circle/strike). Target is
+// ALWAYS scripture → inline RANGE Anchor (Q2). A Mark never targets an element.
+Table mark {
+  id                 varchar   [pk]
+  layer_id           varchar   [not null]
+  kind               mark_kind [not null]
+  // target RANGE Anchor (inline, by coordinate). A mark spans [start, end] INCLUSIVE (#5):
+  target_translation   varchar [not null]   // translation abbrev, e.g. "KJV"
+  target_book_slug     varchar [not null]   // e.g. "John"
+  target_chapter       integer [not null]
+  target_verse         integer [not null]   // start verse (canonical)
+  target_word_index    integer              // start word ordinal; NULL = whole verse (start of verse)
+  target_verse_end     integer              // end verse; NULL = single verse (= target_verse). Enables CROSS-VERSE marks (#5)
+  target_word_index_end integer             // end word ordinal INCLUSIVE in the end verse; NULL = through end of that verse
+  // RANGE SEMANTICS (#5): whole verse → word_index NULL, *_end NULL. Single word → word_index=i,
+  //   verse_end NULL, word_index_end=i. Word span in one verse → word_index=lo, word_index_end=hi.
+  //   Cross-verse phrase → word_index=lo, verse_end=v2, word_index_end=hi. (Replaces the old
+  //   single-verse-only target_word_count, which could not cross a verse boundary.)
+  target_ow_id       varchar                // SEAM P3 (head OW of the START word)
+  // style:
+  color              varchar   [not null]   // sRGB hex
+  weight             real
+  created_at         integer   [not null]
+  updated_at         integer   [not null]
+  deleted_at         integer
+  indexes {
+    (target_translation, target_book_slug, target_chapter, target_verse)  // load marks for visible range
+    (layer_id)
+  }
+}
+
+// Note — free user text pinned to a scripture Anchor + an offset into the margin.
+Table note {
+  id              varchar [pk]
+  layer_id        varchar [not null]
+  // pin Anchor (inline, by coordinate):
+  pin_translation varchar [not null]
+  pin_book_slug   varchar [not null]
+  pin_chapter     integer [not null]
+  pin_verse       integer [not null]
+  pin_word_index  integer                  // null = whole verse
+  pin_ow_id       varchar                  // SEAM P3
+  offset_dx       real    [not null]       // normalized into margin/whitespace
+  offset_dy       real    [not null]
+  text            varchar [not null]       // translation-agnostic content
+  created_at      integer [not null]
+  updated_at      integer [not null]
+  deleted_at      integer
+  indexes {
+    (pin_translation, pin_book_slug, pin_chapter, pin_verse)
+    (layer_id)
+  }
+}
+
+// Connector — arrow/line between two Endpoints (a user cross-reference when it spans
+// passages). Endpoints live in `binding` (Q3).
+Table connector {
+  id         varchar [pk]
+  layer_id   varchar [not null]
+  color      varchar [not null]   // sRGB hex
+  weight     real
+  arrowhead  boolean [not null, default: true]  // single head at the `to` end
+  created_at integer [not null]
+  updated_at integer [not null]
+  deleted_at integer
+  indexes {
+    (layer_id)
+  }
+}
+
+// Binding — ONE row per connector endpoint (endpoint = binding, 1:1, Q3). First-class
+// record (ADR-0003). Polymorphic target: a scripture coordinate OR an element (mark|
+// note). The (target_kind, target_element_id) index is the back-reference — element
+// delete/cascade finds every connector bound to it in one hit.
+// CHECK (carry to DDL; DBML can't express): exactly one target populated —
+//   target_kind='scripture'    ⇒ anchor_* set,          target_element_id null
+//   target_kind in (mark,note) ⇒ target_element_id set,  anchor_* null
+Table binding {
+  id                 varchar        [pk]
+  connector_id       varchar        [not null]
+  role               varchar        [not null]   // 'from' | 'to'
+  target_kind        binding_target [not null]
+  // when target_kind='scripture' — inline POINT Anchor by coordinate (an endpoint is a point,
+  // never a range — so no *_end / *_count fields here, #5/#8):
+  anchor_translation varchar
+  anchor_book_slug   varchar
+  anchor_chapter     integer
+  anchor_verse       integer
+  anchor_word_index  integer                       // null = whole verse
+  anchor_ow_id       varchar                       // SEAM P3
+  // when target is an element:
+  target_element_id  varchar                       // → mark.id | note.id
+  created_at         integer        [not null]
+  updated_at         integer        [not null]
+  deleted_at         integer
+  indexes {
+    (connector_id, role) [unique]
+    (target_kind, target_element_id)               // back-reference: who points at element X
+  }
+}
+
+// InkAnnotation — freehand strokes over one passage in ONE layout. Bound to a layout,
+// never ports (ADR-0002). Anchor by coordinate (no block_id FK, ADR-0004);
+// (translation, scroll_mode) gate visibility; layout_hash mismatch → re-place at block
+// grain or hide (Q6). v1 treats the inked passage as one coarse box.
+Table ink_annotation {
+  id                 varchar     [pk]
+  layer_id           varchar     [not null]
+  anchor_translation varchar     [not null]   // Ink is translation-bound; this IS the layout's translation
+  anchor_book_slug   varchar     [not null]
+  anchor_chapter     integer     [not null]
+  anchor_verse       integer     [not null]
+  anchor_verse_end   integer                  // null = single verse
+  scroll_mode        scroll_mode [not null]   // layout context (match key)
+  layout_hash        varchar     [not null]   // fine invalidation
+  created_at         integer     [not null]
+  updated_at         integer     [not null]
+  deleted_at         integer
+  indexes {
+    (anchor_translation, anchor_book_slug, anchor_chapter, anchor_verse)
+    (layer_id)
+  }
+}
+
+// InkStroke — one committed stroke. points = packed Float32 BLOB (heavy, opaque, never
+// queried per-point, Q5). Eraser/undo = soft-delete (deleted_at).
+Table ink_stroke {
+  id            varchar  [pk]
+  annotation_id varchar  [not null]
+  tool          ink_tool [not null]
+  color         varchar  [not null]   // sRGB hex
+  width         real     [not null]
+  points        blob     [not null]   // packed Float32, stride per point_format
+  point_count   integer  [not null]   // stats without decoding the blob
+  point_format  varchar  [not null]   // e.g. "f32:x,y,p,t" or "f32:x,y,p,tx,ty,t"
+  created_at    integer  [not null]
+  updated_at    integer  [not null]
+  deleted_at    integer
+  indexes {
+    (annotation_id)
+  }
+}
+
+//============================================================
+// Phase 3 — Original Word hub + interlinear alignment + lexicon. See ADR-0007.
+//
+// THREE TIERS, joined by STABLE STRING KEYS across boundaries, FK only within a tier (Q3):
+//   corpus (per-translation tokens)  →  OW hub (shared occurrences)  →  lexicon (reference).
+// So the lexicon/hub re-source or version WITHOUT touching the corpus; physical packaging
+// (one bundled .sqlite vs separate attachable files) stays reversible — the shapes don't change.
+// Cross-tier integrity is an ingest-time validation pass, not a runtime FK.
+//
+// GRAIN: original_word is a lexical SEGMENT-occurrence — a whole word in Greek, a MORPHEME in
+//   Hebrew (the source corpora segment agglutinated words). Written words are regrouped via
+//   segment_of + segment_index (Q7).
+// IDS: original_word.id is the OPAQUE external per-occurrence word-id (MACULA/STEPBible/OSHB
+//   class), never parsed — remappable via a translation table if we ever swap corpora (Q1).
+//============================================================
+
+// The shared hub: one original-language lexical occurrence (Greek word / Hebrew morpheme).
+// Read-only reference data — so addresses are denormalized inline (both canonical + native).
+Table original_word {
+  id              varchar          [pk]          // opaque external per-occurrence word-id (Q1)
+  language        original_language [not null]
+  surface         varchar          [not null]    // original form, e.g. "λόγος" / "בְּ"
+  transliteration varchar
+  // canonical address — the BRIDGE to the reading corpus (av11n) (Q4):
+  canon_book_slug varchar          [not null]
+  canon_chapter   integer          [not null]
+  canon_verse     integer          [not null]
+  position        integer          [not null]    // order within the canonical verse → interlinear render order
+  // native original-language address — fidelity (Hebrew/LXX numbering differs from av11n) (Q4):
+  native_chapter  integer
+  native_verse    integer
+  // segmentation (Q7) — Greek words are single-segment:
+  segment_of      varchar                        // written-word GROUP id (string key); shared by a word's morphemes
+  segment_index   integer          [not null, default: 0]  // order within the written word
+  // lexicon keys (string, cross-tier, NO FK — Q3/Q5):
+  lemma_id        varchar                        // → lemma.id
+  strong_id       varchar                        // → strongs.id (a join key, never an anchor)
+  parse_code      varchar                        // raw morphology code (truth); → morphology.code (Q6)
+  // editorial interlinear gloss (Q8) — distinct from reverse-interlinear (derived via alignment):
+  gloss           varchar
+  gloss_prefix    varchar                        // helper words, e.g. "of" before a genitive
+  gloss_suffix    varchar
+  indexes {
+    // bridge lookup + TOTAL ordered render: Hebrew morphemes of one written word share `position`,
+    // so segment_index is needed for a deterministic interlinear order (#9).
+    (canon_book_slug, canon_chapter, canon_verse, position, segment_index)
+    (segment_of, segment_index)                              // reconstruct a written word
+    (lemma_id)
+    (strong_id)
+  }
+}
+
+// Interlinear alignment — M:N between corpus Tokens and Original Words (Q2/Q9). Bare junction:
+// ordering is derived (token.seq / original_word.position); the head is the denormalized
+// token.ow_id. Corpus-internal storage id; token_id is a real FK (regenerated on ingest, like
+// block_id), original_word_id is a string key into the hub tier (no FK, Q3). Metadata
+// (relation_type / confidence / is_primary) is additive later — no source for it yet.
+Table interlinear_alignment {
+  id               integer [pk, increment]
+  token_id         integer [not null]            // FK → token.id (within corpus tier)
+  original_word_id varchar [not null]            // → original_word.id (string key, cross-tier)
+  indexes {
+    (token_id, original_word_id) [unique]
+    (original_word_id)                           // reverse: tokens aligned to an OW
+    (token_id)
+  }
+}
+
+//---- Lexicon tier (reference data, re-sourceable / versionable) ----
+
+// Lemma — the dictionary/citation form; the lexicon SPINE (occurrence stats + future lexicons
+// hang off this). Separate identifier space from Strong's (Q5).
+// SOURCING CAVEAT (#11): "lemma is the spine" assumes the chosen interlinear corpus supplies a
+// lemma id per occurrence (original_word.lemma_id). MACULA/OSHB do; confirm before relying on it.
+// If a source ships Strong's but NO lemma, original_word.lemma_id is null at launch and occurrence
+// statistics must hang off strong_id until a lemma source is added — additive, no migration.
+Table lemma {
+  id              varchar          [pk]          // opaque lemma id (string key)
+  language        original_language [not null]
+  dictionary_form varchar          [not null]    // citation form
+  primary_gloss   varchar                        // short default gloss
+  // FUTURE (additive, zero migration): root_id (Hebrew), semantic_domain (Louw–Nida),
+  // lexicon_entry(source, lemma_id) for BDB/Thayer/multi-lexicon.
+}
+
+// Strong's — the launch DICTIONARY, keyed by its own number (G####/H####). A reference join
+// key only, never an anchor (Q5). original_word.strong_id references this by string.
+Table strongs {
+  id              varchar          [pk]          // e.g. "G3056", "H7225"
+  language        original_language [not null]
+  headword        varchar          [not null]
+  transliteration varchar
+  short_def       varchar
+  full_def        varchar
+}
+
+// Morphology — code→features DECODE table (Q6). The raw code on original_word.parse_code is the
+// source of truth; this is the queryable decoded VIEW, keyed by code (small: a few thousand
+// distinct codes), not per-word flat columns. Columns are nullable / language-dependent.
+Table morphology {
+  code           varchar          [pk]           // raw parse code, e.g. "V-AAI-3S" / "HVqp3ms"
+  language       original_language [not null]
+  part_of_speech varchar
+  // Greek-leaning:
+  tense          varchar
+  voice          varchar
+  mood           varchar
+  gram_case      varchar                         // `case` is reserved in SQL → gram_case
+  // Hebrew-leaning:
+  stem           varchar
+  state          varchar
+  // shared:
+  person         varchar
+  gender         varchar
+  number         varchar
+}
+
+//============================================================
+// References
+//============================================================
+Ref: block.translation_id > translation.id
+Ref: block.book_id > book.id
+Ref: token.translation_id > translation.id
+Ref: token.book_id > book.id
+Ref: token.block_id > block.id
+Ref: versification_map.translation_id > translation.id
+Ref: versification_map.book_id > book.id
+Ref: reading_settings.active_preset_id > layout_preset.id
+Ref: layout_override.preset_id > layout_preset.id
+
+// Phase 2 — within-layer FKs ONLY. The corpus is referenced by coordinate, never FK.
+Ref: mark.layer_id > layer.id
+Ref: note.layer_id > layer.id
+Ref: connector.layer_id > layer.id
+Ref: binding.connector_id > connector.id
+Ref: ink_annotation.layer_id > layer.id
+Ref: ink_stroke.annotation_id > ink_annotation.id
+
+// Phase 3 — the ONLY cross-table FK is corpus-internal (alignment→token, like block_id).
+// Everything crossing a tier boundary (token.ow_id, alignment.original_word_id,
+// original_word.lemma_id/strong_id/parse_code/segment_of) is a string key, NO FK (Q3).
+Ref: interlinear_alignment.token_id > token.id
