@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1 — The Anchor · bible-codex</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<script src="../assets/quiz.js"></script>
+</head>
+<body>
+
+<nav class="course-nav">
+  <a href="../index.html">Course home</a>
+  <span class="sep">·</span>
+  <a href="../reference/architecture-map.html">Architecture map</a>
+  <span class="sep">·</span>
+  <a href="../GLOSSARY.md">Glossary</a>
+  <span class="sep">·</span>
+  <span>Module 0 · Overview · Lesson 1</span>
+</nav>
+
+<p class="eyebrow">Lesson 1 · The keystone</p>
+<h1>The Anchor</h1>
+<p class="lede">Why your marks survive a font change, a sideways scroll, and even a
+different translation — and why this one idea holds up the whole app.</p>
+
+<div class="callout mission">
+  <span class="tag">Why this lesson</span>
+  <p>You set out to understand <em>both</em> the biblical concepts <em>and</em> how
+  bible-codex is built. Almost every architectural decision in the repo traces back to
+  the idea in this lesson. Learn it first and the rest of the blueprint stops feeling
+  arbitrary.</p>
+</div>
+
+<h2>Start with a physical Bible</h2>
+<p>You read a study Bible. You <strong>underline</strong> a phrase, scribble a
+<strong>note</strong> in the margin, draw an <strong>arrow</strong> joining two verses.
+Now three things change:</p>
+<ul>
+  <li>you make the <strong>font bigger</strong>,</li>
+  <li>you switch to a <strong>different translation</strong> (different English wording),</li>
+  <li>you turn the book <strong>sideways</strong> and read it as a scroll.</li>
+</ul>
+<p>On paper, your marks would now sit in the wrong place, or be meaningless. bible-codex
+makes one core promise: <strong>your marks survive all of that.</strong> That promise is
+the source of most of the design decisions you'll meet later.</p>
+
+<h2>The trick: what a mark <em>remembers</em></h2>
+<p>It comes down to what gets stored when you make a mark.</p>
+<ul>
+  <li>A naïve app stores <em>where on the screen</em> the mark sat:
+      <code>{x: 340, y: 88, w: 120}</code>. Change the font and that box now sits over
+      the wrong words. Dead.</li>
+  <li>bible-codex stores <em>which words</em> the mark is on:
+      <em>"the word <strong>beginning</strong> in John, chapter 1, verse 1."</em>
+      Change anything about the layout and the app <strong>re-finds</strong> those words
+      and re-draws the mark. Alive.</li>
+</ul>
+
+<div class="callout key">
+  <span class="tag">The keystone term</span>
+  <p>That stored scripture address is called an <span class="term">Anchor</span>. Every
+  note, highlight, drawing, bookmark, and cross-reference hangs off one. Memorise this
+  word — the next six lessons all lean on it.</p>
+</div>
+
+<figure>
+<svg viewBox="0 0 720 430" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="The same highlight shown in two different layouts, both resolving from one anchor record.">
+  <style>
+    .panel  { fill:#fff; stroke:#d8cdb8; stroke-width:1.5; }
+    .ptitle { font:600 12px Georgia, serif; fill:#4a443d; }
+    .verse  { font:16px Georgia, serif; fill:#1a1714; }
+    .hl     { fill:#f6e29a; }
+    .arrow  { stroke:#9a7b27; stroke-width:1.6; fill:none; marker-end:url(#ah); }
+    .rec    { fill:#fbf3dc; stroke:#9a7b27; stroke-width:1.5; }
+    .reclbl { font:600 12px Georgia, serif; fill:#9a7b27; }
+    .mono   { font:13px "SF Mono", Menlo, monospace; fill:#1a1714; }
+    .bad    { font:13px "SF Mono", Menlo, monospace; fill:#9a3b2f; }
+    .cap    { font:italic 12px Georgia, serif; fill:#4a443d; }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#9a7b27"/>
+    </marker>
+  </defs>
+
+  <!-- Panel A : big serif -->
+  <rect class="panel" x="20" y="20" width="310" height="120" rx="6"/>
+  <text class="ptitle" x="34" y="42">LAYOUT A — large serif, vertical</text>
+  <rect class="hl" x="87" y="58" width="76" height="20"/>
+  <text class="verse" x="34" y="72">In the beginning was the</text>
+  <text class="verse" x="34" y="98">Word, and the Word was</text>
+  <text class="verse" x="34" y="124">with God&#8230;</text>
+
+  <!-- Panel B : small, other translation -->
+  <rect class="panel" x="390" y="20" width="310" height="120" rx="6"/>
+  <text class="ptitle" x="404" y="42">LAYOUT B — small, other translation</text>
+  <rect class="hl" x="447" y="59" width="58" height="16"/>
+  <text class="verse" x="404" y="70" font-size="13">In the beginning was the Word,</text>
+  <text class="verse" x="404" y="92" font-size="13">and the Word was with God&#8230;</text>
+
+  <!-- arrows down to the record -->
+  <path class="arrow" d="M150,150 C150,200 330,210 360,250"/>
+  <path class="arrow" d="M560,150 C560,200 390,210 360,250"/>
+
+  <!-- the anchor record -->
+  <rect class="rec" x="150" y="255" width="420" height="92" rx="6"/>
+  <text class="reclbl" x="170" y="280">STORED AS ONE ANCHOR (a scripture coordinate)</text>
+  <text class="mono" x="170" y="306">{ book: "John", chapter: 1, verse: 1, word_index: 2 }</text>
+  <text class="bad"  x="170" y="330">✗ never stored as pixels { x: 340, y: 88, w: 120 }</text>
+
+  <text class="cap" x="360" y="380" text-anchor="middle">Layout changes &#8594; the app re-finds the words at that coordinate &#8594; re-draws the mark.</text>
+  <text class="cap" x="360" y="400" text-anchor="middle">One address, many renderings. That is the whole magic.</text>
+</svg>
+<figcaption>One <span class="term">Anchor</span> resolves to a position in <em>any</em> layout.
+The mark points at the words, not the pixels.</figcaption>
+</figure>
+
+<h2>The Bible literacy you need (just one thing today)</h2>
+<p>How do humans already point at a spot in the Bible? With a three-part address:</p>
+<p style="text-align:center; font-size:1.3rem;">
+  <strong>John&nbsp;3:16</strong> &nbsp;=&nbsp; book <strong>John</strong> · chapter <strong>3</strong> · verse <strong>16</strong>
+</p>
+<p>That is the universal coordinate system every Bible uses. bible-codex adopts it exactly
+and adds one more number — <strong>which word</strong> in the verse, called the
+<span class="term">word-index</span>. So an Anchor is, in essence,
+<code>book · chapter · verse · word</code>.</p>
+
+<div class="callout">
+  <span class="tag">One strict rule (we'll use it in Lesson 3)</span>
+  <p>The <span class="term">word-index</span> counts <strong>only real words, not
+  punctuation</strong>, and starts at <strong>0</strong>. So in <em>"In the
+  beginning&#8230;"</em> &rarr; <code>In</code>=0, <code>the</code>=1,
+  <code>beginning</code>=2.</p>
+</div>
+
+<h2>Why this is the keystone (the payoff)</h2>
+<p>Because marks are addressed by scripture coordinate instead of pixels, they automatically:</p>
+<ul>
+  <li><strong>reflow</strong> when font, spacing, or scroll direction change;</li>
+  <li><strong>port</strong> to other translations — the words still exist, just rendered differently;</li>
+  <li><strong>sync</strong> between tablet and desktop as a few bytes of coordinate, not a picture;</li>
+  <li>survive the entire Bible text being <strong>re-imported</strong> from scratch — not one mark breaks.</li>
+</ul>
+<p>This is locked as decision #1 of three "never change these" rules in the blueprint.
+Everything else in the repo is allowed to move; this is not.</p>
+
+<div class="primary-source">
+  <span class="tag">Primary source — read this next</span>
+  <p><a href="../../docs/adr/0001-three-layer-anchor-model.md">ADR-0001 — Three-layer anchor
+  model</a> is the canonical "why" for this lesson (one short page). The term itself is
+  pinned in <a href="../../CONTEXT.md">CONTEXT.md</a> under <em>"Anchor."</em></p>
+</div>
+
+<h2>Check yourself</h2>
+<p>Retrieval — not re-reading — is what makes this stick. Answer before peeking.</p>
+
+<div class="quiz" data-title="Lesson 1 — recall">
+<script type="application/json">
+{
+  "questions": [
+    {
+      "stem": "A highlight is stored as pixels {x:340, y:88}. The reader doubles the font size. What happens?",
+      "options": [
+        "It now covers the wrong words",
+        "It still covers the right words",
+        "It scales up with the bigger text",
+        "It hides until the next reload"
+      ],
+      "answer": 0,
+      "explain": "Pixels don't know about words. Bigger font pushes the words elsewhere; the fixed box is now stranded over whatever happens to sit at x:340, y:88."
+    },
+    {
+      "stem": "What does bible-codex call the stored scripture address a mark points to?",
+      "options": ["A Binding", "An Anchor", "A Token", "A Block"],
+      "answer": 1,
+      "explain": "Anchor. (Token, Block and Binding are real terms too — you'll meet them in Lessons 3 and 5 — but the address itself is the Anchor.)"
+    },
+    {
+      "stem": "In 'In the beginning was the Word', what is the word-index of 'Word'? (0-based, punctuation excluded)",
+      "options": ["3", "4", "5", "6"],
+      "answer": 2,
+      "explain": "In=0, the=1, beginning=2, was=3, the=4, Word=5."
+    }
+  ]
+}
+</script>
+</div>
+
+<div class="recall">
+  <div class="prompt">From memory, in one sentence: what <em>is</em> an Anchor, and what does
+  it deliberately <em>not</em> store?</div>
+  <button class="flip">Reveal</button>
+  <div class="answer">An Anchor is a scripture coordinate — book · chapter · verse · word-index
+  — that a mark points to. It deliberately stores <strong>no pixels / no canvas position</strong>,
+  so the position is recomputed for whatever layout is on screen.</div>
+</div>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Stuck or curious?</strong> I'm your teacher for this — ask me anything that's
+    unclear (e.g. "what's a translation, exactly?", "show me a real Anchor in the code",
+    "why no phone?"). Questions are how we find the next lesson.
+  </div>
+  <div class="next-links">
+    <a href="../reference/architecture-map.html">
+      <span class="label">Reference</span>
+      <span class="title">The whole map on one page →</span>
+    </a>
+    <a href="0002-two-worlds-and-spokes.html">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 2 — Two worlds &amp; spokes →</span>
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

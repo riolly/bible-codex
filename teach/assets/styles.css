@@ -1,0 +1,330 @@
+/* ============================================================================
+   bible-codex — teaching workspace shared stylesheet
+   One stylesheet, linked by every lesson and reference doc, so the course
+   reads as one consistent thing. Tufte-ish: serif body, generous margins,
+   sidenotes, restrained palette. Prints cleanly.
+   ============================================================================ */
+
+:root {
+  --ink:        #1a1714;   /* body text  */
+  --ink-soft:   #4a443d;   /* secondary  */
+  --parchment:  #faf6ee;   /* page bg    */
+  --panel:      #f3ecdf;   /* callout bg  */
+  --rule:       #d8cdb8;   /* hairlines  */
+  --gilt:       #9a7b27;   /* gold accent — echoes the app's gilt verse numbers */
+  --gilt-soft:  #c8a85a;
+  --link:       #3a5a78;   /* muted blue */
+  --good:       #2f6b3f;
+  --bad:        #9a3b2f;
+  --maxw:       46rem;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0 auto;
+  max-width: var(--maxw);
+  padding: 3rem 1.5rem 6rem;
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: "Cardo", "Gentium Plus", Georgia, "Times New Roman", serif;
+  font-size: 1.18rem;
+  line-height: 1.62;
+  font-feature-settings: "kern", "liga", "onum";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- breadcrumb / course nav -------------------------------------------- */
+.course-nav {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 2.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.course-nav a { color: var(--ink-soft); text-decoration: none; border: 0; }
+.course-nav a:hover { color: var(--gilt); }
+.course-nav .sep { color: var(--rule); }
+
+/* --- headings ------------------------------------------------------------ */
+h1, h2, h3 { font-weight: 700; line-height: 1.2; }
+h1 {
+  font-size: 2.1rem;
+  margin: 0 0 0.3rem;
+  letter-spacing: -0.01em;
+}
+.eyebrow {
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gilt);
+  font-weight: 700;
+  margin: 0 0 0.6rem;
+}
+.lede {
+  font-size: 1.28rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin: 0.4rem 0 2.2rem;
+}
+h2 {
+  font-size: 1.45rem;
+  margin: 2.8rem 0 0.8rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--rule);
+}
+h3 { font-size: 1.15rem; margin: 1.8rem 0 0.5rem; color: var(--ink-soft); }
+
+p { margin: 0 0 1.1rem; }
+
+a { color: var(--link); text-decoration: none; border-bottom: 1px solid var(--gilt-soft); }
+a:hover { color: var(--gilt); border-color: var(--gilt); }
+
+strong { font-weight: 700; }
+em { font-style: italic; }
+
+/* a verse-style reference or a domain term inline */
+.term { font-variant: small-caps; letter-spacing: 0.02em; font-weight: 700; color: var(--ink); }
+code, .mono {
+  font-family: "SF Mono", "JetBrains Mono", "Menlo", monospace;
+  font-size: 0.86em;
+  background: var(--panel);
+  padding: 0.08em 0.35em;
+  border-radius: 3px;
+}
+
+/* --- callouts ------------------------------------------------------------ */
+.callout {
+  background: var(--panel);
+  border-left: 3px solid var(--gilt);
+  padding: 1rem 1.2rem;
+  margin: 1.6rem 0;
+  border-radius: 0 4px 4px 0;
+}
+.callout p:last-child { margin-bottom: 0; }
+.callout .tag {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gilt);
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.callout.mission { border-color: var(--link); }
+.callout.mission .tag { color: var(--link); }
+.callout.key { background: #fbf3dc; border-color: var(--gilt); }
+
+/* --- figures / diagrams -------------------------------------------------- */
+figure { margin: 2rem 0; text-align: center; }
+figure svg { max-width: 100%; height: auto; }
+figcaption {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin-top: 0.7rem;
+  text-align: center;
+}
+
+/* --- lists --------------------------------------------------------------- */
+ul, ol { margin: 0 0 1.2rem; padding-left: 1.4rem; }
+li { margin: 0.3rem 0; }
+
+/* --- tables -------------------------------------------------------------- */
+table { border-collapse: collapse; width: 100%; margin: 1.6rem 0; font-size: 0.98rem; }
+th, td { text-align: left; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* --- footer / next steps ------------------------------------------------- */
+.lesson-footer {
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--gilt-soft);
+}
+.ask-teacher {
+  background: var(--panel);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  font-size: 1rem;
+  color: var(--ink-soft);
+}
+.ask-teacher strong { color: var(--ink); }
+.next-links { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.4rem; }
+.next-links a {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  flex: 1 1 12rem;
+  background: #fff;
+}
+.next-links a:hover { border-color: var(--gilt); }
+.next-links .label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+.next-links .title { font-weight: 700; }
+
+/* --- source recommendation ---------------------------------------------- */
+.primary-source {
+  border: 1px dashed var(--gilt-soft);
+  border-radius: 6px;
+  padding: 1rem 1.2rem;
+  margin: 1.8rem 0;
+}
+.primary-source .tag { color: var(--gilt); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ============================================================================
+   QUIZ widget (paired with assets/quiz.js)
+   ============================================================================ */
+.quiz {
+  margin: 2rem 0;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+.quiz-head {
+  background: var(--panel);
+  padding: 0.7rem 1.1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gilt);
+  border-bottom: 1px solid var(--rule);
+}
+.quiz-q { padding: 1.1rem 1.2rem; border-bottom: 1px solid var(--rule); }
+.quiz-q:last-child { border-bottom: 0; }
+.quiz-q .stem { font-weight: 700; margin-bottom: 0.8rem; }
+.quiz-opt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 0.98rem;
+  background: var(--parchment);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 0.6rem 0.8rem;
+  margin: 0.4rem 0;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.quiz-opt:hover { border-color: var(--gilt-soft); }
+.quiz-opt:disabled { cursor: default; opacity: 1; }
+.quiz-opt.correct { background: #e6f0e6; border-color: var(--good); color: var(--good); }
+.quiz-opt.wrong   { background: #f4e3e0; border-color: var(--bad); color: var(--bad); }
+.quiz-feedback {
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 5px;
+  display: none;
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.ok  { background: #e6f0e6; color: var(--good); }
+.quiz-feedback.no  { background: #f4e3e0; color: var(--bad); }
+
+/* --- retrieval flip card (free recall practice) -------------------------- */
+.recall {
+  margin: 1.6rem 0;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 1.1rem 1.2rem;
+  background: #fff;
+}
+.recall .prompt { font-weight: 700; }
+.recall button.flip {
+  font: inherit; font-size: 0.85rem;
+  margin-top: 0.7rem; padding: 0.35rem 0.9rem;
+  background: var(--gilt); color: #fff; border: 0; border-radius: 5px; cursor: pointer;
+}
+.recall .answer { display: none; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--rule); color: var(--ink-soft); }
+.recall .answer.show { display: block; }
+
+/* ============================================================================
+   GAME — connect the pairs (the "connecting arrows" matcher)
+   ============================================================================ */
+.game {
+  margin: 2rem 0;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+.game-head {
+  background: var(--panel);
+  padding: 0.7rem 1.1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--gilt);
+  border-bottom: 1px solid var(--rule);
+}
+.game-body { padding: 1.1rem 1.2rem; }
+.game-hint { font-size: 0.95rem; color: var(--ink-soft); margin-bottom: 0.9rem; }
+
+.connect-wrap { position: relative; }
+.connect-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.connect-cols { position: relative; z-index: 2; display: flex; justify-content: space-between; gap: 2.5rem; }
+.connect-col { flex: 1 1 0; display: flex; flex-direction: column; gap: 0.55rem; }
+.connect-item {
+  font: inherit; font-size: 0.96rem; text-align: left;
+  background: var(--parchment); border: 1.5px solid var(--rule); border-radius: 6px;
+  padding: 0.6rem 0.8rem; cursor: pointer; transition: border-color .12s, background .12s;
+}
+.connect-col.right .connect-item { text-align: right; }
+.connect-item:hover { border-color: var(--gilt-soft); }
+.connect-item.selected { border-color: var(--gilt); background: #fbf3dc; box-shadow: 0 0 0 2px var(--gilt-soft); }
+.connect-item.matched { border-color: var(--good); background: #e6f0e6; color: var(--good); cursor: default; }
+.connect-item.wrong { border-color: var(--bad); background: #f4e3e0; }
+.game-status { margin-top: 1rem; font-size: 0.95rem; font-weight: 700; min-height: 1.2em; }
+.game-status.ok { color: var(--good); }
+.game-status.no { color: var(--bad); }
+
+/* ============================================================================
+   GAME — sequence puzzle (tap chips into the right order)
+   ============================================================================ */
+.seq-slots { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.seq-slot {
+  display: flex; align-items: center; gap: 0.7rem;
+  border: 1.5px dashed var(--rule); border-radius: 6px; min-height: 2.6rem; padding: 0.4rem 0.7rem;
+}
+.seq-slot .num {
+  flex: 0 0 1.6rem; height: 1.6rem; border-radius: 50%;
+  background: var(--gilt); color: #fff; font-size: 0.8rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.seq-slot .filled { font-weight: 600; }
+.seq-slot.ok  { border-style: solid; border-color: var(--good); background: #e6f0e6; }
+.seq-slot.no  { border-style: solid; border-color: var(--bad); background: #f4e3e0; }
+.seq-pool { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.seq-chip {
+  font: inherit; font-size: 0.95rem;
+  background: var(--parchment); border: 1.5px solid var(--rule); border-radius: 6px;
+  padding: 0.5rem 0.8rem; cursor: pointer; transition: opacity .12s, border-color .12s;
+}
+.seq-chip:hover { border-color: var(--gilt-soft); }
+.seq-chip.placed { opacity: 0.35; cursor: default; }
+.game-reset {
+  font: inherit; font-size: 0.82rem; margin-top: 0.9rem;
+  background: none; border: 1px solid var(--rule); border-radius: 5px;
+  padding: 0.3rem 0.8rem; cursor: pointer; color: var(--ink-soft);
+}
+.game-reset:hover { border-color: var(--gilt); color: var(--gilt); }
+
+/* ============================================================================
+   PRINT — reference docs especially should print beautifully
+   ============================================================================ */
+@media print {
+  body { background: #fff; color: #000; font-size: 11pt; max-width: none; padding: 0; }
+  .course-nav, .next-links, .ask-teacher, .recall button.flip, .quiz-opt { display: revert; }
+  a { color: #000; border: 0; }
+  .callout, .quiz, .recall, .primary-source { break-inside: avoid; border-color: #999; }
+  .recall .answer { display: block; }
+  h2 { break-after: avoid; }
+}

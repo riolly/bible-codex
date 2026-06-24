@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference — Architecture Map · bible-codex</title>
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+
+<nav class="course-nav">
+  <a href="../index.html">Course home</a>
+  <span class="sep">·</span>
+  <a href="../lessons/0001-the-anchor.html">Lesson 1</a>
+  <span class="sep">·</span>
+  <a href="../GLOSSARY.md">Glossary</a>
+  <span class="sep">·</span>
+  <span>Reference · print-friendly</span>
+</nav>
+
+<p class="eyebrow">Reference · the one-page map</p>
+<h1>How bible-codex is shaped</h1>
+<p class="lede">Four loosely-coupled data worlds that touch only through two bridges, and
+one coordinate — the Anchor — that everything user-made hangs on.</p>
+
+<div class="callout key">
+  <span class="tag">The thesis in one breath</span>
+  <p>The Bible <strong>text</strong> is read-only and shipped with the app. <strong>Your
+  marks</strong> are separate, yours, and synced. They never touch directly — they meet
+  only at <strong>scripture coordinates</strong>. That separation is what lets text be
+  re-imported and marks still survive.</p>
+</div>
+
+<h2>Four schemas, two bridges</h2>
+<figure>
+<svg viewBox="0 0 760 488" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Four phase schemas connected by the Canonical Verse and Original Word bridges and the Anchor.">
+  <style>
+    .box   { fill:#fff; stroke:#d8cdb8; stroke-width:1.5; }
+    .boxP  { fill:#f3ecdf; stroke:#9a7b27; stroke-width:1.5; }
+    .ph    { font:700 11px Georgia, serif; fill:#9a7b27; letter-spacing:1px; }
+    .tt    { font:700 13px Georgia, serif; fill:#1a1714; }
+    .li    { font:12.5px Georgia, serif; fill:#4a443d; }
+    .bridge{ font:italic 11px Georgia, serif; fill:#3a5a78; }
+    .edge  { stroke:#3a5a78; stroke-width:1.6; fill:none; }
+    .edged { stroke:#3a5a78; stroke-width:1.6; fill:none; stroke-dasharray:5 4; }
+    .anc   { fill:#fbf3dc; stroke:#9a7b27; stroke-width:2; }
+    .anct  { font:700 12px Georgia, serif; fill:#9a7b27; }
+  </style>
+  <defs>
+    <marker id="b" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#3a5a78"/>
+    </marker>
+  </defs>
+
+  <!-- TOP BRIDGE (dashed): interlinear alignment, P1 Token <-> P3 Original Word, arcs over P2 -->
+  <text class="bridge" x="380" y="20" text-anchor="middle">interlinear alignment  ·  N Tokens → 1 Original Word</text>
+  <path class="edged" d="M130,72 C130,34 630,34 630,72" marker-start="url(#b)" marker-end="url(#b)"/>
+
+  <!-- PHASE 1 -->
+  <rect class="box" x="20" y="72" width="222" height="150" rx="6"/>
+  <text class="ph" x="34" y="94">PHASE 1 · READING</text>
+  <text class="li" x="34" y="112" font-style="italic">per translation</text>
+  <text class="tt" x="34" y="138">Translation · Book</text>
+  <text class="li" x="34" y="160">Block — prose / poetry / heading</text>
+  <text class="li" x="34" y="182">Token (one word-occurrence)</text>
+  <text class="li" x="34" y="204">Canonical Verse · Versification</text>
+
+  <!-- PHASE 2 -->
+  <rect class="box" x="268" y="72" width="200" height="150" rx="6"/>
+  <text class="ph" x="282" y="94">PHASE 2 · ANNOTATION</text>
+  <text class="li" x="282" y="112" font-style="italic">your data, synced</text>
+  <text class="tt" x="282" y="140">Markup:</text>
+  <text class="li" x="282" y="160">Mark · Note · Connector</text>
+  <text class="tt" x="282" y="186">Ink:</text>
+  <text class="li" x="282" y="206">InkStroke (freehand, tablet)</text>
+
+  <!-- PHASE 3 -->
+  <rect class="box" x="498" y="72" width="242" height="150" rx="6"/>
+  <text class="ph" x="512" y="94">PHASE 3 · ORIGINAL + LEXICON</text>
+  <text class="tt" x="512" y="118">Original Word (occurrence)</text>
+  <text class="li" x="512" y="136">→ lemma · strong's · parsing</text>
+  <text class="tt" x="512" y="164">Lexicon (reference DB)</text>
+  <text class="li" x="512" y="184">Lemma · Root · Strong's ·</text>
+  <text class="li" x="512" y="204">Morphology · Semantic domain</text>
+
+  <!-- THE ANCHOR (center seam) -->
+  <rect class="anc" x="250" y="300" width="260" height="58" rx="8"/>
+  <text class="anct" x="380" y="325" text-anchor="middle">THE ANCHOR — a coordinate</text>
+  <text class="li" x="380" y="345" text-anchor="middle">book · ch · verse · word-index · (ow_id)</text>
+
+  <!-- solid bridges down to the Anchor -->
+  <path class="edge" d="M130,222 C130,265 250,275 292,300" marker-end="url(#b)"/>
+  <path class="edge" d="M368,222 L380,298" marker-end="url(#b)"/>
+  <text class="bridge" x="565" y="262" text-anchor="middle">every mark resolves</text>
+  <text class="bridge" x="565" y="278" text-anchor="middle">from an Anchor</text>
+
+  <!-- PHASE 4 band -->
+  <rect class="boxP" x="20" y="386" width="720" height="80" rx="6"/>
+  <text class="ph" x="34" y="410">PHASE 4 · PROGRESS / ADVANCED</text>
+  <text class="li" x="34" y="432">Journey state · Themes &amp; tags · Cross-references · Portal gates</text>
+  <text class="li" x="34" y="453" font-style="italic">Rides the Anchor + Cross-reference. No new bridge, no migration.</text>
+  <path class="edge" d="M380,358 L380,384" marker-end="url(#b)"/>
+  <text class="bridge" x="392" y="376">rides the Anchor</text>
+</svg>
+<figcaption>Adapted from <a href="../../data-architecture.md">data-architecture.md §1</a>.
+The two bridges (solid: Canonical Verse via the Anchor; dashed: Original Word via alignment)
+are the <em>only</em> way the worlds connect.</figcaption>
+</figure>
+
+<h2>What lands in each phase</h2>
+<table>
+  <thead><tr><th>Phase</th><th>What the reader gets</th><th>Core tables</th></tr></thead>
+  <tbody>
+    <tr><td><strong>P1</strong> Reading</td><td>Beautiful genre-aware text; horizontal/vertical scroll; tunable layout</td><td>translation · book · block · token · versification_map · layout_*</td></tr>
+    <tr><td><strong>P2</strong> Annotation</td><td>Mark up like a physical Bible: highlight, note, connect, freehand ink</td><td>layer · mark · note · connector · binding · ink_annotation · ink_stroke</td></tr>
+    <tr><td><strong>P3</strong> Lexicon</td><td>Tap a word → Greek/Hebrew, Strong's, meaning; word study</td><td>original_word · interlinear_alignment · lemma · strongs · morphology</td></tr>
+    <tr><td><strong>P4</strong> Advanced</td><td>Portals, the reading Journey, themes/tags, research mode</td><td><em>(none new — rides Anchor + Cross-reference)</em></td></tr>
+  </tbody>
+</table>
+<p style="font-size:0.98rem; color:var(--ink-soft);">The data model is <em>designed</em> for
+all four now, but each is <em>built</em> only when its phase arrives
+(<a href="../../docs/adr/0005-four-product-phases-design-all-build-in-order.md">ADR-0005</a>).</p>
+
+<h2>Translations are spokes, never wired together</h2>
+<figure>
+<svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Three translations connect only through two shared hubs, never directly to each other.">
+  <style>
+    .spoke { fill:#fff; stroke:#d8cdb8; stroke-width:1.5; }
+    .hub   { fill:#fbf3dc; stroke:#9a7b27; stroke-width:2; }
+    .sl    { font:600 13px Georgia, serif; fill:#1a1714; }
+    .hl2   { font:700 12px Georgia, serif; fill:#9a7b27; }
+    .conn  { stroke:#9a7b27; stroke-width:1.5; fill:none; }
+    .cap2  { font:italic 12px Georgia, serif; fill:#4a443d; }
+    .xed   { stroke:#9a3b2f; stroke-width:1.5; }
+  </style>
+  <!-- spokes -->
+  <rect class="spoke" x="30" y="40" width="90" height="38" rx="5"/><text class="sl" x="75" y="64" text-anchor="middle">KJV</text>
+  <rect class="spoke" x="30" y="106" width="90" height="38" rx="5"/><text class="sl" x="75" y="130" text-anchor="middle">BSB</text>
+  <rect class="spoke" x="30" y="172" width="90" height="38" rx="5"/><text class="sl" x="75" y="196" text-anchor="middle">NASB</text>
+  <!-- hubs -->
+  <rect class="hub" x="360" y="55" width="180" height="48" rx="6"/>
+  <text class="hl2" x="450" y="76" text-anchor="middle">CANONICAL VERSE</text>
+  <text class="cap2" x="450" y="94" text-anchor="middle">coarse · passage grain</text>
+  <rect class="hub" x="360" y="150" width="180" height="48" rx="6"/>
+  <text class="hl2" x="450" y="171" text-anchor="middle">ORIGINAL WORD</text>
+  <text class="cap2" x="450" y="189" text-anchor="middle">fine · word grain</text>
+  <!-- connectors spokes->hubs -->
+  <path class="conn" d="M120,59 C250,60 280,75 360,78"/>
+  <path class="conn" d="M120,125 C250,120 280,90 360,90"/>
+  <path class="conn" d="M120,191 C250,190 300,180 360,178"/>
+  <path class="conn" d="M120,66 C250,110 280,150 360,168"/>
+  <!-- forbidden direct edge -->
+  <path class="conn xed" d="M75,82 C75,95 75,95 75,104" stroke-dasharray="4 3"/>
+  <line class="xed" x1="62" y1="86" x2="88" y2="100"/>
+  <text class="cap2" x="600" y="100" text-anchor="middle">No KJV-word</text>
+  <text class="cap2" x="600" y="118" text-anchor="middle">↔ BSB-word edge.</text>
+  <text class="cap2" x="600" y="136" text-anchor="middle">They relate only</text>
+  <text class="cap2" x="600" y="154" text-anchor="middle">through the hubs.</text>
+</svg>
+<figcaption>A KJV word and a BSB word are different objects. They relate transitively — by
+verse (coarse) or by the shared Greek/Hebrew word (fine). Never 1:1.
+(<a href="../../docs/adr/0001-three-layer-anchor-model.md">ADR-0001</a>)</figcaption>
+</figure>
+
+<h2>The three seams that are locked forever</h2>
+<p>The repo's discipline: only <strong>three</strong> things are "migration-fatal." Lock
+these, and <em>don't over-design anything else.</em></p>
+<ol>
+  <li><strong>Anchors key off coordinates</strong> (verse + word-index + optional Original-Word id), never internal DB ids — so the corpus stays freely re-importable.</li>
+  <li><strong>Corpus = a token-stream + verse/block overlays</strong>, ingested from USFM (which carries the literary structure that makes genre-aware beauty possible).</li>
+  <li><strong>Annotations are a scripture-anchored scene graph</strong>, never canvas coordinates.</li>
+</ol>
+<p style="font-size:0.98rem; color:var(--ink-soft);">Everything else — sync backend, fonts,
+Markup styles, eraser rules, DB engine, exact translation set — is reversible. Don't
+bikeshed it. (<a href="../../OVERVIEW.md">OVERVIEW §4</a>)</p>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>This page is a map, not a lesson.</strong> Each box becomes its own lesson on the
+    path. Ask your teacher to take any one of them next.
+  </div>
+</div>
+
+</body>
+</html>

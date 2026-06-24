@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["-C", "prototype", "dev"],
       "port": 5173
+    },
+    {
+      "name": "teach",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4178"],
+      "port": 4178
     }
   ]
 }

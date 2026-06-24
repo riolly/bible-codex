@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bible-codex — Learning Path</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script src="assets/games.js"></script>
+<style>
+  .modules { margin: 1.5rem 0; }
+  .module {
+    border: 1px solid var(--rule); border-radius: 8px; background: #fff;
+    padding: 1.1rem 1.3rem; margin: 1rem 0;
+  }
+  .module.current { border-color: var(--gilt); box-shadow: 0 1px 0 var(--gilt-soft); }
+  .module h3 { margin: 0 0 0.2rem; color: var(--ink); display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+  .badge {
+    font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700;
+    padding: 0.12rem 0.5rem; border-radius: 99px; border: 1px solid var(--rule); color: var(--ink-soft);
+  }
+  .badge.ready { background: #e6f0e6; color: var(--good); border-color: var(--good); }
+  .badge.next  { background: #fbf3dc; color: var(--gilt); border-color: var(--gilt-soft); }
+  .module .pair { font-size: 0.95rem; color: var(--ink-soft); margin: 0.5rem 0 0.6rem; }
+  .module .pair b { color: var(--ink); font-variant: small-caps; letter-spacing: .02em; }
+  .module .links a { font-size: 0.92rem; margin-right: 1rem; display: inline-block; }
+</style>
+</head>
+<body>
+
+<nav class="course-nav">
+  <span>Course home</span>
+  <span class="sep">·</span>
+  <a href="GLOSSARY.md">Glossary</a>
+  <span class="sep">·</span>
+  <a href="reference/architecture-map.html">Architecture map</a>
+</nav>
+
+<p class="eyebrow">Learning path</p>
+<h1>Understanding bible-codex</h1>
+<p class="lede">Two hard things at once — the biblical concepts and the architecture built on
+them — taught together, in short modules, with diagrams and games.</p>
+
+<div class="callout mission">
+  <span class="tag">What this app is (in one breath)</span>
+  <p>A <strong>local-first, literary-beautiful Bible</strong> that turns reading into
+  <strong>discovery</strong>. Scripture is typeset to its literary form (narrative as prose,
+  poetry as poetry), read as a horizontal scroll or vertically. You mark it like a physical
+  Bible — and your marks survive every change of font, layout, and translation. Tablet +
+  desktop, offline. <em>(Full philosophy → <a href="../VISION.md">VISION.md</a>.)</em></p>
+</div>
+
+<h2>How the course is structured</h2>
+<p>Five modules, each a short session of its own so nothing runs too long. Each module pairs
+the <b>biblical idea</b> with the <b>app mechanic</b> built on it, and ends with an
+interactive game.</p>
+
+<div class="modules">
+
+  <div class="module current">
+    <h3>Module 0 · Overview <span class="badge ready">Ready</span></h3>
+    <p class="pair"><b>The cross-cutting ideas every phase leans on.</b></p>
+    <p>The Anchor, the two data worlds, translations as spokes, and the map of all four phases —
+    the "you are here" before we descend into each phase.</p>
+    <p class="links">
+      <a href="lessons/0001-the-anchor.html">Lesson 1 — The Anchor →</a>
+      <a href="lessons/0002-two-worlds-and-spokes.html">Lesson 2 — Two worlds &amp; spokes →</a>
+      <a href="reference/architecture-map.html">Reference — Architecture map →</a>
+    </p>
+  </div>
+
+  <div class="module">
+    <h3>Module 1 · Phase 1 — Reading <span class="badge next">Next session</span></h3>
+    <p class="pair"><b>Bible:</b> scripture has literary shape (prose, poetry, headings); book·chapter·verse; why numbering differs.<br>
+       <b>App:</b> Token · Block · Canonical Verse · Versification · the layout-adjust table.</p>
+  </div>
+
+  <div class="module">
+    <h3>Module 2 · Phase 2 — Annotation <span class="badge">Upcoming</span></h3>
+    <p class="pair"><b>Bible:</b> marking a Bible — underline, note, connect, draw freehand.<br>
+       <b>App:</b> Markup vs Ink (the two physics) · scripture-anchored scene graph · Layer.</p>
+  </div>
+
+  <div class="module">
+    <h3>Module 3 · Phase 3 — Lexicon <span class="badge">Upcoming</span></h3>
+    <p class="pair"><b>Bible:</b> the original Greek &amp; Hebrew, Strong's numbers, lemma, interlinear.<br>
+       <b>App:</b> the Original Word hub · Alignment · the re-sourceable lexicon tiers.</p>
+  </div>
+
+  <div class="module">
+    <h3>Module 4 · Remaining — Advanced <span class="badge">Upcoming</span></h3>
+    <p class="pair"><b>Bible:</b> reading as a journey and an adventure.<br>
+       <b>App:</b> Portal · Journey · Themes &amp; tags · research mode · the journey-state engine.</p>
+  </div>
+
+</div>
+
+<h2>Overview module check</h2>
+<p>The four phases are <em>designed now but built in order</em>. Put them in that order —
+each is unlocked by primitives shipped in the one before.</p>
+
+<div class="game" data-game="sequence" data-title="Order the four phases (build order)">
+<script type="application/json">
+{
+  "hint": "Tap them 1 → 4 in the order they get built.",
+  "items": [
+    "Beautiful reading & layout",
+    "Annotations (Markup + Ink)",
+    "Lexicon / word study",
+    "Portal, Journey & advanced"
+  ]
+}
+</script>
+</div>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>I'm your teacher.</strong> Ask anything that's unclear, or just say
+    <strong>"start Phase 1"</strong> when you're ready for the next module's session.
+  </div>
+</div>
+
+</body>
+</html>
