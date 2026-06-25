@@ -1,0 +1,40 @@
+---
+// Reference — translations as spokes that connect only through two shared
+// hubs (Canonical Verse, Original Word), never directly. Verbatim geometry.
+---
+<svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Three translations connect only through two shared hubs, never directly to each other.">
+  <!-- spokes -->
+  <rect class="spoke" x="30" y="40" width="90" height="38" rx="5"/><text class="sl" x="75" y="64" text-anchor="middle">KJV</text>
+  <rect class="spoke" x="30" y="106" width="90" height="38" rx="5"/><text class="sl" x="75" y="130" text-anchor="middle">BSB</text>
+  <rect class="spoke" x="30" y="172" width="90" height="38" rx="5"/><text class="sl" x="75" y="196" text-anchor="middle">NASB</text>
+  <!-- hubs -->
+  <rect class="hub" x="360" y="55" width="180" height="48" rx="6"/>
+  <text class="hl2" x="450" y="76" text-anchor="middle">CANONICAL VERSE</text>
+  <text class="cap2" x="450" y="94" text-anchor="middle">coarse · passage grain</text>
+  <rect class="hub" x="360" y="150" width="180" height="48" rx="6"/>
+  <text class="hl2" x="450" y="171" text-anchor="middle">ORIGINAL WORD</text>
+  <text class="cap2" x="450" y="189" text-anchor="middle">fine · word grain</text>
+  <!-- connectors spokes->hubs -->
+  <path class="conn" d="M120,59 C250,60 280,75 360,78"/>
+  <path class="conn" d="M120,125 C250,120 280,90 360,90"/>
+  <path class="conn" d="M120,191 C250,190 300,180 360,178"/>
+  <path class="conn" d="M120,66 C250,110 280,150 360,168"/>
+  <!-- forbidden direct edge -->
+  <path class="conn xed" d="M75,82 C75,95 75,95 75,104" stroke-dasharray="4 3"/>
+  <line class="xed" x1="62" y1="86" x2="88" y2="100"/>
+  <text class="cap2" x="600" y="100" text-anchor="middle">No KJV-word</text>
+  <text class="cap2" x="600" y="118" text-anchor="middle">↔ BSB-word edge.</text>
+  <text class="cap2" x="600" y="136" text-anchor="middle">They relate only</text>
+  <text class="cap2" x="600" y="154" text-anchor="middle">through the hubs.</text>
+</svg>
+
+<style>
+  .spoke { fill:#fff; stroke:#d8cdb8; stroke-width:1.5; }
+  .hub   { fill:#fbf3dc; stroke:#9a7b27; stroke-width:2; }
+  .sl    { font:600 13px Georgia, serif; fill:#1a1714; }
+  .hl2   { font:700 12px Georgia, serif; fill:#9a7b27; }
+  .conn  { stroke:#9a7b27; stroke-width:1.5; fill:none; }
+  .cap2  { font:italic 12px Georgia, serif; fill:#4a443d; }
+  .xed   { stroke:#9a3b2f; stroke-width:1.5; }
+</style>

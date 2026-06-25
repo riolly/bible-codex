@@ -4,7 +4,12 @@
 > hand-written static HTML to **Astro + Preact**, then **(B)** author the **Phase 1 (Reading)**
 > learning module in the new setup. Read §0–§2 for context, then execute §3 (Job A) and §4 (Job B).
 >
-> **Created:** 2026-06-25 · **Decided by:** project owner (riolly) · **Status:** not started.
+> **Created:** 2026-06-25 · **Decided by:** project owner (riolly) · **Status:** ✅ **DONE** (2026-06-25).
+> Both jobs complete: workspace migrated to Astro 7 + Preact (one `Layout`/`CourseNav`, MDX lessons,
+> Preact island games, persistent progress → unlock-next; old static files removed), and the Phase 1
+> module authored (lessons `0003`–`0005` with new diagrams). Games hydrate `client:idle` (not
+> `client:visible`) so they're reliable in headless preview. Run via the `teach` launch config
+> (Node ≥22.12 — see `.node-version`). This file is kept as the record of the spec that was built.
 
 ---
 

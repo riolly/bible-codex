@@ -1,0 +1,161 @@
+---
+title: "Same verse, different numbers"
+module: 1
+order: 4
+eyebrow: Module 1 · Phase 1 — Reading · Lesson 4
+here: Module 1 · Phase 1 · Lesson 4
+lede: Why a chapter-and-verse reference is not a universal key — and how a Canonical Verse plus a Versification Map keeps every translation's numbering reconciled.
+summary: Verse numbering diverges between traditions, so the app anchors on one Canonical Verse (av11n) and reconciles each translation's native Translation Verse through a per-translation Versification Map.
+completeId: "0004"
+---
+import VersificationDiagram from '../../components/diagrams/VersificationDiagram.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Carrying on from Lesson 3</span>
+  <p>We have the <em>text</em> stored as a Token stream with Block (genre) and verse overlays.
+  This lesson zooms in on that <strong>verse overlay</strong> — and a surprise that trips up
+  almost everyone who builds Bible software: the verse numbers themselves are <em>not</em>
+  universal.</p>
+</div>
+
+## Bible idea: `book · chapter · verse` — then the twist
+
+From Lesson 1 you already have the everyday address: **John 3:16** = book *John*, chapter *3*,
+verse *16*. It feels like a universal coordinate. Mostly it is — but **not quite**, and the
+exceptions matter.
+
+Different textual traditions **number verses differently**. The same words can carry different
+numbers depending on the tradition a translation follows:
+
+- **Psalm titles.** A superscription like *"A psalm of David"* is counted as **verse 1** in the
+  Hebrew numbering, but is **unnumbered** in most English Bibles — which shifts every later verse
+  in that psalm by one.
+- **Joel** and **Malachi** are divided into a different number of chapters/verses in the Hebrew
+  vs. many English Bibles.
+- **Revelation 12/13** and various **Hebrew/LXX** passages split verses at different points.
+
+So a bare `chapter:verse` is **not a free universal key**. Two Bibles can both say "verse 2" and
+mean different text.
+
+## App idea: one Canonical Verse, reconciled by a Map
+
+bible-codex resolves this with three pieces (all in `CONTEXT.md`):
+
+- <span class="term">Canonical Verse</span> — a `(book, chapter, verse)` address in the **one
+  chosen** canonical numbering (KJV-based, `av11n`). This is the single shared key everything
+  anchors on.
+- <span class="term">Translation Verse</span> — the *same passage* under a translation's own
+  **native** numbering.
+- <span class="term">Versification Map</span> — a per-translation table that **reconciles** that
+  translation's Translation Verses to the Canonical Verse. It is the reason `chapter:verse` isn't
+  a free key — and it stores a row **only where native and canonical differ**.
+
+The crucial design move (and why this is safe): an **Anchor stores the *canonical* verse
+directly**. So your marks key off the one shared numbering, and each translation's quirks are
+absorbed by its Map — no mark ever depends on a translation's native count.
+
+<figure>
+  <VersificationDiagram />
+  <figcaption>A Psalm superscription is verse 1 in the Hebrew count but a heading (no number)
+  canonically — so the native verses run one ahead. The Map reconciles native → canonical.</figcaption>
+</figure>
+
+<div class="callout">
+  <span class="tag">Teaching honesty — a known open risk</span>
+  <p>The repo flags this plainly (<a href="https://github.com/riolly/bible-codex/blob/main/OVERVIEW.md">OVERVIEW §5</a>):
+  the versification round-trip is <strong>UNVALIDATED</strong>. In the prototype, WEB &amp; KJV
+  ≈ canonical, so the map had <strong>zero rows</strong> — the native↔canonical conversion it
+  exists to perform was never exercised. It's safe to defer (anchors store canonical directly,
+  and the map is rebuildable corpus data, not a locked seam), but it is honestly <em>not yet
+  proven</em>. Validating it needs a genuinely divergent fixture — Psalm titles, Joel/Malachi,
+  Rev 12/13.</p>
+</div>
+
+## Connect the pieces (and the divergent case)
+
+<Connect
+  client:idle
+  title="Lesson 4 — verses & versification"
+  hint="Match each term (or case) to what it is."
+  pairs={[
+    { left: "Canonical Verse", right: "(book, chapter, verse) in the one chosen numbering (av11n)" },
+    { left: "Translation Verse", right: "the same passage in a translation's native numbering" },
+    { left: "Versification Map", right: "per-translation table reconciling native → canonical" },
+    { left: "A Psalm's title", right: "verse 1 in Hebrew, unnumbered in many English Bibles" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 4 — recall"
+  completeId="0004"
+  questions={[
+    {
+      stem: "Why isn't a bare chapter-and-verse reference a universal key across translations?",
+      options: [
+        "Because translations use different English words",
+        "Because different traditions number verses differently (Psalm titles, Joel, Malachi, Rev 12/13), so the same number can point to different text",
+        "Because chapters get reordered between Bibles",
+        "Because some translations drop verses entirely",
+      ],
+      answer: 1,
+      explain: "Numbering diverges between traditions — a Psalm superscription is verse 1 in Hebrew but unnumbered in English; Joel, Malachi and Rev 12/13 split differently. So you need one canonical numbering plus a per-translation map.",
+    },
+    {
+      stem: "Where does an Anchor store its verse — the translation's native number, or the canonical one?",
+      options: [
+        "The translation's native number",
+        "The canonical verse (av11n); the Map reconciles native numbering",
+        "Both numbers, duplicated",
+        "Neither — it stores a pixel position",
+      ],
+      answer: 1,
+      explain: "Anchors store the CANONICAL verse directly, so they survive re-import and relate across translations. Each translation's native numbering is reconciled to canonical via its Versification Map.",
+    },
+    {
+      stem: "In the prototype, the versification map had zero rows. What does that tell us?",
+      options: [
+        "It was fully tested and works",
+        "WEB & KJV ≈ canonical, so the native↔canonical round-trip is still UNVALIDATED",
+        "The map isn't needed at all",
+        "Every verse mapped one-to-one by design",
+      ],
+      answer: 1,
+      explain: "WEB and KJV nearly match canonical, so the map had 0 rows and the conversion it exists for was never exercised. Safe to defer (anchors store canonical; the map is rebuildable corpus data) — but honestly not yet proven. A divergent-translation fixture is needed.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: name the three addressing pieces and how they relate."
+  answer="Canonical Verse — (book, chapter, verse) in the one chosen versification (av11n), the shared cross-translation key. Translation Verse — the same passage under a translation's native numbering. Versification Map — a per-translation table reconciling native → canonical (a row only where they differ). Anchors store the canonical verse directly; the Map does the native↔canonical conversion."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Canonical Verse</em>, <em>Translation Verse</em>, and <em>Versification Map</em>; <a href="https://github.com/riolly/bible-codex/blob/main/data-architecture.md">data-architecture.md §2</a> covers the two bridges; the open risk is <a href="https://github.com/riolly/bible-codex/blob/main/OVERVIEW.md">OVERVIEW §5</a>.
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Want a concrete example?</strong> Ask me to walk Psalm 3 through the Map number by
+    number, or "what exactly is av11n?", or "how would a verse <em>split</em> (not just a shift)
+    be handled?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0003-scripture-has-shape">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 3 — Token &amp; Block</span>
+    </a>
+    <a href="/lessons/0005-your-layout-your-rules">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 5 — Your layout, your rules →</span>
+    </a>
+  </div>
+</div>

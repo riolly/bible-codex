@@ -1,0 +1,47 @@
+---
+// Lesson 2 — the read-only corpus and the synced user layer, meeting only at
+// a scripture coordinate (the Anchor). Geometry verbatim from the lesson HTML.
+---
+<svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="The read-only shipped corpus and your synced user layer meet only at a scripture coordinate.">
+  <defs>
+    <marker id="tw-a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#3a5a78"/>
+    </marker>
+  </defs>
+
+  <rect class="b" x="20" y="40" width="270" height="150" rx="6"/>
+  <text class="ph" x="36" y="64">READ-ONLY CORPUS — shipped</text>
+  <text class="li" x="36" y="90">The Bible text itself:</text>
+  <text class="li" x="36" y="112">KJV · NASB · BSB …</text>
+  <text class="li" x="36" y="134">Tokens · Blocks · verses</text>
+  <text class="li" x="36" y="160">You cannot edit it. It can be</text>
+  <text class="li" x="36" y="178">re-imported any time.</text>
+
+  <rect class="b" x="430" y="40" width="270" height="150" rx="6"/>
+  <text class="ph" x="446" y="64">USER LAYER — synced, yours</text>
+  <text class="li" x="446" y="90">Highlights · notes · arrows</text>
+  <text class="li" x="446" y="112">· freehand ink · bookmarks</text>
+  <text class="li" x="446" y="138">Editable, yours, follows you</text>
+  <text class="li" x="446" y="156">tablet ↔ desktop.</text>
+
+  <rect class="anc" x="285" y="225" width="150" height="50" rx="8"/>
+  <text class="at" x="360" y="248" text-anchor="middle">scripture coordinate</text>
+  <text class="li" x="360" y="266" text-anchor="middle">the Anchor</text>
+
+  <path class="e" d="M150,190 C150,235 250,250 285,250" marker-end="url(#tw-a)"/>
+  <path class="e" d="M565,190 C565,235 470,250 435,250" marker-end="url(#tw-a)"/>
+  <text class="cap" x="360" y="120" text-anchor="middle">they never</text>
+  <text class="cap" x="360" y="138" text-anchor="middle">mix directly</text>
+</svg>
+
+<style>
+  .b   { fill:#fff; stroke:#d8cdb8; stroke-width:1.5; }
+  .t   { font:700 12px Georgia, serif; fill:#1a1714; }
+  .ph  { font:700 11px Georgia, serif; fill:#9a7b27; letter-spacing:1px; }
+  .li  { font:12.5px Georgia, serif; fill:#4a443d; }
+  .anc { fill:#fbf3dc; stroke:#9a7b27; stroke-width:2; }
+  .at  { font:700 12px Georgia, serif; fill:#9a7b27; }
+  .e   { stroke:#3a5a78; stroke-width:1.6; fill:none; }
+  .cap { font:italic 12px Georgia, serif; fill:#4a443d; }
+</style>

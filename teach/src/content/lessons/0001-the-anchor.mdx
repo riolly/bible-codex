@@ -1,0 +1,152 @@
+---
+title: The Anchor
+module: 0
+order: 1
+eyebrow: Lesson 1 · The keystone
+here: Module 0 · Overview · Lesson 1
+lede: Why your marks survive a font change, a sideways scroll, and even a different translation — and why this one idea holds up the whole app.
+summary: A mark stores a scripture coordinate (book · chapter · verse · word-index), never pixels — so it survives any layout or translation change.
+completeId: "0001"
+---
+import AnchorDiagram from '../../components/diagrams/AnchorDiagram.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Why this lesson</span>
+  <p>You set out to understand <em>both</em> the biblical concepts <em>and</em> how
+  bible-codex is built. Almost every architectural decision in the repo traces back to
+  the idea in this lesson. Learn it first and the rest of the blueprint stops feeling
+  arbitrary.</p>
+</div>
+
+## Start with a physical Bible
+
+You read a study Bible. You **underline** a phrase, scribble a **note** in the margin, draw an
+**arrow** joining two verses. Now three things change:
+
+- you make the **font bigger**,
+- you switch to a **different translation** (different English wording),
+- you turn the book **sideways** and read it as a scroll.
+
+On paper, your marks would now sit in the wrong place, or be meaningless. bible-codex makes one
+core promise: **your marks survive all of that.** That promise is the source of most of the
+design decisions you'll meet later.
+
+## The trick: what a mark *remembers*
+
+It comes down to what gets stored when you make a mark.
+
+- A naïve app stores *where on the screen* the mark sat: `{x: 340, y: 88, w: 120}`. Change the
+  font and that box now sits over the wrong words. Dead.
+- bible-codex stores *which words* the mark is on: *"the word **beginning** in John, chapter 1,
+  verse 1."* Change anything about the layout and the app **re-finds** those words and re-draws
+  the mark. Alive.
+
+<div class="callout key">
+  <span class="tag">The keystone term</span>
+  <p>That stored scripture address is called an <span class="term">Anchor</span>. Every
+  note, highlight, drawing, bookmark, and cross-reference hangs off one. Memorise this
+  word — the next six lessons all lean on it.</p>
+</div>
+
+<figure>
+  <AnchorDiagram />
+  <figcaption>One <span class="term">Anchor</span> resolves to a position in <em>any</em> layout.
+  The mark points at the words, not the pixels.</figcaption>
+</figure>
+
+## The Bible literacy you need (just one thing today)
+
+How do humans already point at a spot in the Bible? With a three-part address:
+
+<p style="text-align:center; font-size:1.3rem;">
+  <strong>John 3:16</strong> = book <strong>John</strong> · chapter <strong>3</strong> · verse <strong>16</strong>
+</p>
+
+That is the universal coordinate system every Bible uses. bible-codex adopts it exactly and adds
+one more number — **which word** in the verse, called the <span class="term">word-index</span>.
+So an Anchor is, in essence, `book · chapter · verse · word`.
+
+<div class="callout">
+  <span class="tag">One strict rule (we'll use it in Lesson 3)</span>
+  <p>The <span class="term">word-index</span> counts <strong>only real words, not
+  punctuation</strong>, and starts at <strong>0</strong>. So in <em>"In the
+  beginning…"</em> → <code>In</code>=0, <code>the</code>=1, <code>beginning</code>=2.</p>
+</div>
+
+## Why this is the keystone (the payoff)
+
+Because marks are addressed by scripture coordinate instead of pixels, they automatically:
+
+- **reflow** when font, spacing, or scroll direction change;
+- **port** to other translations — the words still exist, just rendered differently;
+- **sync** between tablet and desktop as a few bytes of coordinate, not a picture;
+- survive the entire Bible text being **re-imported** from scratch — not one mark breaks.
+
+This is locked as decision #1 of three "never change these" rules in the blueprint. Everything
+else in the repo is allowed to move; this is not.
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0001-three-layer-anchor-model.md">ADR-0001 — Three-layer anchor model</a> is the canonical "why" for this lesson (one short page). The term itself is pinned in <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> under <em>"Anchor."</em>
+</PrimarySource>
+
+## Check yourself
+
+Retrieval — not re-reading — is what makes this stick. Answer before peeking.
+
+<Quiz
+  client:idle
+  title="Lesson 1 — recall"
+  completeId="0001"
+  questions={[
+    {
+      stem: "A highlight is stored as pixels {x:340, y:88}. The reader doubles the font size. What happens?",
+      options: [
+        "It now covers the wrong words",
+        "It still covers the right words",
+        "It scales up with the bigger text",
+        "It hides until the next reload",
+      ],
+      answer: 0,
+      explain: "Pixels don't know about words. Bigger font pushes the words elsewhere; the fixed box is now stranded over whatever happens to sit at x:340, y:88.",
+    },
+    {
+      stem: "What does bible-codex call the stored scripture address a mark points to?",
+      options: ["A Binding", "An Anchor", "A Token", "A Block"],
+      answer: 1,
+      explain: "Anchor. (Token, Block and Binding are real terms too — you'll meet them in Lessons 3 and 5 — but the address itself is the Anchor.)",
+    },
+    {
+      stem: "In 'In the beginning was the Word', what is the word-index of 'Word'? (0-based, punctuation excluded)",
+      options: ["3", "4", "5", "6"],
+      answer: 2,
+      explain: "In=0, the=1, beginning=2, was=3, the=4, Word=5.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory, in one sentence: what is an Anchor, and what does it deliberately not store?"
+  answer="An Anchor is a scripture coordinate — book · chapter · verse · word-index — that a mark points to. It deliberately stores no pixels / no canvas position, so the position is recomputed for whatever layout is on screen."
+/>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Stuck or curious?</strong> I'm your teacher for this — ask me anything that's
+    unclear (e.g. "what's a translation, exactly?", "show me a real Anchor in the code",
+    "why no phone?"). Questions are how we find the next lesson.
+  </div>
+  <div class="next-links">
+    <a href="/reference/architecture-map">
+      <span class="label">Reference</span>
+      <span class="title">The whole map on one page →</span>
+    </a>
+    <a href="/lessons/0002-two-worlds-and-spokes">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 2 — Two worlds & spokes →</span>
+    </a>
+  </div>
+</div>

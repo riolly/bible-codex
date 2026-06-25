@@ -1,0 +1,11 @@
+---
+// Renders teach/GLOSSARY.md — the learned-terms subset — keeping that file the
+// single source of truth (the /teach skill grows it as terms are demonstrated).
+import Layout from '../layouts/Layout.astro';
+import { Content } from '../../GLOSSARY.md';
+---
+<Layout title="Glossary · bible-codex" here="Glossary" footer={false}>
+  <article class="glossary">
+    <Content />
+  </article>
+</Layout>

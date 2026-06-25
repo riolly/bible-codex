@@ -1,0 +1,76 @@
+---
+// Reference — four phase schemas joined by two bridges and the Anchor.
+// Keeps the already-fixed geometry: boxes lowered, the alignment arc over the
+// top, non-overlapping labels. Carried over verbatim from architecture-map.html.
+---
+<svg viewBox="0 0 760 488" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Four phase schemas connected by the Canonical Verse and Original Word bridges and the Anchor.">
+  <defs>
+    <marker id="sm-b" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#3a5a78"/>
+    </marker>
+  </defs>
+
+  <!-- TOP BRIDGE (dashed): interlinear alignment, P1 Token <-> P3 Original Word, arcs over P2 -->
+  <text class="bridge" x="380" y="20" text-anchor="middle">interlinear alignment  ·  N Tokens → 1 Original Word</text>
+  <path class="edged" d="M130,72 C130,34 630,34 630,72" marker-start="url(#sm-b)" marker-end="url(#sm-b)"/>
+
+  <!-- PHASE 1 -->
+  <rect class="box" x="20" y="72" width="222" height="150" rx="6"/>
+  <text class="ph" x="34" y="94">PHASE 1 · READING</text>
+  <text class="li" x="34" y="112" font-style="italic">per translation</text>
+  <text class="tt" x="34" y="138">Translation · Book</text>
+  <text class="li" x="34" y="160">Block — prose / poetry / heading</text>
+  <text class="li" x="34" y="182">Token (one word-occurrence)</text>
+  <text class="li" x="34" y="204">Canonical Verse · Versification</text>
+
+  <!-- PHASE 2 -->
+  <rect class="box" x="268" y="72" width="200" height="150" rx="6"/>
+  <text class="ph" x="282" y="94">PHASE 2 · ANNOTATION</text>
+  <text class="li" x="282" y="112" font-style="italic">your data, synced</text>
+  <text class="tt" x="282" y="140">Markup:</text>
+  <text class="li" x="282" y="160">Mark · Note · Connector</text>
+  <text class="tt" x="282" y="186">Ink:</text>
+  <text class="li" x="282" y="206">InkStroke (freehand, tablet)</text>
+
+  <!-- PHASE 3 -->
+  <rect class="box" x="498" y="72" width="242" height="150" rx="6"/>
+  <text class="ph" x="512" y="94">PHASE 3 · ORIGINAL + LEXICON</text>
+  <text class="tt" x="512" y="118">Original Word (occurrence)</text>
+  <text class="li" x="512" y="136">→ lemma · strong's · parsing</text>
+  <text class="tt" x="512" y="164">Lexicon (reference DB)</text>
+  <text class="li" x="512" y="184">Lemma · Root · Strong's ·</text>
+  <text class="li" x="512" y="204">Morphology · Semantic domain</text>
+
+  <!-- THE ANCHOR (center seam) -->
+  <rect class="anc" x="250" y="300" width="260" height="58" rx="8"/>
+  <text class="anct" x="380" y="325" text-anchor="middle">THE ANCHOR — a coordinate</text>
+  <text class="li" x="380" y="345" text-anchor="middle">book · ch · verse · word-index · (ow_id)</text>
+
+  <!-- solid bridges down to the Anchor -->
+  <path class="edge" d="M130,222 C130,265 250,275 292,300" marker-end="url(#sm-b)"/>
+  <path class="edge" d="M368,222 L380,298" marker-end="url(#sm-b)"/>
+  <text class="bridge" x="565" y="262" text-anchor="middle">every mark resolves</text>
+  <text class="bridge" x="565" y="278" text-anchor="middle">from an Anchor</text>
+
+  <!-- PHASE 4 band -->
+  <rect class="boxP" x="20" y="386" width="720" height="80" rx="6"/>
+  <text class="ph" x="34" y="410">PHASE 4 · PROGRESS / ADVANCED</text>
+  <text class="li" x="34" y="432">Journey state · Themes &amp; tags · Cross-references · Portal gates</text>
+  <text class="li" x="34" y="453" font-style="italic">Rides the Anchor + Cross-reference. No new bridge, no migration.</text>
+  <path class="edge" d="M380,358 L380,384" marker-end="url(#sm-b)"/>
+  <text class="bridge" x="392" y="376">rides the Anchor</text>
+</svg>
+
+<style>
+  .box   { fill:#fff; stroke:#d8cdb8; stroke-width:1.5; }
+  .boxP  { fill:#f3ecdf; stroke:#9a7b27; stroke-width:1.5; }
+  .ph    { font:700 11px Georgia, serif; fill:#9a7b27; letter-spacing:1px; }
+  .tt    { font:700 13px Georgia, serif; fill:#1a1714; }
+  .li    { font:12.5px Georgia, serif; fill:#4a443d; }
+  .bridge{ font:italic 11px Georgia, serif; fill:#3a5a78; }
+  .edge  { stroke:#3a5a78; stroke-width:1.6; fill:none; }
+  .edged { stroke:#3a5a78; stroke-width:1.6; fill:none; stroke-dasharray:5 4; }
+  .anc   { fill:#fbf3dc; stroke:#9a7b27; stroke-width:2; }
+  .anct  { font:700 12px Georgia, serif; fill:#9a7b27; }
+</style>

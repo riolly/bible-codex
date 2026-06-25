@@ -3,7 +3,7 @@
 The canonical language for these lessons. Terms are **promoted here only once you've used
 them correctly** — so this grows as you learn, and is *not* the full dictionary.
 
-> The repo's [`CONTEXT.md`](../CONTEXT.md) is the **authoritative, complete glossary** for
+> The repo's [`CONTEXT.md`](https://github.com/riolly/bible-codex/blob/main/CONTEXT.md) is the **authoritative, complete glossary** for
 > the project (every domain term + the rules binding them). This file is the *learned
 > subset*, in lesson order, with beginner-facing phrasing.
 
@@ -39,12 +39,12 @@ _Avoid_: database, content
 
 **User layer**:
 Your editable, synced data — highlights, notes, connectors, ink, bookmarks. A separate world
-from the Corpus; the two meet only at an [[Anchor]].
+from the Corpus; the two meet only at an **Anchor**.
 _Avoid_: annotations (that's one part), profile
 
 **Spoke / Hub**:
 Translations are **spokes** that never link to each other directly; they connect only
-through two shared **hubs** — the [[Canonical Verse]] (coarse, by passage) and the Original
+through two shared **hubs** — the **Canonical Verse** (coarse, by passage) and the Original
 Word (fine, by the underlying Greek/Hebrew word).
 _Avoid_: linking translations token-to-token
 
@@ -54,6 +54,6 @@ hub. (A whole word in Greek; a morpheme in Hebrew.)
 _Avoid_: lemma (dictionary form), Strong's (the lexical id)
 
 ---
-*Module 0 · Overview complete: [Lesson 1 — The Anchor](lessons/0001-the-anchor.html),
-[Lesson 2 — Two worlds & spokes](lessons/0002-two-worlds-and-spokes.html). Phase-by-phase
+*Module 0 · Overview complete: [Lesson 1 — The Anchor](/lessons/0001-the-anchor),
+[Lesson 2 — Two worlds & spokes](/lessons/0002-two-worlds-and-spokes). Phase-by-phase
 terms get added as each module is taught.*

@@ -1,0 +1,57 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Modules from '../islands/Modules.tsx';
+import Sequence from '../islands/Sequence.tsx';
+import { modules } from '../data/modules';
+---
+<Layout title="bible-codex — Learning Path">
+  <p class="eyebrow">Learning path</p>
+  <h1>Understanding bible-codex</h1>
+  <p class="lede">
+    Two hard things at once — the biblical concepts and the architecture built on
+    them — taught together, in short modules, with diagrams and games.
+  </p>
+
+  <div class="callout mission">
+    <span class="tag">What this app is (in one breath)</span>
+    <p>
+      A <strong>local-first, literary-beautiful Bible</strong> that turns reading into
+      <strong>discovery</strong>. Scripture is typeset to its literary form (narrative as
+      prose, poetry as poetry), read as a horizontal scroll or vertically. You mark it like a
+      physical Bible — and your marks survive every change of font, layout, and translation.
+      Tablet + desktop, offline.
+      <em
+        >(Full philosophy →
+        <a href="https://github.com/riolly/bible-codex/blob/main/VISION.md">VISION.md</a>.)</em
+      >
+    </p>
+  </div>
+
+  <h2>How the course is structured</h2>
+  <p>
+    Five modules, each a short session of its own so nothing runs too long. Each module pairs
+    the <b>biblical idea</b> with the <b>app mechanic</b> built on it, and ends with an
+    interactive game. Finish a module's check to unlock the next.
+  </p>
+
+  <Modules client:load modules={modules} />
+
+  <h2>Overview module check</h2>
+  <p>
+    The four phases are <em>designed now but built in order</em>. Put them in that order —
+    each is unlocked by primitives shipped in the one before. Get it right to unlock Phase 1.
+  </p>
+
+  <Sequence
+    client:idle
+    title="Order the four phases (build order)"
+    hint="Tap them 1 → 4 in the order they get built."
+    items={[
+      'Beautiful reading & layout',
+      'Annotations (Markup + Ink)',
+      'Lexicon / word study',
+      'Portal, Journey & advanced',
+    ]}
+    completeId="check-overview"
+  />
+</Layout>

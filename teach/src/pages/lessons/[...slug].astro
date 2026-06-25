@@ -1,0 +1,22 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const lessons = await getCollection('lessons');
+  return lessons.map((lesson) => ({
+    params: { slug: lesson.id },
+    props: { lesson },
+  }));
+}
+
+const { lesson } = Astro.props;
+const { Content } = await render(lesson);
+const { title, eyebrow, lede, here } = lesson.data;
+---
+<Layout title={`${title} · bible-codex`} here={here} footer={false}>
+  {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+  <h1>{title}</h1>
+  <p class="lede" set:html={lede} />
+  <Content />
+</Layout>

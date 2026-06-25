@@ -1,0 +1,29 @@
+---
+// ONE course nav — the single source of truth that fixes the old hand-copied
+// drift. Canonical links are always Course home · Architecture map · Glossary,
+// followed by an optional "here" breadcrumb for the current location.
+interface Props {
+  here?: string;
+}
+const { here } = Astro.props;
+
+const links = [
+  { href: '/', label: 'Course home' },
+  { href: '/reference/architecture-map', label: 'Architecture map' },
+  { href: '/glossary', label: 'Glossary' },
+];
+---
+<nav class="course-nav">
+  {links.map((l, i) => (
+    <>
+      {i > 0 && <span class="sep">·</span>}
+      <a href={l.href}>{l.label}</a>
+    </>
+  ))}
+  {here && (
+    <>
+      <span class="sep">·</span>
+      <span class="here">{here}</span>
+    </>
+  )}
+</nav>

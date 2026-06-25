@@ -1,0 +1,56 @@
+---
+// Lesson 4 — the same passage numbered two ways. A Psalm superscription is
+// verse 1 in the Hebrew numbering but unnumbered in English, so every later
+// verse is shifted by one. The Versification Map reconciles a translation's
+// NATIVE numbering to the single CANONICAL verse. (KJV ≈ canonical → its map
+// is empty, which is exactly why the round-trip is still unvalidated.)
+const rows = [
+  { canon: '— heading (verse = NULL)', native: '1 · the title', head: true },
+  { canon: 'verse 1', native: '2' },
+  { canon: 'verse 2', native: '3' },
+  { canon: 'verse 3', native: '4' },
+];
+const y = (i: number) => 84 + i * 52;
+---
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="A Psalm superscription is verse 1 in Hebrew numbering but unnumbered canonically, shifting every later verse by one; the versification map reconciles them.">
+  <defs>
+    <marker id="vm-a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#3a5a78"/>
+    </marker>
+  </defs>
+
+  <text class="col" x="160" y="56" text-anchor="middle">CANONICAL (av11n)</text>
+  <text class="col" x="600" y="56" text-anchor="middle">A TRANSLATION — native numbering</text>
+  <text class="sub" x="160" y="72" text-anchor="middle">the one shared key</text>
+  <text class="sub" x="600" y="72" text-anchor="middle">e.g. the Hebrew/LXX count</text>
+
+  {rows.map((r, i) => (
+    <g>
+      <rect class={r.head ? 'box head' : 'box canon'} x="40" y={y(i)} width="240" height="38" rx="5"/>
+      <text class="btxt" x="52" y={y(i) + 24}>{r.canon}</text>
+      <rect class={r.head ? 'box head' : 'box native'} x="480" y={y(i)} width="240" height="38" rx="5"/>
+      <text class="btxt" x="492" y={y(i) + 24}>{r.native}</text>
+      <line class="map" x1="280" y1={y(i) + 19} x2="480" y2={y(i) + 19} marker-end="url(#vm-a)"/>
+    </g>
+  ))}
+
+  <text class="maplbl" x="380" y="70" text-anchor="middle">versification_map</text>
+  <text class="maplbl2" x="380" y="300" text-anchor="middle">reconciles native → canonical · stores a row only where they differ</text>
+  <text class="cap" x="380" y="326" text-anchor="middle">The title ate number 1, so native verses run one ahead. Same passage, different numbers —</text>
+  <text class="cap" x="380" y="344" text-anchor="middle">which is why <tspan font-style="italic">chapter:verse</tspan> is not a free universal key.</text>
+</svg>
+
+<style>
+  .col   { font:700 12px Georgia, serif; fill:#1a1714; letter-spacing:.4px; }
+  .sub   { font:italic 11px Georgia, serif; fill:#7a7468; }
+  .box   { stroke-width:1.4; }
+  .canon { fill:#fbf3dc; stroke:#9a7b27; }
+  .native{ fill:#fff; stroke:#d8cdb8; }
+  .head  { fill:#eee7d8; stroke:#b9ad93; }
+  .btxt  { font:13px Georgia, serif; fill:#1a1714; }
+  .map   { stroke:#3a5a78; stroke-width:1.6; }
+  .maplbl  { font:700 11px "SF Mono", Menlo, monospace; fill:#3a5a78; }
+  .maplbl2 { font:italic 11px Georgia, serif; fill:#3a5a78; }
+  .cap   { font:italic 12px Georgia, serif; fill:#4a443d; }
+</style>

@@ -1,9 +1,32 @@
 /* ============================================================================
    bible-codex — teaching workspace shared stylesheet
-   One stylesheet, linked by every lesson and reference doc, so the course
-   reads as one consistent thing. Tufte-ish: serif body, generous margins,
-   sidenotes, restrained palette. Prints cleanly.
+   One stylesheet, imported once by Layout.astro, so the course reads as one
+   consistent thing. Tufte-ish: serif body, generous margins, sidenotes,
+   restrained palette. Prints cleanly.
    ============================================================================ */
+
+/* --- Cardo serif (the literary face the app uses; bundled, not CDN) -------- */
+@font-face {
+  font-family: "Cardo";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Cardo-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Cardo";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Cardo-Italic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Cardo";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/Cardo-Bold.ttf") format("truetype");
+}
 
 :root {
   --ink:        #1a1714;   /* body text  */
@@ -51,6 +74,7 @@ body {
 .course-nav a { color: var(--ink-soft); text-decoration: none; border: 0; }
 .course-nav a:hover { color: var(--gilt); }
 .course-nav .sep { color: var(--rule); }
+.course-nav .here { color: var(--ink); }
 
 /* --- headings ------------------------------------------------------------ */
 h1, h2, h3 { font-weight: 700; line-height: 1.2; }
@@ -177,7 +201,54 @@ th { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; colo
 .primary-source .tag { color: var(--gilt); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
 /* ============================================================================
-   QUIZ widget (paired with assets/quiz.js)
+   COURSE HUB — module cards (was inline in the old index.html)
+   ============================================================================ */
+.modules { margin: 1.5rem 0; }
+.module {
+  display: block;
+  border: 1px solid var(--rule); border-radius: 8px; background: #fff;
+  padding: 1.1rem 1.3rem; margin: 1rem 0;
+  color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule);
+  transition: border-color .12s, box-shadow .12s, transform .12s;
+}
+a.module:hover { border-color: var(--gilt); box-shadow: 0 2px 10px rgba(154,123,39,0.12); transform: translateY(-1px); }
+.module.current { border-color: var(--gilt); box-shadow: 0 1px 0 var(--gilt-soft); }
+.module.locked { opacity: 0.6; }
+.module h3 { margin: 0 0 0.2rem; color: var(--ink); display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.badge {
+  font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700;
+  padding: 0.12rem 0.5rem; border-radius: 99px; border: 1px solid var(--rule); color: var(--ink-soft);
+}
+.badge.ready { background: #e6f0e6; color: var(--good); border-color: var(--good); }
+.badge.next  { background: #fbf3dc; color: var(--gilt); border-color: var(--gilt-soft); }
+.badge.done  { background: #e6f0e6; color: var(--good); border-color: var(--good); }
+.badge.progress { background: #fbf3dc; color: var(--gilt); border-color: var(--gilt-soft); }
+.module .pair { font-size: 0.95rem; color: var(--ink-soft); margin: 0.5rem 0 0.6rem; }
+.module .pair b { color: var(--ink); font-variant: small-caps; letter-spacing: .02em; }
+.module .links { font-size: 0.92rem; color: var(--ink-soft); }
+.module .links .arrow { color: var(--gilt); font-weight: 700; }
+
+/* --- the "Next CTA" the hub reveals once a module's check is complete ----- */
+.next-cta {
+  display: block;
+  margin: 1.8rem 0;
+  border: 1.5px solid var(--gilt);
+  border-radius: 8px;
+  background: #fbf3dc;
+  padding: 1rem 1.3rem;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1.5px solid var(--gilt);
+}
+.next-cta:hover { background: #f8ecc8; border-color: var(--gilt); }
+.next-cta .label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gilt); font-weight: 700; margin-bottom: 0.2rem; }
+.next-cta .title { font-weight: 700; font-size: 1.1rem; }
+
+/* progress islands swap their own visibility; keep them from flashing */
+.island-hidden { display: none; }
+
+/* ============================================================================
+   QUIZ widget (paired with src/islands/Quiz.tsx)
    ============================================================================ */
 .quiz {
   margin: 2rem 0;

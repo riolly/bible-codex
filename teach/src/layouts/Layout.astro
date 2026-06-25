@@ -1,0 +1,39 @@
+---
+// The single page chrome: <head>, global styles, the one nav, the
+// ask-teacher footer. Every page and lesson routes through here so the
+// header can no longer drift between files.
+import CourseNav from '../components/CourseNav.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  /** small uppercase kicker above the H1 */
+  eyebrow?: string;
+  /** current-location breadcrumb shown at the end of the nav */
+  here?: string;
+  /** hide the shared ask-teacher footer (e.g. the hub supplies its own) */
+  footer?: boolean;
+}
+const { title, here, footer = true } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <CourseNav here={here} />
+    <slot />
+    {footer && (
+      <div class="lesson-footer">
+        <div class="ask-teacher">
+          <strong>I'm your teacher.</strong> Ask anything that's unclear, or say
+          <strong>"start Phase 1"</strong> when you're ready for the next module.
+        </div>
+      </div>
+    )}
+  </body>
+</html>

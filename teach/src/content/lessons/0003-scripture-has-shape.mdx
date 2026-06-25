@@ -1,0 +1,159 @@
+---
+title: "Scripture has shape: Token & Block"
+module: 1
+order: 3
+eyebrow: Module 1 · Phase 1 — Reading · Lesson 3
+here: Module 1 · Phase 1 · Lesson 3
+lede: Why the app stores scripture as a stream of words with literary overlays — not as a list of verses — and how that one choice buys genre-aware beauty.
+summary: Scripture is stored as a Token stream with two independent overlays — Blocks (literary units, for genre-aware beauty) and verses (for addressing) — because a verse crosses Block boundaries.
+completeId: "0003"
+---
+import TokenBlockStream from '../../components/diagrams/TokenBlockStream.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Where we are — a 20-second recap of Module 0</span>
+  <p>Three ideas hold up everything: the <span class="term">Anchor</span> (a mark stores a
+  scripture <em>coordinate</em>, never pixels); the <strong>two worlds</strong> (a read-only
+  text corpus + your separate, synced marks); and <strong>spokes &amp; hubs</strong>
+  (translations relate only through shared hubs, never directly). Phase 1 is the first world —
+  <em>the text itself</em>. Today: how that text is actually stored.</p>
+</div>
+
+## Bible idea: scripture has a literary *shape*
+
+Open a Bible and the writing is not all one kind of thing. Scholars group it into a few broad
+**literary forms** (genres), and they *look* different on the page:
+
+- **Narrative / prose** — story and discourse. Flows as ordinary paragraphs.
+- **Poetry** — Psalms, Proverbs, much of the Prophets. Built on **parallelism**: short paired
+  lines (*cola*) that echo each other, traditionally set as **indented lines**, not paragraphs.
+- **Headings &amp; titles** — section headings and, especially, **Psalm superscriptions**
+  ("A psalm of David"). They label a passage but are not part of its running text.
+
+The *same words* read differently depending on form. A psalm crushed into a justified paragraph
+loses the parallel structure that *is* the poem. bible-codex's core literary bet is to **typeset
+each genre to its own form** — so the reader sees poetry as poetry. (Beginner-friendly tour of
+the genres: BibleProject's *How to Read the Bible*, in Resources.)
+
+## App idea: two units — the Token and the Block
+
+To typeset by genre, the corpus is stored as two things:
+
+- A <span class="term">Token</span> is **one word- or punctuation-occurrence** in a single
+  translation — the unit of storage, rendering, and hit-testing. Crucially, **whitespace is not
+  a Token**: spacing is a presentation concern, never corpus data. (A KJV Token and a BSB Token
+  are different objects — recall *spokes*.)
+- A <span class="term">Block</span> is a **contiguous range of Tokens forming one literary
+  unit** — a prose paragraph, a poetry line, or a heading — carrying a *genre* and an *indent*.
+  Blocks are derived from **USFM** markers (`\p` prose paragraph, `\q1`/`\q2` poetry lines, `\d`
+  Psalm title, `\s` section heading). **Blocks partition the stream**: every Token belongs to
+  exactly one Block.
+
+Headings are special: a heading Block's Tokens carry **no verse** (`verse = NULL`, never 0) and
+sit *outside* the verse sequence — so in v1 they are **not anchorable**.
+
+## The key insight: why a Token stream, not a list of verses
+
+Here is the payoff, and it traces straight back to the Anchor decision (ADR-0001).
+
+A single **verse often crosses Block boundaries** — one verse can be two poetry lines, or can
+start halfway through a paragraph. So if you stored scripture *as verses* (a row per verse), the
+verse units would be welded to the storage and you could never set the poetry as poetry.
+
+The fix: store **one Token stream**, then lay **two independent overlays** over it —
+**Blocks** (for genre-aware beauty) and **verses** (for addressing). Neither owns the text; both
+just group the same stream.
+
+<figure>
+  <TokenBlockStream />
+  <figcaption>One Token stream, two overlays. The verse spans <em>both</em> poetry lines, while
+  each line is its own Block — so verse boundaries and Block boundaries deliberately disagree.</figcaption>
+</figure>
+
+## Match the genre to how it's stored & set
+
+<Connect
+  client:idle
+  title="Lesson 3 — genre, marker, and rendering"
+  hint="Click a literary form on the left, then how the corpus stores or sets it."
+  pairs={[
+    { left: "Narrative / prose", right: "Flows as paragraphs — USFM \\p" },
+    { left: "Poetry", right: "Indented lines / cola — USFM \\q1, \\q2" },
+    { left: "Heading / Psalm title", right: "Set apart, outside the verse sequence — \\d, \\s" },
+    { left: "The space between two words", right: "Not a Token at all — it's presentation" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 3 — recall"
+  completeId="0003"
+  questions={[
+    {
+      stem: "Why store scripture as a Token stream with Block overlays instead of as a list of verses?",
+      options: [
+        "Verses take up too much disk space",
+        "A verse can cross paragraph and poetry-line boundaries, so verse-storage would block genre-aware typesetting",
+        "Because verse numbers change between translations",
+        "So the text can be edited in place",
+      ],
+      answer: 1,
+      explain: "A single verse often spans two poetry lines, or starts mid-paragraph. Storing by verse welds the text to verse units and kills genre-aware typesetting. One stream, two overlays: Blocks for beauty, verses for addressing.",
+    },
+    {
+      stem: "Which of these is NOT a Token?",
+      options: [
+        "The word \"God\"",
+        "A comma",
+        "The space between two words",
+        "The word \"beginning\"",
+      ],
+      answer: 2,
+      explain: "Whitespace is a presentation/layout concern, never corpus data. Words and punctuation are Tokens; the spacing between them is not.",
+    },
+    {
+      stem: "A Psalm superscription (\"A psalm of David\") is a heading Block. What verse number do its Tokens carry?",
+      options: [
+        "verse 0",
+        "verse 1",
+        "None — verse is NULL; it sits outside the verse sequence",
+        "Whatever the following verse is",
+      ],
+      answer: 2,
+      explain: "Heading Tokens carry verse = NULL (never 0), are addressed via their Block, and are not anchorable in v1. A heading never inherits a neighbouring verse's number.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: what are the two independent overlays on the single Token stream, and what is each one for?"
+  answer="Blocks — contiguous Token ranges grouping the stream into literary units (prose paragraph, poetry line, heading) with genre + indent, for genre-aware beauty. Verses — the canonical addressing overlay. They are independent because a verse can cross Block boundaries — which is exactly why scripture is a token stream, not a verse list."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0001-three-layer-anchor-model.md">ADR-0001</a> is the "why" for token-stream storage; <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Token</em> and <em>Block</em>; <a href="https://github.com/riolly/bible-codex/blob/main/data-architecture.md">data-architecture.md</a> shows the Phase 1 tables (`translation · book · block · token`).
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "show me a real USFM
+    snippet", "what's parallelism, exactly?", or "how does a Block know its indent?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0002-two-worlds-and-spokes">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 2 — Two worlds &amp; spokes</span>
+    </a>
+    <a href="/lessons/0004-same-verse-different-numbers">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 4 — Same verse, different numbers →</span>
+    </a>
+  </div>
+</div>

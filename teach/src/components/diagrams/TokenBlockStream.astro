@@ -1,0 +1,64 @@
+---
+// Lesson 3 — one Token stream with two independent overlays: Blocks (for
+// genre-aware beauty) and verses (for addressing). The poetry couplet is one
+// verse but two poetry-line Blocks, so the verse crosses the line boundary —
+// which is exactly why scripture is stored as a token stream, not a verse list.
+// The superscription is a heading Block that sits outside the verse sequence.
+const words = ['The', 'heavens', 'declare', "God's", 'glory', 'the', 'skies', 'proclaim', 'his', 'work'];
+const x = (i: number) => 40 + i * 70; // left edge of chip i
+const cx = (i: number) => x(i) + 31; // centre of chip i
+const right = (i: number) => x(i) + 62; // right edge of chip i
+---
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="One token stream grouped two ways: by verse (one verse over both lines) and by Block (two poetry lines, plus a heading outside the verse sequence).">
+
+  <!-- heading block (superscription) — outside the verse sequence -->
+  <rect class="head" x="40" y="40" width="240" height="30" rx="4"/>
+  <text class="htxt" x="52" y="60">A psalm of David</text>
+  <text class="lbl head-lbl" x="296" y="52">heading Block (\d)</text>
+  <text class="lbl head-lbl" x="296" y="67">verse = NULL · not anchorable</text>
+
+  <!-- VERSE overlay (above the stream) -->
+  <text class="vlbl" x="400" y="100" text-anchor="middle">VERSE OVERLAY — for addressing</text>
+  <path class="vbr" d={`M${x(0)},132 L${x(0)},120 L${right(9)},120 L${right(9)},132`}/>
+  <text class="vtag" x="400" y="114" text-anchor="middle">verse 1 — one verse, spanning both lines</text>
+
+  <!-- the single TOKEN STREAM -->
+  {words.map((w, i) => (
+    <g>
+      <rect class="chip" x={x(i)} y="150" width="62" height="34" rx="5"/>
+      <text class="wtxt" x={cx(i)} y="172" text-anchor="middle">{w}</text>
+      <text class="widx" x={cx(i)} y="146" text-anchor="middle">{i}</text>
+    </g>
+  ))}
+  <text class="stream-lbl" x="400" y="206" text-anchor="middle">one Token stream (words only — whitespace is presentation, never a Token) · numbers = word-index</text>
+
+  <!-- BLOCK overlay (below the stream) -->
+  <path class="bbr" d={`M${x(0)},214 L${x(0)},226 L${right(4)},226 L${right(4)},214`}/>
+  <text class="btag" x={(x(0) + right(4)) / 2} y="244" text-anchor="middle">poetry line 1 (\q1)</text>
+  <path class="bbr" d={`M${x(5)},214 L${x(5)},226 L${right(9)},226 L${right(9)},214`}/>
+  <text class="btag" x={(x(5) + right(9)) / 2} y="244" text-anchor="middle">poetry line 2 (\q1)</text>
+  <text class="blbl" x="400" y="270" text-anchor="middle">BLOCK OVERLAY — for genre-aware beauty (the engine indents each line as poetry)</text>
+
+  <!-- the punchline -->
+  <text class="cap" x="400" y="312" text-anchor="middle">The verse boundary falls in the middle of the poetry — so you cannot store by verse</text>
+  <text class="cap" x="400" y="330" text-anchor="middle">without breaking the typesetting. Two overlays on one stream: Blocks for beauty, verses for addressing.</text>
+</svg>
+
+<style>
+  .head  { fill:#eee7d8; stroke:#b9ad93; stroke-width:1.3; }
+  .htxt  { font:italic 13px Georgia, serif; fill:#4a443d; }
+  .chip  { fill:#faf6ee; stroke:#9a7b27; stroke-width:1.3; }
+  .wtxt  { font:14px Georgia, serif; fill:#1a1714; }
+  .widx  { font:9px "SF Mono", Menlo, monospace; fill:#9a7b27; }
+  .lbl   { font:11px Georgia, serif; fill:#4a443d; }
+  .head-lbl { fill:#7a7468; }
+  .vbr   { fill:none; stroke:#3a5a78; stroke-width:1.8; }
+  .vlbl  { font:700 11px Georgia, serif; fill:#3a5a78; letter-spacing:.5px; }
+  .vtag  { font:italic 12px Georgia, serif; fill:#3a5a78; }
+  .bbr   { fill:none; stroke:#2f6b3f; stroke-width:1.8; }
+  .blbl  { font:700 11px Georgia, serif; fill:#2f6b3f; letter-spacing:.5px; }
+  .btag  { font:italic 12px Georgia, serif; fill:#2f6b3f; }
+  .stream-lbl { font:11px Georgia, serif; fill:#4a443d; }
+  .cap   { font:italic 12px Georgia, serif; fill:#4a443d; }
+</style>

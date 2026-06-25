@@ -1,0 +1,148 @@
+---
+title: Two worlds & spokes
+module: 0
+order: 2
+eyebrow: Module 0 · Overview · the other keystone
+here: Module 0 · Overview · Lesson 2
+lede: Where the Bible text ends and "your stuff" begins — and why the app refuses to wire two translations directly together.
+summary: The corpus and your user layer are separate worlds that meet only at an Anchor; translations are spokes joined only through shared hubs, never wired token-to-token.
+completeId: "0002"
+---
+import TwoWorlds from '../../components/diagrams/TwoWorlds.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Where this sits</span>
+  <p>Lesson 1 gave you the <strong>Anchor</strong> — the coordinate a mark points to. This
+  lesson gives you the two facts that the Anchor exists to serve: there are <em>two separate
+  data worlds</em>, and translations are <em>spokes that never touch</em>. Together with the
+  Anchor, that's the whole Overview.</p>
+</div>
+
+## Bible idea: why there are many translations
+
+The Bible was written in ancient **Hebrew** (Old Testament) and **Greek** (New Testament).
+Everything you read in English is a **translation** — a team's rendering of that original into
+English. There are many because teams make different choices:
+
+- **KJV** (1611) — historic, formal, "thee/thou" English.
+- **NASB** — very literal, word-for-word.
+- **BSB** (Berean Standard Bible) — modern, readable, openly licensed.
+
+Same passage, different words. "John 1:1" exists in all of them — but the actual English
+*words*, and even how many words, differ. Hold onto that: **the passage is shared; the words
+are not.**
+
+## App idea 1: two data worlds that never mix
+
+bible-codex keeps two completely separate stores:
+
+<figure>
+  <TwoWorlds />
+  <figcaption>The text is never edited; your marks are never baked into the text. They meet only
+  at a <span class="term">scripture coordinate</span> — the Anchor from Lesson 1.</figcaption>
+</figure>
+
+This separation is *why* the Anchor exists. Because your marks live in their own world and only
+*point* into the text by coordinate, the whole Bible text can be swapped or re-imported and your
+marks don't even notice.
+
+## App idea 2: translations are spokes, never wired together
+
+Here's the rule that trips people up. A **KJV word** and a **BSB word** are *different objects*.
+The app **never** draws a direct line from "this KJV word" to "that BSB word" — the word counts
+and order don't line up, so no such clean 1:1 line exists.
+
+Instead, translations are **spokes** that connect only through two shared **hubs**:
+
+- **Canonical Verse** — the *coarse* hub. Links translations by **passage** ("John 1:1 in KJV"
+  ↔ "John 1:1 in BSB").
+- **Original Word** — the *fine* hub. Links translations by the underlying **Greek/Hebrew word**
+  they both translate. (This is Phase 3.)
+
+<div class="callout key">
+  <span class="tag">The payoff (this is the Anchor lesson, completed)</span>
+  <p>A highlight you draw in KJV reappears when you switch to BSB <strong>not</strong> because
+  the two are wired together — but because your mark ports <strong>through a hub</strong>: by
+  passage always, and by exact word once Phase 3's Original Word hub lights up.</p>
+</div>
+
+## Connect the pairs
+
+Click a term on the left, then its match on the right. (Arrows you draw turn green when they're
+right.)
+
+<Connect
+  client:idle
+  title="Module 0 — connect the concepts"
+  hint="Two worlds + two hubs. Connect each to what it is."
+  pairs={[
+    { left: "Read-only corpus", right: "The Bible text, shipped with the app" },
+    { left: "User layer", right: "Your marks, synced across devices" },
+    { left: "Canonical Verse", right: "Hub linking translations by passage (coarse)" },
+    { left: "Original Word", right: "Hub linking translations by word (fine)" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 2 — recall"
+  completeId="0002"
+  questions={[
+    {
+      stem: "Which statement about a KJV word and a BSB word is true in bible-codex?",
+      options: [
+        "They are wired together directly",
+        "They are the very same object",
+        "They are different, joined via hubs",
+        "They cannot be related at all",
+      ],
+      answer: 2,
+      explain: "Different objects, related only transitively — by passage (Canonical Verse) or by the shared original word (Original Word hub). No direct token-to-token edge exists.",
+    },
+    {
+      stem: "Why can the entire Bible text be re-imported without breaking your notes?",
+      options: [
+        "Notes are copied into the text",
+        "Notes only point in by coordinate",
+        "The text is never allowed to change",
+        "Notes are re-typed after each import",
+      ],
+      answer: 1,
+      explain: "Your notes live in a separate world and only reference the text by Anchor coordinate — so re-importing the text leaves the coordinates valid and the notes untouched.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: a highlight drawn in KJV shows up after you switch to BSB. By what path does it travel — and what path does it not take?"
+  answer="It ports through a shared hub — the Canonical Verse (by passage, coarse) and, in Phase 3, the Original Word (by exact word, fine). It does not travel by any direct KJV-word ↔ BSB-word link — translations are spokes, with no token-to-token edge."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0001-three-layer-anchor-model.md">ADR-0001</a> states the spokes rule and why direct alignment was rejected. The <em>Rules</em> section of <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins "translations are spokes, never linked directly."
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>That completes the Overview module.</strong> You now hold the three ideas every
+    later module leans on: the <em>Anchor</em>, the <em>two worlds</em>, and <em>spokes &amp;
+    hubs</em>. Ask me anything before we descend into a phase.
+  </div>
+  <div class="next-links">
+    <a href="/">
+      <span class="label">Back to</span>
+      <span class="title">Course home — pick the next module</span>
+    </a>
+    <a href="/lessons/0003-scripture-has-shape">
+      <span class="label">Next session</span>
+      <span class="title">Module 1 · Phase 1 — Reading →</span>
+    </a>
+  </div>
+</div>

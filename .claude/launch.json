@@ -9,9 +9,9 @@
     },
     {
       "name": "teach",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "4178"],
-      "port": 4178
+      "runtimeExecutable": "fnm",
+      "runtimeArgs": ["exec", "--using=22", "pnpm", "-C", "teach", "dev"],
+      "port": 4321
     }
   ]
 }

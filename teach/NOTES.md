@@ -22,27 +22,35 @@ Working notes on how the user wants to be taught. Refer back when designing less
 
 ## Course structure — MODULES (learner request, 2026-06-25)
 Break the path into **5 modules, one short session each**, so nothing runs too long.
-Course hub = `index.html` (lists modules + status badges).
+Course hub = `src/pages/index.astro` (renders module cards + status badges, reactive to progress).
 - **Module 0 · Overview** — Anchor, two data worlds, spokes & hubs, the 4-phase map. *(DONE: lessons 0001, 0002 + architecture-map reference.)*
-- **Module 1 · Phase 1 — Reading** — Token, Block, Canonical Verse, Versification, layout. *(NEXT)*
-- **Module 2 · Phase 2 — Annotation** — Markup vs Ink, scene graph, Layer.
+- **Module 1 · Phase 1 — Reading** — Token, Block, Canonical Verse, Versification, layout. *(DONE: lessons 0003–0005 + TokenBlockStream / Versification / LayoutRules diagrams.)*
+- **Module 2 · Phase 2 — Annotation** — Markup vs Ink, scene graph, Layer. *(NEXT)*
 - **Module 3 · Phase 3 — Lexicon** — Original Word hub, Alignment, Strong's/lemma/morphology.
 - **Module 4 · Remaining — Advanced** — Portal, Journey, themes/tags, research mode.
-Lessons keep **global sequential numbering** (0001, 0002, …); the *module* grouping lives in `index.html`.
+Lessons keep **global sequential numbering** (0001, 0002, …); the *module* grouping lives in the
+module manifest `src/data/modules.ts`. The hub computes Ready / Coming soon / Locked / Done from
+the persisted progress store and unlocks the next module's check.
 
 ## Interactive games (learner request, 2026-06-25)
-Use games for checks, not just MCQ. Reusable components in `assets/games.js`:
-- **connect** — connect-the-arrows matcher (click left term → right match; correct = green line). Great for term↔meaning, world↔role.
-- **sequence** — tap chips into the correct order (e.g. the four phases; later: word-tap reveal rungs).
-Build new game types here as components when a module needs them; never inline.
+Use games for checks, not just MCQ. Now Preact island components in `src/islands/`:
+- **Connect.tsx** — connect-the-arrows matcher (click left term → right match; correct = green line). Great for term↔meaning, world↔role.
+- **Sequence.tsx** — tap chips into the correct order (e.g. the four phases; the layout cascade).
+- **Quiz.tsx** / **Recall.tsx** — MCQ with per-question feedback; free-recall flip card.
+Islands mark their `completeId` done on completion → drives the unlock store. Hydrate `client:idle`
+(deferred but reliable — the headless preview can't fire `client:visible`'s IntersectionObserver).
+Build new game types here as island components when a module needs them; never inline.
 
-## Tooling decision (2026-06-25)
-Workspace will move from static HTML → **Astro + Preact (full)**: shared `<Layout>` (fixes nav
-drift), MDX lessons, Preact island games, and progress/completion → unlock-next. Decided by the
-owner, but **deferred** — the work is specced for the next agent in [`HANDOFF.md`](HANDOFF.md)
-(Job A = the rewrite, Job B = author the Phase 1 module). Until then the static workspace stands,
-with 3 known issues (non-clickable module cards, no next-CTA after the sequence game, inconsistent
-nav) left unfixed because the rewrite subsumes them.
+## Tooling decision (2026-06-25) — DONE
+Workspace moved from static HTML → **Astro 7 + Preact (full)**: one shared `Layout.astro` +
+`CourseNav.astro` (nav drift fixed), MDX lessons, Preact island games, and a persistent progress
+store (`@nanostores/persistent` → localStorage) driving completion → unlock-next. The three
+original issues are resolved (every module card is one link; the sequence game reveals a Next CTA;
+nav is a single component). The old static `index.html` / `lessons/*.html` / `reference/*.html` /
+`assets/*` were removed after parity was verified. Diagrams are `.astro` components under
+`src/components/diagrams/`; the five `.md` state files + `learning-records/` stay at `teach/` root.
+**Run it:** the `teach` launch config (`fnm exec --using=22 pnpm -C teach dev`, port 4321) — Astro 7
+needs Node ≥22.12 (pinned in `.node-version`); `pnpm -C teach build` for the static build.
 
 ## Environment quirks
 - A repo session hook ("caveman mode") compresses chat replies. **Lessons and teaching prose

@@ -1,0 +1,163 @@
+---
+title: "Your layout, your rules"
+module: 1
+order: 5
+eyebrow: Module 1 · Phase 1 — Reading · Lesson 5
+here: Module 1 · Phase 1 · Lesson 5
+lede: How the app lets you tune spacing, indent, and fonts — while keeping every adjustment tied to canonical structure, never to pixels. The Anchor idea, applied to presentation.
+summary: Presentation is a small rules layer bound by semantic keys (genre, role, book, coordinate) with a base < genre < role < book cascade; computed layout is an ephemeral, never-synced cache — the Anchor philosophy applied to typography.
+completeId: "check-reading"
+---
+import LayoutRules from '../../components/diagrams/LayoutRules.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Sequence from '../../islands/Sequence.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">The last piece of Phase 1</span>
+  <p>You have the <strong>text</strong> (Token stream + Block overlays) and its
+  <strong>addressing</strong> (Canonical Verse + Versification). The reader still wants one
+  thing: to make it <em>their</em> reading — bigger type, wider margins, more air around the
+  poetry. This lesson is how the app stores those choices — and it's the Anchor idea wearing a
+  different hat.</p>
+</div>
+
+## Bible idea: every reader sets the page differently
+
+People read physical Bibles differently. One wants a large face and generous margins for
+margin-notes; another wants tight prose and deeply-indented poetry. The **words don't change** —
+only how they're *set*. A good reader's Bible lets the reading be tuned without ever altering the
+text.
+
+## App idea: presentation is a *rules* layer, not pixels
+
+bible-codex stores presentation as a small **rules** layer (ADR-0004), in two parts:
+
+- **Global `reading_settings`** — scroll mode (horizontal / vertical) and theme.
+- **A typography cascade** — `layout_preset` plus `layout_override` rows for spacing, indent,
+  font, margins.
+
+The decisive rule: every override **binds by a stable semantic key** — `genre`, `role`,
+`book.slug`, or a canonical coordinate — **never by `token.id`, never by pixels**. And overrides
+resolve in a cascade, **most specific wins**:
+
+> base preset  <  genre  <  role  <  book
+
+So "indent poetry a little more" attaches to *genre = poetry*, and "give the Psalms extra line
+spacing" attaches to *book = Psalms* — and the book rule wins where they overlap. (`scroll_mode`
+and `theme` are global, outside the cascade.)
+
+What about the actual **line breaks and per-token rectangles** the engine paints? Those are the
+**computed layout** — a *derived, ephemeral, local cache*. The engine re-typesets a whole chapter
+on open (the prototype proved this at ~120fps), so the computed layout is **never synced and
+never the source of truth**. Storing pixel positions would re-create exactly the orphaning the
+Anchor was invented to avoid.
+
+<figure>
+  <LayoutRules />
+  <figcaption>A tiny rules layer bound by semantic keys, resolved most-specific-wins; the painted
+  layout is a throwaway cache, rebuilt on every open.</figcaption>
+</figure>
+
+<div class="callout key">
+  <span class="tag">The Module 0 callback</span>
+  <p>This <em>is</em> the <span class="term">Anchor</span> idea again. A mark addresses words by
+  canonical <em>coordinate</em>, never pixels; a layout rule addresses typography by semantic
+  <em>key</em>, never pixels. Both refuse to store screen positions — so both survive corpus
+  re-ingest, font changes, scroll-mode switches, and translation swaps with <strong>no
+  migration</strong>.</p>
+</div>
+
+## Put the cascade in order
+
+<Sequence
+  client:idle
+  title="Lesson 5 — override precedence (least → most specific)"
+  hint="Tap them base → most-specific, 1 → 4. The most specific scope wins."
+  items={[
+    "base preset",
+    "genre (poetry / prose)",
+    "role (psalm_title, section)",
+    "book (e.g. Psalms)",
+  ]}
+/>
+
+## Check yourself — and finish Phase 1
+
+<Quiz
+  client:idle
+  title="Lesson 5 — recall (completes Module 1)"
+  completeId="check-reading"
+  questions={[
+    {
+      stem: "What does a layout override bind to, so it survives a corpus re-import?",
+      options: [
+        "The token.id of each affected word",
+        "Pixel positions on screen",
+        "Stable semantic keys — genre, role, book.slug, canonical coordinate",
+        "The current device's screen size",
+      ],
+      answer: 2,
+      explain: "Rules key off semantic structure, never token.id (which renumbers on re-ingest) and never pixels. So 'indent poetry more' survives re-import, font changes, and translation switches with no migration.",
+    },
+    {
+      stem: "Two overrides apply to a verse — one for genre = poetry, one for book = Psalms. Which wins?",
+      options: [
+        "genre — it is the more general rule",
+        "book — most specific wins (base < genre < role < book)",
+        "They are averaged together",
+        "Whichever override was created last",
+      ],
+      answer: 1,
+      explain: "The cascade resolves base < genre < role < book; the most specific scope wins. (scroll_mode and theme are global, outside the cascade.)",
+    },
+    {
+      stem: "The computed layout — actual line breaks and per-token rectangles — is…?",
+      options: [
+        "The source of truth, carefully synced across devices",
+        "An ephemeral local cache, rebuilt on open, never synced and never truth",
+        "Stored as pixels inside each Anchor",
+        "Fixed once at install time",
+      ],
+      answer: 1,
+      explain: "Computed layout is a function of viewport + font; the engine re-typesets at ~120fps, so it is a rebuildable local cache — never truth, never synced. Storing pixels would reproduce the orphaning the Anchor model forbids.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: how is 'presentation is a rules layer' the same idea as the Anchor?"
+  answer="Both refuse to store pixels. The Anchor addresses a mark by canonical coordinate; presentation addresses a layout rule by semantic key (genre, role, book, coordinate). Neither references token.id or screen position — so both survive re-ingest, font changes, scroll-mode switches, and translation changes with no migration. The computed layout, like a rendered mark, is ephemeral and recomputed."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0004-presentation-is-a-rules-layer-computed-layout-is-ephemeral.md">ADR-0004</a> is the canonical "why" for this lesson; <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> states that data and presentation must be separable. The Phase-1 layout tables (`reading_settings · layout_preset · layout_override`) are in <a href="https://github.com/riolly/bible-codex/blob/main/data-architecture.md">data-architecture.md</a>.
+</PrimarySource>
+
+<div class="callout">
+  <span class="tag">That's Phase 1</span>
+  <p>You can now explain why scripture is stored as a <strong>Token stream with Block
+  overlays</strong> (not a verse list), why verse numbering needs a <strong>Canonical Verse +
+  Versification Map</strong>, and why presentation is a <strong>rules layer, never pixels</strong>.
+  Finishing the quiz above completes Module 1 — and lights up <strong>Phase 2 · Annotation</strong>
+  as next on the course hub (its lessons are coming).</p>
+</div>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Phase 1 down.</strong> Ask me anything before we move on — or say
+    <strong>"start Phase 2"</strong> when you're ready to mark up the text.
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0004-same-verse-different-numbers">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 4 — Same verse, different numbers</span>
+    </a>
+    <a href="/">
+      <span class="label">Course home</span>
+      <span class="title">See Phase 2 unlock →</span>
+    </a>
+  </div>
+</div>
