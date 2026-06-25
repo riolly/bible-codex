@@ -243,6 +243,10 @@ a.module:hover { border-color: var(--gilt); box-shadow: 0 2px 10px rgba(154,123,
 .next-cta:hover { background: #f8ecc8; border-color: var(--gilt); }
 .next-cta .label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gilt); font-weight: 700; margin-bottom: 0.2rem; }
 .next-cta .title { font-weight: 700; font-size: 1.1rem; }
+/* the course-complete variant — the terminal module's check is set */
+.next-cta.complete { background: #e6f0e6; border-color: var(--good); }
+.next-cta.complete:hover { background: #d8e8d8; border-color: var(--good); }
+.next-cta.complete .label { color: var(--good); }
 
 /* progress islands swap their own visibility; keep them from flashing */
 .island-hidden { display: none; }

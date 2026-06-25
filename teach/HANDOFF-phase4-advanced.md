@@ -8,7 +8,9 @@
 > ground every claim in the repo docs (cite them). Read §0–§1 for the lay of the land, then execute
 > §2–§7.
 >
-> **Created:** 2026-06-25 · **Decided by:** project owner (riolly) · **Status:** not started.
+> **Created:** 2026-06-25 · **Decided by:** project owner (riolly) · **Status:** DONE (2026-06-25) —
+> lessons 0012–0014 authored + PortalGate / JourneyLadder / OneEngine diagrams; `m4` wired
+> (`check-advanced`, href, hints); hub shows a course-complete CTA. The 5-module course is complete.
 
 ---
 

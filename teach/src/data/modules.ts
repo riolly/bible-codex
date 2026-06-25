@@ -83,6 +83,10 @@ export const modules: ModuleDef[] = [
     title: 'Remaining — Advanced',
     pairBible: 'reading as a journey and an adventure.',
     pairApp: 'Portal · Journey · Themes & tags · research mode · the journey-state engine.',
+    lessonHints:
+      'Lesson 12 — The earned cross-reference (Portal) · Lesson 13 — Reading at your pace · Lesson 14 — One engine, many surfaces',
+    href: '/lessons/0012-the-earned-cross-reference',
+    checkId: 'check-advanced',
     unlockBy: 'check-lexicon',
     lockedBadge: 'Upcoming',
   },

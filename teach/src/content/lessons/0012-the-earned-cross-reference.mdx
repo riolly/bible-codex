@@ -1,0 +1,156 @@
+---
+title: "The earned cross-reference: Portal"
+module: 4
+order: 12
+eyebrow: Module 4 · Remaining — Advanced · Lesson 12
+here: Module 4 · Advanced · Lesson 12
+lede: "A word that quietly glows once you've earned it, then carries you to the passage it echoes. That's a Portal — and it adds nothing to the data model you already learned."
+summary: "A Portal is the wishlist's earned cross-reference. It rides entirely on primitives already locked: a Cross-reference (the editorial link between two Anchors) wrapped by a visibility gate (reading progress / collected clues) and a presentation skin (glow + transport). No new data model — a gate and a skin. The Genesis 1 to John 1 'beginning' thread is the worked example, and because Module 3 gave us word-grain, the glow can ride a single word. This is MISSION criterion #4 in its cleanest form, and the licence for it is ADR-0005's design-now-build-later."
+completeId: "0012"
+---
+import PortalGate from '../../components/diagrams/PortalGate.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Where we are — Phase 4 begins, and the shape inverts</span>
+  <p>The first four modules each opened with a <em>locked</em> schema and asked "why is it built this
+  way?" Phase 4 is different on purpose: it is the <strong>least-decided</strong> phase — no dedicated
+  ADR, just ideas parked in <a href="https://github.com/riolly/bible-codex/blob/main/WISHLIST.md">WISHLIST.md</a>.
+  So the question flips. Instead of "here is a schema, defend it," it's <strong>"here is a feature you
+  can already picture — now watch it ride entirely on primitives you already learned, with zero new
+  data model."</strong> If you can do that, you've landed the fourth thing the mission asked for.</p>
+</div>
+
+## Bible idea: a word that glows once you've earned it
+
+You're reading **Genesis 1** — "In the beginning God created the heaven and the earth." Later, books
+on, you reach **John 1** — "In the beginning was the Word." If you've read *both*, the word
+*"beginning"* in John quietly begins to **glow**. Follow it and you're **carried** back to Genesis
+1:1, to read that first sentence again — now resonating against John's. The connection wasn't handed
+to you in a footnote; you **earned** it by reading your way to it.
+
+That's the feel the app is chasing: reading as an **adventure**, where a cross-reference is a
+*treasure you discover*, not a citation you skim. "Challenge, not ease." Discovery is the reward.
+
+## App idea: a Portal is a gate + a skin over a Cross-reference
+
+Back in Module 2 you met the **Connector** — *your* hand-drawn arrow between two passages. Its
+read-only, shipped-with-the-app sibling is the <span class="term">Cross-reference</span>: an
+**editorial link between two Anchors** (think the Treasury of Scripture Knowledge — "this verse
+connects to that one"). It's already in the data model.
+
+A **Portal** is that exact Cross-reference with **two thin wrappers that store nothing new**
+([WISHLIST](https://github.com/riolly/bible-codex/blob/main/WISHLIST.md)):
+
+- **A gate — *when* it shows.** The link stays invisible until you've **earned** it: read the passage
+  it connects to, or collected the clue that reveals it. That gate is just a read of
+  **reading progress** — the same "what have you read" signal we'll lean on again in the next lesson.
+- **A skin — *how* it feels.** When the gate opens, the link is *presented* as a glow on the word
+  plus a transport to the other passage. Glow and transport are **presentation**, not data.
+
+<figure>
+  <PortalGate />
+  <figcaption>The Cross-reference (the editorial link between two Anchors) is already shipped. A
+  Portal wraps it in a gate (reading progress decides <em>when</em> it shows) and a skin (glow +
+  transport decide <em>how</em> it feels). Neither wrapper adds a column. Genesis 1 ↔ John 1: read
+  both and "beginning" glows.</figcaption>
+</figure>
+
+<div class="callout key">
+  <span class="tag">The one line that matters</span>
+  <p><strong>No new data model. A Portal is a gate and a skin over a Cross-reference.</strong> That's
+  why <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> can pin it
+  in a single phrase — <em>"a Portal is a Cross-reference gated by reading progress"</em> — and why it
+  costs <strong>zero migration</strong> to add later. And because Module 3 gave the model
+  <strong>word-grain</strong> (the Original Word hub), the glow can ride a <em>single word</em>, not
+  just a whole verse — "beginning" itself lights up.</p>
+</div>
+
+## Match each Portal ingredient to the primitive it reuses
+
+<Connect
+  client:idle
+  title="Lesson 12 — Portal ingredient ↔ already-locked primitive"
+  hint="Click a piece of the Portal on the left, then the thing you already learned that it's made from."
+  pairs={[
+    { left: "The link between the two passages", right: "Cross-reference — the editorial link between two Anchors (already shipped)" },
+    { left: "Show it only once you've earned it", right: "Reading progress / collected clues — a visibility gate" },
+    { left: "The glow on the word + the transport", right: "Presentation — a skin, not a new store" },
+    { left: "The glow can land on one word, not just a verse", right: "The Original Word hub — word-grain, from Module 3" },
+    { left: "Why it can wait for later with no migration", right: "Design-now-build-later — the four phases composed (ADR-0005)" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 12 — recall"
+  completeId="0012"
+  questions={[
+    {
+      stem: "What does a Portal add to the data model?",
+      options: [
+        "A new 'portal' table linking two verses",
+        "Nothing — it's an existing Cross-reference wrapped in a visibility gate and a presentation skin",
+        "A copy of both passages so they can be shown together",
+        "A new kind of Anchor that stores the glow position",
+      ],
+      answer: 1,
+      explain: "A Portal is a gate and a skin over a Cross-reference. The link (an editorial connection between two Anchors) already exists; the gate decides WHEN it shows (reading progress) and the skin decides HOW it feels (glow + transport). No new store, no migration.",
+    },
+    {
+      stem: "What makes a Portal 'earned' rather than simply shown?",
+      options: [
+        "The reader pays for it",
+        "A visibility gate keyed on reading progress / collected clues — it stays hidden until you've read the passage it connects to",
+        "It only appears in the original Greek view",
+        "An editor manually enables it per reader",
+      ],
+      answer: 1,
+      explain: "The gate is a read of reading progress: the Cross-reference stays invisible until you've earned it (read the connected passage, or collected the revealing clue). That's the 'discovery, not a handout' feel made mechanical.",
+    },
+    {
+      stem: "Why can the Portal safely be deferred to a later phase with zero migration cost?",
+      options: [
+        "Because it's a low-priority feature nobody will use",
+        "Because it rides entirely on already-locked primitives (Cross-reference + reading progress + presentation); the POC even ships only a mocked, scripted glow as a taste",
+        "Because the schema reserves empty 'portal' columns up front",
+        "Because Portals are computed fresh on every read and never stored",
+      ],
+      answer: 1,
+      explain: "This is ADR-0005's design-now-build-later in its cleanest form: the link, the gate's data, and the skin all reuse primitives shipped in Phases 1–3, so nothing in the schema has to change when the full mechanic lands. The POC ships just one mocked scripted glow (finish John 1 → 'beginning' glows → Genesis 1:1) as a taste.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: what is a Portal, what are its two wrappers, and why does it cost zero new data model?"
+  answer="A Portal is the earned cross-reference: a word glows only once you've read your way to it, then carries you to the passage it echoes (the Genesis 1 ↔ John 1 'beginning' thread). Underneath it is a plain Cross-reference — the editorial, shipped link between two Anchors (the read-only sibling of a user's Connector) — wrapped by two things that store nothing new: a gate (reading progress / collected clues) that decides WHEN it shows, and a skin (glow + transport) that decides HOW it feels. So it adds no data model — 'a gate and a skin over a Cross-reference' — which is why CONTEXT pins it as 'a Cross-reference gated by reading progress' and why it defers with zero migration (ADR-0005's design-now-build-later). Because Module 3 added word-grain, the glow can ride a single Original Word, not just a verse."
+/>
+
+<PrimarySource>
+  The Portal is specified in <a href="https://github.com/riolly/bible-codex/blob/main/WISHLIST.md">WISHLIST.md</a> ("the earned cross-reference … a gate and a skin"); <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Cross-reference</em> and the note "a Portal is a Cross-reference gated by reading progress". The Cross-reference reuses the Anchor column-group from <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0001-three-layer-anchor-model.md">ADR-0001</a> (see also <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>'s <code>cross_reference</code>), and the licence to defer it is <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0005-four-product-phases-design-all-build-in-order.md">ADR-0005</a>. The feel comes from <a href="https://github.com/riolly/bible-codex/blob/main/VISION.md">VISION.md</a>.
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "what's the difference between a
+    Portal and a Connector again?", "what counts as a 'clue' for the gate?", or "how would the glow
+    actually find the right word across translations?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0011-re-sourceable-by-design">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 11 — Re-sourceable by design</span>
+    </a>
+    <a href="/lessons/0013-reading-at-your-pace">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 13 — Reading at your pace →</span>
+    </a>
+  </div>
+</div>

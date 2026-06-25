@@ -1,0 +1,172 @@
+---
+title: "Reading at your pace: Journey, themes & tags"
+module: 4
+order: 13
+eyebrow: Module 4 · Remaining — Advanced · Lesson 13
+here: Module 4 · Advanced · Lesson 13
+lede: "The Bible as a library of scrolls, opened a few at a time — and your own themes laid over the text. Two more wishlist features, both built from primitives you already own."
+summary: "The Journey opens the Bible gradually — a few scrolls to start, one bookmark per book, a limit on open scrolls, and new books unlocking as you finish your current leg. All of it rides on reading progress (a position per book) + the same earned-unlock gate the Portal uses — no new primitive, and the course hub you've been using IS a Journey. Themes & tags are the Anchor column-group reused verbatim: a tag row anchors to scripture exactly like a Mark or Note, and tag suggestion is a read over your own notes, not a new store."
+completeId: "0013"
+---
+import JourneyLadder from '../../components/diagrams/JourneyLadder.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Sequence from '../../islands/Sequence.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Same move, two more features</span>
+  <p>Last lesson the Portal reduced to <em>a gate and a skin over a Cross-reference</em>. Hold that
+  move in mind, because the <strong>Journey</strong> and <strong>themes &amp; tags</strong> are the
+  same trick again: a feature you can picture, riding on primitives you already learned, with no new
+  data model.</p>
+</div>
+
+## Bible idea: a library of scrolls, opened gradually
+
+Most people feel one thing about the Bible: **overwhelmed**. It arrives as a single thick volume and
+asks you to start at page one. But it didn't *begin* that way — it was a **library of scrolls**. The
+**Journey** leans into that: you don't get the whole library at once. A **few scrolls open to start**,
+each book keeps **its own bookmark** (your last place in it), only **so many scrolls are open at
+once**, and **new books unlock as you finish** your current leg. The Bible becomes a path you walk,
+not a wall you face.
+
+Alongside that, a reader wants to mark passages by **how they relate** — *forgiveness*, *anger*, *the
+Spirit of God*. These are **themes**, and tagging with them is a habit the app teaches early.
+
+## App idea 1: Journey = reading progress + the earned-unlock gate
+
+Look closely and the Journey introduces **nothing new** ([WISHLIST](https://github.com/riolly/bible-codex/blob/main/WISHLIST.md)):
+
+- **One bookmark per book** is just **reading progress** — a single position stored per book.
+- **Books unlock as you finish a leg** is the **same earned-unlock gate** the Portal used — a read of
+  what you've finished, deciding what opens next. The **open-scroll limit** simply grows with it.
+
+<figure>
+  <JourneyLadder />
+  <figcaption>Start with a few scrolls open; finish your current leg and the next books unlock while
+  the open-limit grows (2 → 3 → 4). Every book carries one bookmark (•). It all rides on reading
+  progress plus the earned-unlock gate — the very same gate behind the Portal's glow.</figcaption>
+</figure>
+
+<div class="callout key">
+  <span class="tag">You've been inside a Journey this whole time</span>
+  <p>The course hub is literally a Journey: it started with <strong>Module 0 open</strong>, each
+  module kept your place, and finishing a module's check <strong>unlocked the next</strong>. The
+  unlock gate you've been tripping lesson after lesson <em>is</em> the Journey mechanic — you learned
+  it by living it.</p>
+</div>
+
+## App idea 2: themes & tags = the Anchor column-group, reused
+
+A **tag** ("forgiveness" on this story) sounds like it needs its own machinery. It doesn't. A `tag`
+row reuses the **same Anchor column-group** — `book · chapter · verse · word-index` — that a
+**Mark** and a **Note** use ([ADR-0001](https://github.com/riolly/bible-codex/blob/main/docs/adr/0001-three-layer-anchor-model.md);
+`tag` in [schema.dbml](https://github.com/riolly/bible-codex/blob/main/schema.dbml)). It anchors to
+scripture exactly like every other user mark — so it ports across translations for free, the same way
+your highlights do.
+
+And **tag *suggestion*** — the app proposing themes for a passage — is a **read over your own notes**,
+not a new database. It's the engine surfacing what you've already written; we'll meet that engine head-on
+next lesson.
+
+## Put the Journey in motion
+
+<Sequence
+  client:idle
+  title="Lesson 13 — the Journey unlock flow"
+  hint="Tap the steps 1 → 5 in the order the Journey opens up."
+  items={[
+    "Start with a few scrolls open",
+    "Each open book keeps one bookmark",
+    "You finish your current leg",
+    "New scrolls unlock as your next leg",
+    "The open-scroll limit grows",
+  ]}
+/>
+
+## Match each feature to the primitive it reuses
+
+<Connect
+  client:idle
+  title="Lesson 13 — feature ↔ already-locked primitive"
+  hint="Click a piece of the Journey or tags on the left, then the primitive it's built from."
+  pairs={[
+    { left: "One bookmark per book", right: "Reading progress — a single position stored per book" },
+    { left: "Books open as you finish a leg", right: "The earned-unlock gate — the same one the Portal uses" },
+    { left: "A theme pinned to a passage", right: "The Anchor column-group — reused exactly like a Mark or Note" },
+    { left: "The app suggests themes for you", right: "A read over your own notes — not a new store" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 13 — recall"
+  completeId="0013"
+  questions={[
+    {
+      stem: "What primitives does the Journey (scrolls opening as you read) reduce to?",
+      options: [
+        "A new 'journey' table tracking every book's unlock state",
+        "Reading progress (one bookmark per book) plus the same earned-unlock gate the Portal uses",
+        "A copy of each book the reader is allowed to open",
+        "A server that decides per-reader which books to send",
+      ],
+      answer: 1,
+      explain: "One bookmark per book is just reading progress; books unlocking as you finish a leg (and the growing open-limit) is the same earned-unlock gate behind the Portal. No new primitive — and the course hub you've been using is exactly this mechanic.",
+    },
+    {
+      stem: "How is a theme/tag stored?",
+      options: [
+        "In a separate tagging service keyed by reader",
+        "As a tag row reusing the same Anchor column-group (book · chapter · verse · word-index) that a Mark or Note uses",
+        "As free text appended to the verse in the corpus",
+        "As pixels positioned over the rendered passage",
+      ],
+      answer: 1,
+      explain: "A tag anchors to scripture exactly like every other user mark — it reuses the Anchor column-group verbatim (ADR-0001 / schema 'tag'). So it ports across translations for free, just like your highlights.",
+    },
+    {
+      stem: "What is tag *suggestion* (the app proposing themes), in data terms?",
+      options: [
+        "A brand-new model trained and stored on device",
+        "A read over the reader's own notes — surfacing what's already there, not a new store",
+        "A lookup into the shipped corpus",
+        "A copy of every other reader's tags",
+      ],
+      answer: 1,
+      explain: "Suggestion is a surface, not a store: it reads the reader's own notes to propose themes. It's the same 'one engine, many surfaces' idea we make explicit in the next lesson — nothing new underneath.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: what does the Journey reduce to, and how are themes/tags stored?"
+  answer="The Journey opens the Bible gradually — a few scrolls open to start, one bookmark per book, a limit on how many are open, and new books unlocking as you finish your current leg while the limit grows. It introduces no new primitive: one bookmark per book is just reading progress, and books unlocking is the same earned-unlock gate the Portal uses (the course hub itself is a Journey — each module unlocked the next). Themes & tags reuse the Anchor column-group verbatim: a tag row anchors to scripture (book · chapter · verse · word-index) exactly like a Mark or Note, so it ports across translations for free. Tag suggestion is a read over the reader's own notes, not a new store."
+/>
+
+<PrimarySource>
+  The Journey and themes/tags are specified in <a href="https://github.com/riolly/bible-codex/blob/main/WISHLIST.md">WISHLIST.md</a>; the "library of scrolls" feel is in <a href="https://github.com/riolly/bible-codex/blob/main/VISION.md">VISION.md</a>. A tag reuses the Anchor column-group from <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0001-three-layer-anchor-model.md">ADR-0001</a> (the <code>tag</code> entity in <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>), and deferring all of it with no migration is the bet in <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0005-four-product-phases-design-all-build-in-order.md">ADR-0005</a>.
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "what exactly is a 'leg'?",
+    "how does the open-scroll limit decide what to grow to?", or "why does a tag port across
+    translations automatically?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0012-the-earned-cross-reference">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 12 — The earned cross-reference</span>
+    </a>
+    <a href="/lessons/0014-one-engine-many-surfaces">
+      <span class="label">Up next — the finale</span>
+      <span class="title">Lesson 14 — One engine, many surfaces →</span>
+    </a>
+  </div>
+</div>

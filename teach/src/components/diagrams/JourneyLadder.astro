@@ -1,0 +1,92 @@
+---
+// Lesson 13 — the JOURNEY unlock ladder. Scrolls (books) open gradually: you
+// start with a few, each book keeps ONE bookmark (one reading position), only so
+// many are open at once, and finishing your current leg unlocks the next while
+// the open-limit grows. It all rides on reading progress + the SAME earned-unlock
+// gate the Portal uses — no new primitive. (This echoes the course hub itself:
+// each module unlocked the next on a completed check.) WISHLIST (Journey).
+---
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="The Journey unlock ladder. Three legs left to right: you start with two scrolls open, finish a leg to unlock more, and the open-scroll limit grows from two to three to four. Each book keeps one bookmark. It rides on reading progress plus the earned-unlock gate, no new primitive.">
+  <defs>
+    <marker id="jl-a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9a7b27"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="40" y="28">THE JOURNEY — scrolls open as you finish each leg; the open-limit grows</text>
+
+  <!-- LEG 1 -->
+  <rect class="leg" x="24" y="52" width="216" height="182" rx="10"/>
+  <text class="lh" x="40" y="76">Leg 1 · start small</text>
+  <!-- open books (bookmark dot) -->
+  <rect class="bk open" x="40" y="88" width="84" height="44" rx="6"/>
+  <text class="bn" x="82" y="115" text-anchor="middle">Genesis</text>
+  <circle class="mark" cx="116" cy="96" r="4"/>
+  <rect class="bk open" x="140" y="88" width="84" height="44" rx="6"/>
+  <text class="bn" x="182" y="115" text-anchor="middle">John</text>
+  <circle class="mark" cx="216" cy="96" r="4"/>
+  <!-- locked books -->
+  <rect class="bk lock" x="40" y="142" width="84" height="44" rx="6"/>
+  <text class="bl" x="82" y="169" text-anchor="middle">Psalms 🔒</text>
+  <rect class="bk lock" x="140" y="142" width="84" height="44" rx="6"/>
+  <text class="bl" x="182" y="169" text-anchor="middle">Mark 🔒</text>
+  <text class="lim" x="40" y="214">open limit: 2</text>
+
+  <!-- LEG 2 -->
+  <rect class="leg" x="272" y="52" width="216" height="182" rx="10"/>
+  <text class="lh" x="288" y="76">Leg 2 · finish a leg</text>
+  <rect class="bk open" x="288" y="88" width="84" height="44" rx="6"/>
+  <text class="bn" x="330" y="115" text-anchor="middle">Genesis</text>
+  <circle class="mark" cx="364" cy="96" r="4"/>
+  <rect class="bk open" x="388" y="88" width="84" height="44" rx="6"/>
+  <text class="bn" x="430" y="115" text-anchor="middle">John</text>
+  <circle class="mark" cx="464" cy="96" r="4"/>
+  <rect class="bk open" x="288" y="142" width="84" height="44" rx="6"/>
+  <text class="bn" x="330" y="169" text-anchor="middle">Psalms</text>
+  <circle class="mark" cx="364" cy="150" r="4"/>
+  <rect class="bk lock" x="388" y="142" width="84" height="44" rx="6"/>
+  <text class="bl" x="430" y="169" text-anchor="middle">Mark 🔒</text>
+  <text class="lim" x="288" y="214">open limit: 3</text>
+
+  <!-- LEG 3 -->
+  <rect class="leg" x="520" y="52" width="216" height="182" rx="10"/>
+  <text class="lh" x="536" y="76">Leg 3 · keep going</text>
+  <rect class="bk open" x="536" y="88" width="84" height="44" rx="6"/>
+  <text class="bn" x="578" y="115" text-anchor="middle">Genesis</text>
+  <circle class="mark" cx="612" cy="96" r="4"/>
+  <rect class="bk open" x="636" y="88" width="84" height="44" rx="6"/>
+  <text class="bn" x="678" y="115" text-anchor="middle">John</text>
+  <circle class="mark" cx="712" cy="96" r="4"/>
+  <rect class="bk open" x="536" y="142" width="84" height="44" rx="6"/>
+  <text class="bn" x="578" y="169" text-anchor="middle">Psalms</text>
+  <circle class="mark" cx="612" cy="150" r="4"/>
+  <rect class="bk open" x="636" y="142" width="84" height="44" rx="6"/>
+  <text class="bn" x="678" y="169" text-anchor="middle">Mark</text>
+  <circle class="mark" cx="712" cy="150" r="4"/>
+  <text class="lim" x="536" y="214">open limit: 4</text>
+
+  <!-- unlock arrows between legs -->
+  <path class="gate" d="M244,143 L268,143" marker-end="url(#jl-a)"/>
+  <path class="gate" d="M492,143 L516,143" marker-end="url(#jl-a)"/>
+  <text class="gt" x="380" y="250" text-anchor="middle">finish current leg → earned-unlock gate (the same gate the Portal uses)</text>
+
+  <!-- footer -->
+  <text class="foot" x="40" y="290">Each book keeps ONE bookmark (• = your reading position). The Journey rides on reading progress + the earned-unlock gate.</text>
+  <text class="foot" x="40" y="310">No new primitive — and you have been living it: this course is a Journey, each module unlocking the next.</text>
+</svg>
+
+<style>
+  .ttl  { font:700 13px Georgia, serif; fill:#1a1714; letter-spacing:.3px; }
+  .leg  { fill:#faf7ef; stroke:#d8cdb8; stroke-width:1.5; }
+  .lh   { font:700 12px Georgia, serif; fill:#4a443d; }
+  .bk.open { fill:#fff; stroke:#9a7b27; stroke-width:1.5; }
+  .bk.lock { fill:#efeae0; stroke:#c3b9a3; stroke-width:1.3; stroke-dasharray:4 3; }
+  .bn   { font:600 12px Georgia, serif; fill:#1a1714; }
+  .bl   { font:italic 11px Georgia, serif; fill:#8a7f6a; }
+  .mark { fill:#9a3b2f; }
+  .lim  { font:700 11px Georgia, serif; fill:#9a7b27; }
+  .gate { fill:none; stroke:#9a7b27; stroke-width:2.4; }
+  .gt   { font:600 11.5px Georgia, serif; fill:#3a5a78; }
+  .foot { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+</style>

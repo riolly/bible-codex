@@ -1,0 +1,169 @@
+---
+title: "One engine, many surfaces: journey state & research mode"
+module: 4
+order: 14
+eyebrow: Module 4 · Remaining — Advanced · Lesson 14
+here: Module 4 · Advanced · Lesson 14
+lede: "The finale. Underneath the Journey, the Portal's pacing, and tag suggestion sits one latent thing — and research mode is just the lexicon, paced. Phase 4 isn't a fifth world. It's the four you already built, composed."
+summary: "The synthesis lesson. Journey progression, Portal/clue pacing, and tag suggestion all draw on one latent model — journey state: what the reader has read and how familiar they are. One model, many surfaces, worth building once, later. Research mode is a paced surface over the Phase-3 lexicon (translation-on-hover, incremental study notes, deeper Strong's/morphology), one step at a time — never a wall of tabs. Nothing new underneath: every Phase-4 surface is a read over journey state or the lexicon. This is MISSION criterion #4 fully demonstrated and the design-now-build-later bet (ADR-0005) paid off — and it completes the course."
+completeId: "check-advanced"
+---
+import OneEngine from '../../components/diagrams/OneEngine.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">The finale — where the four features converge</span>
+  <p>You've now reduced the Portal and the Journey to primitives you already owned. This last lesson
+  asks the synthesis question: <em>if all those features add no new data model, what is the single
+  thing they're all reading from?</em> Answer that and you've walked the whole blueprint.</p>
+</div>
+
+## Bible idea: depth, one step at a time
+
+A reader wants to go **deeper** on a word — but the worst thing you can do to someone going deeper is
+**drown them**. Open a typical study tool and you get a wall of tabs: lexicon, parsings, six
+cross-references, three commentaries, all at once. The app's stance is the opposite — **revelation is
+earned and incremental**. A translation appears **on hover**; a study note surfaces **one step at a
+time**; the deeper lexicon waits until you ask. You grow into the depth instead of falling into it.
+
+And notice what *drives* the pacing across every feature so far: the glow that knows you've read both
+passages, the scrolls that open as you finish a leg, the themes drawn from your notes. They all lean
+on one quiet thing — **what you've read, and how familiar you are with it.**
+
+## App idea: one engine (journey state) + research mode over the lexicon
+
+That "what you've read and how familiar" is the **journey state** — and it's the engine underneath
+([WISHLIST](https://github.com/riolly/bible-codex/blob/main/WISHLIST.md), "the engine underneath"):
+
+- **Journey progression** reads it to decide which scrolls open next.
+- **Portal / clue pacing** reads it to decide when a word starts to glow.
+- **Tag suggestion** reads it (and your notes) to propose themes.
+
+> *One model, many surfaces. Worth building once, later.*
+
+**Research mode** is the one surface that draws on a *different* already-built store: the **Phase-3
+lexicon**. Translation-on-hover, incremental resource suggestions, deeper Strong's / morphology — every
+bit of it is a **paced read** over the Original Word hub and the lexicon tiers you built in Module 3.
+Nothing new underneath; just the anti-"too much information" pacing laid on top.
+
+<figure>
+  <OneEngine />
+  <figcaption>One latent model — journey state — fans out to Journey, Portal pacing, and tag
+  suggestion. Research mode is a separate paced surface reading the Phase-3 lexicon. Every Phase-4
+  feature is a <em>read</em>; none of them is a new store.</figcaption>
+</figure>
+
+<div class="callout key">
+  <span class="tag">The whole point of Phase 4</span>
+  <p>Phase 4 is <strong>not a fifth world</strong>. It's a <strong>gate and a skin</strong> here, a
+  <strong>read</strong> there — the four phases you already built, <strong>composed</strong>. That's
+  exactly what <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0005-four-product-phases-design-all-build-in-order.md">ADR-0005</a>
+  bet on: design the model for all four phases now, build in order, and the advanced features cost
+  <strong>zero migration</strong> when they arrive. Phase 4 is that bet, paid off.</p>
+</div>
+
+## Match each surface to what it reads
+
+<Connect
+  client:idle
+  title="Lesson 14 — surface ↔ the store it reads"
+  hint="Click a Phase-4 surface on the left, then the already-built thing it reads from."
+  pairs={[
+    { left: "Which scrolls open as your next leg", right: "Journey state — what you've already read" },
+    { left: "When a clue word starts to glow", right: "Journey state — how familiar you are" },
+    { left: "Themes suggested for a passage", right: "Your own notes — surfaced, not stored anew" },
+    { left: "A different translation shown on hover", right: "The Phase-3 lexicon — alignment + glosses" },
+    { left: "Deeper Strong's, morphology, a study note", right: "The Phase-3 lexicon tiers — paced, one step at a time" },
+  ]}
+/>
+
+## Check yourself — and complete the course
+
+<Quiz
+  client:idle
+  title="Lesson 14 — recall (completes the course)"
+  completeId="check-advanced"
+  questions={[
+    {
+      stem: "What is 'journey state', and what is it for?",
+      options: [
+        "A cache of the last screen the reader visited",
+        "One latent model — what the reader has read and how familiar they are — that Journey progression, Portal pacing, and tag suggestion all read from",
+        "The list of books the reader has purchased",
+        "A per-device setting controlling fonts and layout",
+      ],
+      answer: 1,
+      explain: "Journey state is the engine underneath: 'what you've read and how familiar you are.' One model, many surfaces — Journey progression, Portal/clue pacing, and tag suggestion all read it. Worth building once, later.",
+    },
+    {
+      stem: "What does research mode (translation-on-hover, deeper Strong's, study notes) build on?",
+      options: [
+        "A new research database shipped separately",
+        "A paced surface over the Phase-3 lexicon — the Original Word hub and lexicon tiers — revealed one step at a time",
+        "The reading-progress store",
+        "A live internet lookup against external sources",
+      ],
+      answer: 1,
+      explain: "Research mode is the word-tap extended: every bit of it reads the Phase-3 lexicon you already built (Original Word hub + tiers), paced 'one step at a time' to honor revelation-is-incremental. Nothing new underneath.",
+    },
+    {
+      stem: "In one sentence, what IS Phase 4, architecturally?",
+      options: [
+        "A fifth schema layered on top of the first four",
+        "Not a new world or a new schema — the four phases composed: a gate and a skin here, a read there, with zero new data model",
+        "A rewrite that merges the corpus and user layers",
+        "An optional plugin that bypasses the Anchor model",
+      ],
+      answer: 1,
+      explain: "That's MISSION criterion #4: take a wishlist idea (Portal, Journey, tags, research mode) and show it reduces to already-locked primitives with no new data model. Phase 4 is a gate + a skin + a read — the four phases composed. ADR-0005's design-now-build-later, proven.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: what is journey state, what does research mode read, and what is Phase 4 in one sentence?"
+  answer="Journey state is the engine underneath — one latent model of what the reader has read and how familiar they are. Journey progression (which scrolls open), Portal/clue pacing (when a word glows), and tag suggestion (themes from your notes) are all reads over it: one model, many surfaces, worth building once later. Research mode is the one surface reading a different already-built store — the Phase-3 lexicon (Original Word hub + lexicon tiers): translation-on-hover, incremental study notes, deeper Strong's/morphology, all paced one step at a time, never a wall of tabs. So Phase 4 is not a fifth world or a new schema — it's a gate and a skin here, a read there: the four phases composed, with zero new data model. That's ADR-0005's design-now-build-later bet, paid off."
+/>
+
+<PrimarySource>
+  "The engine underneath" and research mode are in <a href="https://github.com/riolly/bible-codex/blob/main/WISHLIST.md">WISHLIST.md</a>; the incremental, anti-"too much information" feel is in <a href="https://github.com/riolly/bible-codex/blob/main/VISION.md">VISION.md</a>. Research mode reads the Phase-3 lexicon (<a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md">ADR-0007</a>), and the whole "compose, don't extend" stance is <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0005-four-product-phases-design-all-build-in-order.md">ADR-0005</a>. This is the fourth success criterion in <a href="https://github.com/riolly/bible-codex/blob/main/teach/MISSION.md">MISSION.md</a>.
+</PrimarySource>
+
+<div class="callout key">
+  <span class="tag">You've walked the whole blueprint</span>
+  <p>Five modules, the four design phases composed. Look back at what the mission asked for, now true:</p>
+  <ul>
+    <li><strong>Read any term and explain it plainly</strong> — the Anchor, Token, Original Word, the
+    glossary you grew lesson by lesson.</li>
+    <li><strong>Explain <em>why</em> a choice exists from the biblical reality it serves</strong> — a
+    token-stream not a verse-list; an Anchor that's a coordinate, not pixels.</li>
+    <li><strong>Walk the four-schema / two-bridge model and place any feature</strong> — Canonical
+    Verse and Original Word, the two hubs the spokes meet at.</li>
+    <li><strong>Take a wishlist idea and map it onto locked primitives with no new data model</strong> —
+    Portal, Journey, tags, research mode. You just did, four times.</li>
+  </ul>
+  <p>Finishing the quiz above completes Module 4 — and the whole course.</p>
+</div>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>That's the blueprint, end to end.</strong> Ask me anything to consolidate — "walk me
+    through the four-schema model again," "where would feature X land?", or "which seams are
+    migration-fatal and why?". Or revisit the <a href="/reference/architecture-map">architecture
+    map</a> and the <a href="/glossary">glossary</a> you built.
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0013-reading-at-your-pace">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 13 — Reading at your pace</span>
+    </a>
+    <a href="/">
+      <span class="label">Course complete</span>
+      <span class="title">Back to the start →</span>
+    </a>
+  </div>
+</div>

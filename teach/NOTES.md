@@ -27,7 +27,9 @@ Course hub = `src/pages/index.astro` (renders module cards + status badges, reac
 - **Module 1 · Phase 1 — Reading** — Token, Block, Canonical Verse, Versification, layout. *(DONE: lessons 0003–0005 + TokenBlockStream / Versification / LayoutRules diagrams.)*
 - **Module 2 · Phase 2 — Annotation** — Markup vs Ink, scene graph, Layer. *(DONE: lessons 0006–0008 + TwoPhysics / SceneGraph / SyncFirstStore diagrams.)*
 - **Module 3 · Phase 3 — Lexicon** — Original Word hub, Alignment, Strong's/lemma/morphology. *(DONE: lessons 0009–0011 + AlignmentHub / WordLabels / ThreeTiers diagrams. `0011`'s terminal quiz carries `completeId="check-lexicon"` → flips Module 3 Done, unlocks Module 4.)*
-- **Module 4 · Remaining — Advanced** — Portal, Journey, themes/tags, research mode. *(NEXT — spec in `HANDOFF-phase4-advanced.md`.)*
+- **Module 4 · Remaining — Advanced** — Portal, Journey, themes/tags, research mode. *(DONE: lessons 0012–0014 + PortalGate / JourneyLadder / OneEngine diagrams. `0014`'s terminal quiz carries `completeId="check-advanced"` → flips Module 4 Done and **completes the course**; the hub shows a green course-complete CTA when it's set.)*
+
+**The 5-module course is complete (2026-06-25).** All four design phases are taught and composed; MISSION's four success criteria are each landed (criterion #4 — map a wishlist idea onto locked primitives with no new data model — is the spine of Module 4). No Phase-5 handoff.
 Lessons keep **global sequential numbering** (0001, 0002, …); the *module* grouping lives in the
 module manifest `src/data/modules.ts`. The hub computes Ready / Coming soon / Locked / Done from
 the persisted progress store and unlocks the next module's check.

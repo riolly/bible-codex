@@ -1,0 +1,68 @@
+---
+// Lesson 14 — the synthesis. One latent model, JOURNEY STATE (what the reader has
+// read + how familiar), feeds many surfaces: Journey progression, Portal/clue
+// pacing, and tag suggestion. Research mode is a separate paced surface that reads
+// the PHASE-3 LEXICON (the Original Word hub + tiers). Every surface is a READ —
+// nothing new underneath. Phase 4 is the four phases composed (ADR-0005).
+// WISHLIST ("the engine underneath" + Research mode).
+---
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="One engine, many surfaces. A central journey-state model — what the reader has read and how familiar — feeds three surfaces: Journey, Portal pacing, and tag suggestion. A separate Phase-3 lexicon node feeds Research mode. Every surface is a read; nothing new underneath.">
+  <defs>
+    <marker id="oe-a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9a7b27"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="40" y="28">ONE ENGINE, MANY SURFACES — Phase 4 is the four phases, composed</text>
+
+  <!-- ENGINE A: journey state -->
+  <rect class="eng" x="30" y="66" width="196" height="116" rx="10"/>
+  <text class="en" x="128" y="104" text-anchor="middle">JOURNEY STATE</text>
+  <text class="ed" x="128" y="128" text-anchor="middle">what you've read</text>
+  <text class="ed" x="128" y="146" text-anchor="middle">+ how familiar</text>
+  <text class="ed2" x="128" y="168" text-anchor="middle">one latent model</text>
+
+  <!-- ENGINE B: lexicon -->
+  <rect class="eng lex" x="30" y="206" width="196" height="84" rx="10"/>
+  <text class="en lex" x="128" y="240" text-anchor="middle">PHASE-3 LEXICON</text>
+  <text class="ed" x="128" y="262" text-anchor="middle">Original Word hub</text>
+  <text class="ed" x="128" y="278" text-anchor="middle">+ the lexicon tiers</text>
+
+  <!-- SURFACES -->
+  <rect class="surf" x="470" y="56" width="266" height="44" rx="8"/>
+  <text class="sn" x="486" y="83">Journey — which scrolls open next</text>
+  <rect class="surf" x="470" y="110" width="266" height="44" rx="8"/>
+  <text class="sn" x="486" y="137">Portal — clue / glow pacing</text>
+  <rect class="surf" x="470" y="164" width="266" height="44" rx="8"/>
+  <text class="sn" x="486" y="191">Tag suggestion — themes from notes</text>
+  <rect class="surf lex" x="470" y="246" width="266" height="44" rx="8"/>
+  <text class="sn" x="486" y="273">Research mode — word study, paced</text>
+
+  <!-- A fans out to 3 surfaces -->
+  <path class="r" d="M226,110 C360,90 380,78 468,78" marker-end="url(#oe-a)"/>
+  <path class="r" d="M226,124 C360,128 380,132 468,132" marker-end="url(#oe-a)"/>
+  <path class="r" d="M226,138 C360,168 380,182 468,186" marker-end="url(#oe-a)"/>
+  <!-- B to research -->
+  <path class="r lex" d="M226,256 C360,262 380,268 468,268" marker-end="url(#oe-a)"/>
+
+  <!-- footer -->
+  <text class="foot" x="40" y="322">Every surface is a READ over journey state or the lexicon — never a new store. Nothing new underneath.</text>
+  <text class="foot" x="40" y="342">"One model, many surfaces. Worth building once, later." That's design-now-build-later, taken to its limit.</text>
+</svg>
+
+<style>
+  .ttl  { font:700 13px Georgia, serif; fill:#1a1714; letter-spacing:.3px; }
+  .eng  { fill:#eef1f4; stroke:#3a5a78; stroke-width:1.8; }
+  .eng.lex { fill:#fbf3dc; stroke:#9a7b27; }
+  .en   { font:700 14px Georgia, serif; fill:#3a5a78; letter-spacing:.3px; }
+  .en.lex { fill:#9a7b27; }
+  .ed   { font:12px Georgia, serif; fill:#1a1714; }
+  .ed2  { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+  .surf { fill:#fff; stroke:#3a5a78; stroke-width:1.5; }
+  .surf.lex { stroke:#9a7b27; }
+  .sn   { font:600 12.5px Georgia, serif; fill:#1a1714; }
+  .r    { fill:none; stroke:#3a5a78; stroke-width:1.8; }
+  .r.lex { stroke:#9a7b27; }
+  .foot { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+</style>

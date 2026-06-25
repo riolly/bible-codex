@@ -111,6 +111,9 @@ export default function Modules({ modules }: Props) {
       !(m.checkId && doneIds.includes(m.checkId)),
   );
 
+  // the terminal module's check doubles as the course-completion signal
+  const courseComplete = doneIds.includes('check-advanced');
+
   return (
     <>
       <div class="modules">
@@ -118,11 +121,18 @@ export default function Modules({ modules }: Props) {
           <Card m={m} s={statusFor(m, doneIds, currentNum)} />
         ))}
       </div>
-      {cta && (
-        <a class="next-cta" href={cta.href}>
-          <span class="label">Next session — unlocked</span>
-          <span class="title">Start {cta.title} →</span>
+      {courseComplete ? (
+        <a class="next-cta complete" href="/reference/architecture-map">
+          <span class="label">Course complete — all five modules done</span>
+          <span class="title">You've walked the whole blueprint · revisit the map →</span>
         </a>
+      ) : (
+        cta && (
+          <a class="next-cta" href={cta.href}>
+            <span class="label">Next session — unlocked</span>
+            <span class="title">Start {cta.title} →</span>
+          </a>
+        )
       )}
     </>
   );
