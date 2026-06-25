@@ -3,6 +3,7 @@
 // ask-teacher footer. Every page and lesson routes through here so the
 // header can no longer drift between files.
 import { getCollection } from 'astro:content';
+import { ClientRouter } from 'astro:transitions';
 import CourseNav from '../components/CourseNav.astro';
 import Toc from '../islands/Toc.tsx';
 import CourseRail from '../islands/CourseRail.tsx';
@@ -45,6 +46,10 @@ const courseTree = modules.map((m) => ({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="generator" content={Astro.generator} />
+    {/* Client-side routing: crossfade between pages, no full reload. Islands
+        re-hydrate per nav (rail re-reads its props, TOC rebuilds its headings),
+        which is exactly what they expect. Honors prefers-reduced-motion. */}
+    <ClientRouter />
   </head>
   <body>
     <CourseNav />
