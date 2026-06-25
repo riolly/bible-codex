@@ -7,7 +7,17 @@
 > infra: follow the learner's ZPD and ground every claim in the repo ADRs/CONTEXT (cite them). Read
 > §0–§1 for the lay of the land, then execute §2–§7.
 >
-> **Created:** 2026-06-25 · **Decided by:** project owner (riolly) · **Status:** not started.
+> **Created:** 2026-06-25 · **Decided by:** project owner (riolly) · **Status:** ✅ **DONE** (2026-06-25).
+> Module 3 authored: lessons `0009` (Down to the original word — the hub & alignment), `0010` (Naming
+> the word — Strong's, lemma, morphology, gloss), `0011` (Re-sourceable by design — external ids &
+> three tiers), with three new diagrams (`AlignmentHub`, `WordLabels`, `ThreeTiers`). `0011`'s terminal
+> quiz carries `completeId="check-lexicon"` → flips Module 3 → Done and unlocks Module 4. Manifest `m3`
+> got its `href` + `lessonHints`. All games verified via preview (Connect reaches "All connected";
+> the three quizzes write `0009`/`0010`/`check-lexicon` to `localStorage['bc.completed']`; the hub
+> flips Module 3 → Done). `pnpm -C teach build` is clean (14 pages). No learning record written — the
+> learner has not yet *demonstrated* the material (authoring ≠ learning), and no glossary terms
+> pre-seeded (same reason; the `Original Word` stub stays until demonstrated). **Next:** Phase 4 —
+> Advanced, specced in [`HANDOFF-phase4-advanced.md`](HANDOFF-phase4-advanced.md).
 
 ---
 

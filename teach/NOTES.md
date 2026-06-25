@@ -26,8 +26,8 @@ Course hub = `src/pages/index.astro` (renders module cards + status badges, reac
 - **Module 0 · Overview** — Anchor, two data worlds, spokes & hubs, the 4-phase map. *(DONE: lessons 0001, 0002 + architecture-map reference.)*
 - **Module 1 · Phase 1 — Reading** — Token, Block, Canonical Verse, Versification, layout. *(DONE: lessons 0003–0005 + TokenBlockStream / Versification / LayoutRules diagrams.)*
 - **Module 2 · Phase 2 — Annotation** — Markup vs Ink, scene graph, Layer. *(DONE: lessons 0006–0008 + TwoPhysics / SceneGraph / SyncFirstStore diagrams.)*
-- **Module 3 · Phase 3 — Lexicon** — Original Word hub, Alignment, Strong's/lemma/morphology. *(NEXT — spec in `HANDOFF-phase3-lexicon.md`.)*
-- **Module 4 · Remaining — Advanced** — Portal, Journey, themes/tags, research mode.
+- **Module 3 · Phase 3 — Lexicon** — Original Word hub, Alignment, Strong's/lemma/morphology. *(DONE: lessons 0009–0011 + AlignmentHub / WordLabels / ThreeTiers diagrams. `0011`'s terminal quiz carries `completeId="check-lexicon"` → flips Module 3 Done, unlocks Module 4.)*
+- **Module 4 · Remaining — Advanced** — Portal, Journey, themes/tags, research mode. *(NEXT — spec in `HANDOFF-phase4-advanced.md`.)*
 Lessons keep **global sequential numbering** (0001, 0002, …); the *module* grouping lives in the
 module manifest `src/data/modules.ts`. The hub computes Ready / Coming soon / Locked / Done from
 the persisted progress store and unlocks the next module's check.

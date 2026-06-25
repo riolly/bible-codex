@@ -1,0 +1,170 @@
+---
+title: "Down to the original word: the hub & alignment"
+module: 3
+order: 9
+eyebrow: Module 3 · Phase 3 — Lexicon · Lesson 9
+here: Module 3 · Phase 3 · Lesson 9
+lede: Open an interlinear and you drop beneath the English to the Greek and Hebrew underneath. That underneath layer is the second hub from Module 0 — and this is where it finally gets built.
+summary: The Original Word hub is the fine, word-grain bridge between translations (Module 0's second hub). An Original Word is a single lexical occurrence — a whole word in Greek, a morpheme in Hebrew — identified by a stable external id. Translation Tokens align to it many-to-many (Alignment); token.ow_id is the denormalized head, interlinear_alignment is the full M:N truth, and reverse-interlinear is derived, never stored.
+completeId: "0009"
+---
+import AlignmentHub from '../../components/diagrams/AlignmentHub.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Where we are — Phase 3 begins</span>
+  <p>Module 0 promised <strong>two hubs</strong>. Translations are <span class="term">spokes</span>
+  that never link to each other directly — they meet only at the <span class="term">Canonical
+  Verse</span> (coarse, by passage) and the <span class="term">Original Word</span> (fine, by the
+  underlying Greek/Hebrew word). Phase 1 built reading; Phase 2 built your marks. Phase 3 is where
+  that <em>second</em> hub is actually constructed — and where the word-grain seam that has sat empty
+  since Phase 1 finally fills.</p>
+</div>
+
+## Bible idea: open an interlinear
+
+A reader who wants to go deeper than the English opens an **interlinear** Bible. Under (or over)
+each English word sits the original — the **Greek** in the New Testament, the **Hebrew** in the Old
+— usually wearing four little tags: a **Strong's number** (G3056 / H7225), the **dictionary form**
+of the word, a tiny **parsing code**, and a one-word **gloss**. That whole apparatus is the surface
+of Phase 3, printed on paper. (We name those four tags in the next lesson; this one is about the
+layer they hang on.)
+
+Two things jump out the moment you read an interlinear closely:
+
+- **Translations don't agree word-for-word.** "In the beginning" is **three** English words sitting
+  over **two** Greek words (*Ἐν ἀρχῇ* — literally "In beginning"). One Greek word can blossom into
+  three English ones; three English words can collapse into one Greek word. The link is
+  **many-to-many**, never a tidy 1:1.
+- **Hebrew packs several "words" into one.** Hebrew glues a conjunction, an article, a preposition,
+  a stem, and a suffix into a single written word. *bərēʾšîṯ* ("in the beginning") is really
+  *bə-* ("in") + *rēʾšîṯ* ("beginning") — and a scholar splits it into those **morphemes**, each
+  with its own Strong's, dictionary form, and gloss.
+
+## App idea: the Original Word hub + alignment
+
+That underneath layer is the <span class="term">Original Word</span> hub
+([ADR-0007](https://github.com/riolly/bible-codex/blob/main/docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md)).
+Three ideas build it:
+
+- **An Original Word is a morpheme-occurrence, not always a whole word.** It's one lexical
+  <span class="term">Segment</span> as it appears at one spot in the text — a *whole word* in Greek,
+  a *morpheme* in Hebrew. So *bə-* and *rēʾšîṯ* are **two** Original Words; the
+  <span class="term">Written Word</span> *bərēʾšîṯ* is reconstructed by ordering its sibling segments
+  (`segment_of` + `segment_index`). One uniform entity means alignment, gloss, and morphology all
+  point at one kind of thing — no special "morpheme" code path.
+- **Alignment is the many-to-many bridge.** <span class="term">Alignment</span> maps a translation's
+  <span class="term">Tokens</span> to Original Words — N Tokens ↔ M Original Words. It's the fine,
+  word-grain edge between a spoke and the hub.
+- **A head, plus the full set.** Each Token also carries a single `token.ow_id` — the **head**, "the
+  one Original Word this Token primarily maps to." That denormalized column is the fast path and the
+  portability handle; the full many-to-many lives in the `interlinear_alignment` junction. The
+  reverse view — a translation's words shown *under* the original — is **derived** by walking
+  alignment, never stored.
+
+<figure>
+  <AlignmentHub />
+  <figcaption>KJV Tokens align up into the shared Original Word hub. Two Tokens ("the beginning")
+  converge on one Greek word — alignment is many-to-many. The bold line is each Token's head
+  (token.ow_id); the thin lines are the full set (interlinear_alignment). Below: one Hebrew written
+  word is several morpheme Original Words, regrouped by segment_of.</figcaption>
+</figure>
+
+<div class="callout key">
+  <span class="tag">The seam that was waiting</span>
+  <p>Since Phase 1, an <code>ow_id</code> column has sat <em>null</em> on <code>token</code>, and on
+  every word-grain <span class="term">Mark</span>, <span class="term">Note</span>, and
+  <span class="term">Binding</span> from Phase 2. The moment this hub populates, that seam wires up
+  with <strong>zero migration</strong> — and a highlight you drew on one word gains true
+  cross-translation portability, because it can now travel through the shared Original Word instead
+  of only through the verse.</p>
+</div>
+
+## Sort each interlinear fact into its model idea
+
+<Connect
+  client:idle
+  title="Lesson 9 — what kind of relationship is this?"
+  hint="Click an interlinear observation on the left, then the model idea it lands on."
+  pairs={[
+    { left: "One Greek word printed under three English words", right: "Alignment is many-to-many (1 Original Word to N Tokens)" },
+    { left: "Three English words over one Greek word", right: "Alignment is many-to-many (N Tokens to 1 Original Word)" },
+    { left: "A Hebrew written word split into prefix + stem", right: "Several morpheme Original Words, grouped by segment_of" },
+    { left: "The one word a Token mainly maps to", right: "token.ow_id — the denormalized head" },
+    { left: "A translation's words shown under the original", right: "Reverse-interlinear, derived by walking alignment" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 9 — recall"
+  completeId="0009"
+  questions={[
+    {
+      stem: "What exactly is one Original Word in the model?",
+      options: [
+        "A whole written word in every language",
+        "A single lexical occurrence — a whole word in Greek, a morpheme in Hebrew",
+        "The dictionary form a group of words shares",
+        "A verse-level address in the original text",
+      ],
+      answer: 1,
+      explain: "An Original Word is a segment-occurrence: a whole word in Greek, but a single morpheme in Hebrew (the source corpora split agglutinated Hebrew into prefix/stem/suffix). A whole Hebrew Written Word is regrouped from its sibling segments.",
+    },
+    {
+      stem: "Why is the link between a translation and the original modelled as many-to-many?",
+      options: [
+        "To save storage on the alignment table",
+        "Because words don't correspond 1:1 — one original word can become several translated words, and vice versa",
+        "Because every translation uses the same word order",
+        "Because Strong's numbers are unique per verse",
+      ],
+      answer: 1,
+      explain: "Real alignment is N Tokens to M Original Words: 'In the beginning' is three English words over two Greek; a Greek compound can sit under one English word. A 1:1 model would lose compounds and phrase glosses.",
+    },
+    {
+      stem: "What is the difference between token.ow_id and the interlinear_alignment table?",
+      options: [
+        "They are duplicates; one is a backup of the other",
+        "token.ow_id is the single primary 'head' Original Word; interlinear_alignment carries the full many-to-many set",
+        "token.ow_id stores pixels; interlinear_alignment stores coordinates",
+        "interlinear_alignment is only for Hebrew; token.ow_id is only for Greek",
+      ],
+      answer: 1,
+      explain: "token.ow_id is a denormalized head — the one Original Word a Token primarily maps to (fast path + portability). The bare junction (token_id, original_word_id) carries the complete many-to-many used to render the interlinear.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: what is an Original Word, how do translation Tokens connect to it, and what is the difference between the head and the full alignment?"
+  answer="An Original Word is a single lexical occurrence in the source text — a whole word in Greek, a morpheme in Hebrew — identified by a stable external id, and it is the shared word-grain hub the translations meet at. Translation Tokens connect to it through Alignment, which is many-to-many (N Tokens to M Original Words). token.ow_id is the denormalized head — the one Original Word a Token primarily maps to — while interlinear_alignment is the full many-to-many set. Reverse-interlinear is derived by walking alignment, never stored."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md">ADR-0007</a> is the canonical "why" for the hub's grain and the head-vs-junction split; <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Original Word</em>, <em>Segment</em>, <em>Written Word</em>, and <em>Alignment</em>. The hub is the second of the two bridges in <a href="https://github.com/riolly/bible-codex/blob/main/data-architecture.md">data-architecture.md</a>, and the P3 tables live in <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>.
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "what fills the head when a
+    Token maps to two original words?", "why a morpheme and not a whole word?", or "how does a Mark
+    actually ride this seam across translations?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0008-your-notes-everywhere">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 8 — Your notes, everywhere</span>
+    </a>
+    <a href="/lessons/0010-naming-the-word">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 10 — Naming the word →</span>
+    </a>
+  </div>
+</div>

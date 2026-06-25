@@ -1,0 +1,100 @@
+---
+// Lesson 10 — the four interlinear labels and what each IS in the model
+// (ADR-0007 #6–#8). One Original Word (an occurrence) fans out to: LEMMA (the
+// dictionary-form spine), STRONG'S (a numbered id in its OWN number space —
+// join key only), MORPHOLOGY (a raw parse_code that DECODES via a small table),
+// and GLOSS (one editorial cue, inline on the hub). lemma_id and strong_id are
+// SEPARATE id spaces; the gloss lives on the word itself, the rest are keys out.
+---
+<svg viewBox="0 0 760 430" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="One Original Word occurrence fans out to four labels: lemma (the dictionary-form spine), Strong's (a numbered id, join key only), morphology (a raw parse code decoded by a table), and gloss (an inline editorial cue). Lemma and Strong's are separate id spaces.">
+  <defs>
+    <marker id="wl-a" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#9a7b27"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="40" y="28">ONE ORIGINAL WORD, FOUR LABELS — and what each one IS in the model</text>
+
+  <!-- the central Original Word -->
+  <rect class="hub" x="288" y="48" width="184" height="64" rx="7"/>
+  <text class="lab" x="380" y="68" text-anchor="middle">ORIGINAL WORD</text>
+  <text class="gk"  x="380" y="92" text-anchor="middle">λόγος</text>
+  <text class="gl"  x="380" y="106" text-anchor="middle">one occurrence · John 1:1</text>
+
+  <!-- four fan-out arrows from the OW bottom (380,112) to each box top (y=176) -->
+  <path class="down" d="M380,112 C160,140 112,150 112,176" marker-end="url(#wl-a)"/>
+  <path class="down" d="M380,112 C300,140 294,150 294,176" marker-end="url(#wl-a)"/>
+  <path class="down" d="M380,112 C460,140 476,150 476,176" marker-end="url(#wl-a)"/>
+  <path class="downgold" d="M380,112 C600,140 658,150 658,176" marker-end="url(#wl-a)"/>
+
+  <!-- LEMMA (lexicon tier) -->
+  <rect class="ref" x="30" y="176" width="164" height="86" rx="6"/>
+  <text class="rh" x="112" y="196" text-anchor="middle">LEMMA</text>
+  <text class="gk2" x="112" y="218" text-anchor="middle">λόγος</text>
+  <text class="rd" x="112" y="236" text-anchor="middle">dictionary form</text>
+  <text class="rd em" x="112" y="252" text-anchor="middle">the spine: stats hang here</text>
+
+  <!-- STRONG'S (lexicon tier) -->
+  <rect class="ref" x="212" y="176" width="164" height="86" rx="6"/>
+  <text class="rh" x="294" y="196" text-anchor="middle">STRONG'S</text>
+  <text class="gk2" x="294" y="218" text-anchor="middle">G3056</text>
+  <text class="rd" x="294" y="236" text-anchor="middle">numbered id</text>
+  <text class="rd em" x="294" y="252" text-anchor="middle">join key only · never an anchor</text>
+
+  <!-- MORPHOLOGY (raw code on word → decode table) -->
+  <rect class="ref" x="394" y="176" width="164" height="86" rx="6"/>
+  <text class="rh" x="476" y="196" text-anchor="middle">MORPHOLOGY</text>
+  <text class="gk2" x="476" y="218" text-anchor="middle">code: N-NSM</text>
+  <text class="rd" x="476" y="236" text-anchor="middle">raw parse_code = truth</text>
+  <text class="rd em" x="476" y="252" text-anchor="middle">decodes via a table ↓</text>
+
+  <!-- GLOSS (inline on the hub) -->
+  <rect class="gloss" x="576" y="176" width="164" height="86" rx="6"/>
+  <text class="rh gold" x="658" y="196" text-anchor="middle">GLOSS</text>
+  <text class="gk2" x="658" y="218" text-anchor="middle">"Word"</text>
+  <text class="rd" x="658" y="236" text-anchor="middle">editorial cue</text>
+  <text class="rd em" x="658" y="252" text-anchor="middle">inline ON the hub</text>
+
+  <!-- morphology decode table under the morphology box -->
+  <path class="down" d="M476,262 L476,300" marker-end="url(#wl-a)"/>
+  <rect class="decode" x="338" y="300" width="276" height="44" rx="6"/>
+  <text class="dh" x="352" y="320">N-NSM →</text>
+  <text class="dd" x="352" y="336">noun · nominative · singular · masculine</text>
+
+  <!-- separate-id-spaces annotation under lemma + strong's -->
+  <path class="brace" d="M112,300 L112,308 L294,308 L294,300"/>
+  <text class="note2" x="203" y="326" text-anchor="middle">two SEPARATE id spaces —</text>
+  <text class="note2" x="203" y="340" text-anchor="middle">Strong's conflates / splits differently from lemma</text>
+
+  <!-- gloss inline annotation -->
+  <text class="note2" x="658" y="318" text-anchor="middle">the gloss sits on the</text>
+  <text class="note2" x="658" y="332" text-anchor="middle">word; the rest are keys OUT</text>
+
+  <!-- footer line -->
+  <text class="foot" x="40" y="378">LEMMA + STRONG'S live in the re-sourceable lexicon tier · MORPHOLOGY is a code + decode table · GLOSS is the one thing stored inline</text>
+  <text class="foot" x="40" y="398">Reverse-interlinear (a translation's words under the original) is DERIVED by walking alignment — never stored here.</text>
+</svg>
+
+<style>
+  .ttl   { font:700 12.5px Georgia, serif; fill:#1a1714; letter-spacing:.3px; }
+  .hub   { fill:#fbf3dc; stroke:#9a7b27; stroke-width:2; }
+  .lab   { font:700 11px Georgia, serif; fill:#9a7b27; letter-spacing:.5px; }
+  .gk    { font:600 22px "Cardo", serif; fill:#1a1714; }
+  .gk2   { font:600 16px "Cardo", serif; fill:#1a1714; }
+  .gl    { font:italic 10.5px Georgia, serif; fill:#7a6a3a; }
+  .down  { fill:none; stroke:#c9b27a; stroke-width:1.6; }
+  .downgold { fill:none; stroke:#9a7b27; stroke-width:2.2; }
+  .ref   { fill:#fff; stroke:#3a5a78; stroke-width:1.5; }
+  .gloss { fill:#fbf3dc; stroke:#9a7b27; stroke-width:1.6; }
+  .rh    { font:700 12px Georgia, serif; fill:#3a5a78; letter-spacing:.4px; }
+  .rh.gold { fill:#9a7b27; }
+  .rd    { font:11.5px Georgia, serif; fill:#1a1714; }
+  .rd.em { font:italic 10.5px Georgia, serif; fill:#7a6a3a; }
+  .decode{ fill:#eef2f5; stroke:#3a5a78; stroke-width:1.3; }
+  .dh    { font:700 12px Georgia, serif; fill:#3a5a78; }
+  .dd    { font:12px Georgia, serif; fill:#1a1714; }
+  .brace { fill:none; stroke:#3a5a78; stroke-width:1.2; }
+  .note2 { font:italic 10.5px Georgia, serif; fill:#4a443d; }
+  .foot  { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+</style>

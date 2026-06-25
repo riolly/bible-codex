@@ -70,6 +70,9 @@ export const modules: ModuleDef[] = [
     title: 'Phase 3 — Lexicon',
     pairBible: "the original Greek & Hebrew, Strong's numbers, lemma, interlinear.",
     pairApp: 'the Original Word hub · Alignment · the re-sourceable lexicon tiers.',
+    lessonHints:
+      'Lesson 9 — Down to the original word · Lesson 10 — Naming the word · Lesson 11 — Re-sourceable by design',
+    href: '/lessons/0009-down-to-the-original-word',
     checkId: 'check-lexicon',
     unlockBy: 'check-annotation',
     lockedBadge: 'Upcoming',

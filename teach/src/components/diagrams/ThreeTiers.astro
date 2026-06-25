@@ -1,0 +1,87 @@
+---
+// Lesson 11 — three tiers joined by STABLE STRING KEYS; FK only WITHIN a tier
+// (ADR-0007 #1, #4). corpus → hub → lexicon. Everything crossing a boundary
+// (token.ow_id, alignment.original_word_id, original_word.lemma_id/strong_id/
+// parse_code) is an opaque string key with NO foreign key; the one real FK is
+// corpus-internal (alignment.token_id → token.id, regenerated on ingest like
+// block_id). No DB-enforced cross-tier integrity — an ingest-time validation
+// pass asserts every key resolves. So the lexicon is re-sourceable + licence-clean.
+---
+<svg viewBox="0 0 760 440" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Three tiers — corpus, Original Word hub, lexicon — joined by stable string keys with no foreign key across a boundary. The only real foreign key is inside the corpus tier. Cross-tier integrity is an ingest-time validation pass, so the lexicon is re-sourceable.">
+  <defs>
+    <marker id="tt-a" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#9a7b27"/>
+    </marker>
+    <marker id="tt-fk" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2f6b3f"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="40" y="28">THREE TIERS — joined by string keys; a real FK only WITHIN a tier</text>
+
+  <!-- TIER 1 · CORPUS -->
+  <rect class="tier" x="40" y="44" width="680" height="92" rx="8"/>
+  <text class="th" x="56" y="66">CORPUS · per-translation, re-ingestable</text>
+  <rect class="ent" x="64" y="78" width="150" height="46" rx="6"/>
+  <text class="en" x="139" y="98" text-anchor="middle">token</text>
+  <text class="ed" x="139" y="114" text-anchor="middle">a translation's word</text>
+  <rect class="ent" x="244" y="78" width="190" height="46" rx="6"/>
+  <text class="en" x="339" y="98" text-anchor="middle">interlinear_alignment</text>
+  <text class="ed" x="339" y="114" text-anchor="middle">the M:N junction</text>
+  <!-- the one real FK, corpus-internal -->
+  <path class="fk" d="M244,101 L214,101" marker-end="url(#tt-fk)"/>
+  <text class="fkl" x="470" y="96">token_id → token.id</text>
+  <text class="fkl2" x="470" y="112">the ONLY real FK · regenerated on</text>
+  <text class="fkl2" x="470" y="126">ingest, like block_id</text>
+
+  <!-- seam 1: corpus → hub (string keys, no FK) -->
+  <path class="key" d="M139,124 L139,176" marker-end="url(#tt-a)"/>
+  <path class="key" d="M339,124 L339,176" marker-end="url(#tt-a)"/>
+  <rect class="seam" x="150" y="142" width="270" height="20" rx="10"/>
+  <text class="seaml" x="285" y="156" text-anchor="middle">token.ow_id · alignment.original_word_id — string key, NO FK</text>
+
+  <!-- TIER 2 · HUB -->
+  <rect class="tier hub" x="40" y="176" width="680" height="76" rx="8"/>
+  <text class="th gold" x="56" y="198">ORIGINAL WORD hub · shared, re-sourceable occurrences</text>
+  <rect class="ent gold" x="285" y="208" width="190" height="36" rx="6"/>
+  <text class="en" x="380" y="231" text-anchor="middle">original_word</text>
+
+  <!-- seam 2: hub → lexicon (string keys, no FK) -->
+  <path class="key" d="M380,244 L380,300" marker-end="url(#tt-a)"/>
+  <rect class="seam" x="190" y="266" width="380" height="20" rx="10"/>
+  <text class="seaml" x="380" y="280" text-anchor="middle">original_word.lemma_id · strong_id · parse_code — string key, NO FK</text>
+
+  <!-- TIER 3 · LEXICON -->
+  <rect class="tier" x="40" y="300" width="680" height="76" rx="8"/>
+  <text class="th" x="56" y="322">LEXICON · reference data, versions independently</text>
+  <rect class="ent" x="80" y="332" width="170" height="36" rx="6"/>
+  <text class="en" x="165" y="355" text-anchor="middle">lemma · spine</text>
+  <rect class="ent" x="296" y="332" width="170" height="36" rx="6"/>
+  <text class="en" x="381" y="355" text-anchor="middle">strongs · dictionary</text>
+  <rect class="ent" x="512" y="332" width="170" height="36" rx="6"/>
+  <text class="en" x="597" y="355" text-anchor="middle">morphology · decode</text>
+
+  <!-- validation pass note -->
+  <text class="foot" x="40" y="404">No DB-enforced cross-tier integrity: an ingest-time VALIDATION PASS asserts every ow_id / lemma_id / strong_id / parse_code resolves.</text>
+  <text class="foot" x="40" y="424">That's the price of separability — and the payoff: the lexicon re-sources, licences clean, and can ship as a separate attachable file.</text>
+</svg>
+
+<style>
+  .ttl   { font:700 12.5px Georgia, serif; fill:#1a1714; letter-spacing:.3px; }
+  .tier  { fill:#faf7ef; stroke:#d8cdb8; stroke-width:1.5; }
+  .tier.hub { fill:#fbf3dc; stroke:#9a7b27; stroke-width:1.8; }
+  .th    { font:700 12px Georgia, serif; fill:#4a443d; letter-spacing:.3px; }
+  .th.gold { fill:#9a7b27; }
+  .ent   { fill:#fff; stroke:#d8cdb8; stroke-width:1.4; }
+  .ent.gold { fill:#fff; stroke:#9a7b27; stroke-width:1.6; }
+  .en    { font:600 13px Georgia, serif; fill:#1a1714; }
+  .ed    { font:italic 10px Georgia, serif; fill:#7a6a3a; }
+  .fk    { fill:none; stroke:#2f6b3f; stroke-width:2.2; }
+  .fkl   { font:700 11.5px Georgia, serif; fill:#2f6b3f; }
+  .fkl2  { font:italic 10px Georgia, serif; fill:#4a443d; }
+  .key   { fill:none; stroke:#9a7b27; stroke-width:1.8; stroke-dasharray:5 3; }
+  .seam  { fill:#fff; stroke:#9a3b2f; stroke-width:1.3; }
+  .seaml { font:600 10.5px Georgia, serif; fill:#9a3b2f; }
+  .foot  { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+</style>

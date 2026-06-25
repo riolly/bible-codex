@@ -1,0 +1,158 @@
+---
+title: "Naming the word: Strong's, lemma, morphology, gloss"
+module: 3
+order: 10
+eyebrow: Module 3 · Phase 3 — Lexicon · Lesson 10
+here: Module 3 · Phase 3 · Lesson 10
+lede: The four little tags in an interlinear — a number, a dictionary form, a parse code, and a one-word meaning — are four different things in the model. Tell them apart and the lexicon stops being a blur.
+summary: An Original Word fans out to four labels. Lemma is the dictionary-form spine that statistics and future dictionaries hang off. Strong's is a numbered id (G####/H####) in its own number space — a join key only, never an anchor. Morphology is a raw parse_code (the truth) decoded by a small code-keyed table, not wide per-word columns. Gloss is one editorial under-the-original cue, stored inline on the hub.
+completeId: "0010"
+---
+import WordLabels from '../../components/diagrams/WordLabels.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Picking up from Lesson 9</span>
+  <p>You have the <span class="term">Original Word</span> hub and how Tokens
+  <span class="term">align</span> to it. Each occurrence in that hub carries four labels — the same
+  four an interlinear prints. This lesson is about telling them apart, because the model treats them
+  as four genuinely different kinds of thing, and the one that trips people up (Strong's vs lemma)
+  is two separate id spaces.</p>
+</div>
+
+## Bible idea: the four tags under a word
+
+Look again at one entry in an interlinear — say the Greek *λόγος* in John 1:1. Around it you'll find:
+
+- a **dictionary form** — the word as a dictionary would list it (its citation form), so every
+  inflected appearance points back to one headword;
+- a **Strong's number** — *G3056*, a numbered handle from Strong's concordance that lets a reader
+  with no Greek look the word up;
+- a **parsing** — a terse code saying *noun, nominative, singular, masculine*; for a verb it'd carry
+  tense, voice, mood;
+- a **gloss** — a single editorial word, *"Word,"* printed under the original so you can read along.
+
+On paper they sit in a row, easy to blur together. In the model they are four distinct things.
+
+## App idea: four labels, four roles
+
+<figure>
+  <WordLabels />
+  <figcaption>One Original Word fans out to lemma, Strong's, morphology, and gloss. Lemma and
+  Strong's are separate id spaces in the re-sourceable lexicon; morphology is a raw code that
+  decodes via a table; the gloss is the one label stored inline on the hub.</figcaption>
+</figure>
+
+Each label is its own idea ([ADR-0007](https://github.com/riolly/bible-codex/blob/main/docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md) #6–#8):
+
+- <span class="term">Lemma</span> — the **dictionary form**, and the lexicon's **spine**. It's the
+  thing occurrence statistics ("this word appears 330 times") and future dictionary entries
+  (BDB, Thayer) hang off. An Original Word references it by `lemma_id`.
+- <span class="term">Strong's</span> — a **numbered lexical id** (G#### / H####) with its own
+  dictionary entry. Crucially it lives in **its own number space**, separate from the lemma — Strong's
+  lumps and splits words differently than a lemma list does. And it is a **join key only**: it
+  identifies a word's lexeme but is **never an Anchor** — you never address an occurrence by its
+  Strong's number, only by coordinate.
+- <span class="term">Morphology</span> — the parse. The source of truth is a raw `parse_code` on the
+  word (e.g. `N-NSM`); a small **decode table** keyed by that code turns it into queryable features
+  (noun · nominative · singular · masculine). Not wide per-word columns — a code plus a lookup, so
+  Greek cases and Hebrew stems don't fight in one sparse table.
+- <span class="term">Gloss</span> — the one **editorial cue** shown under the original (*"Word"*),
+  optionally with helper words. It's stored **inline on the hub**, and it is *not* a translation —
+  it's a translation-agnostic reading aid, distinct from any Token's actual surface text.
+
+<div class="callout">
+  <span class="tag">The distinction to hold onto</span>
+  <p><strong>Lemma ≠ Strong's.</strong> Both identify "which word," but they're two separate
+  identifier spaces — a lemma is the dictionary headword (the statistics spine); a Strong's number
+  is a fixed concordance id. The model keeps them as two columns (`lemma_id`, `strong_id`) precisely
+  because a source can ship one without the other.</p>
+</div>
+
+## Match each label to what it actually is
+
+<Connect
+  client:idle
+  title="Lesson 10 — label ↔ role"
+  hint="Click an interlinear label on the left, then what it is in the model. Watch the lemma/Strong's split."
+  pairs={[
+    { left: "Lemma", right: "The dictionary form — the spine stats and dictionaries hang off" },
+    { left: "Strong's number", right: "A numbered id in its own space — a join key, never an anchor" },
+    { left: "Morphology", right: "A raw parse code, decoded to features by a small table" },
+    { left: "Gloss", right: "One editorial under-the-original cue, stored inline on the hub" },
+    { left: "Reverse-interlinear", right: "Not a stored label — derived by walking alignment" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 10 — recall"
+  completeId="0010"
+  questions={[
+    {
+      stem: "Why are lemma and Strong's kept as two separate columns rather than one?",
+      options: [
+        "Strong's is just an older name for the lemma",
+        "They are two separate identifier spaces — Strong's lumps and splits words differently, and a source may supply one without the other",
+        "Lemma is for Greek and Strong's is for Hebrew",
+        "One stores the gloss and the other stores the parse",
+      ],
+      answer: 1,
+      explain: "The lemma is the dictionary headword (the statistics spine); a Strong's number is a fixed concordance id in its own number space that conflates and splits lexemes differently. Keeping lemma_id and strong_id separate means a corpus can ship Strong's with no lemma (then stats hang off strong_id).",
+    },
+    {
+      stem: "How is morphology stored, and why that way?",
+      options: [
+        "As wide per-word columns: one column for tense, one for case, one for stem",
+        "As a raw parse_code on the word, decoded by a small code-keyed table into features",
+        "As free text the user types per occurrence",
+        "Inline on the gloss, since both describe the word",
+      ],
+      answer: 1,
+      explain: "The raw parse_code is the source of truth; a small morphology(code → features) table is the queryable decode. Wide per-word columns would be a sparse two-language mess (Greek case vs Hebrew stem) and brittle.",
+    },
+    {
+      stem: "What is a gloss, and how does it differ from a translation Token?",
+      options: [
+        "A gloss is just the KJV's word for that verse",
+        "A gloss is one editorial, translation-agnostic cue stored inline on the Original Word; a Token is a real translation's surface text",
+        "A gloss is the Strong's dictionary entry",
+        "A gloss is the reverse-interlinear, computed from alignment",
+      ],
+      answer: 1,
+      explain: "A gloss ('Word' under λόγος) is an editorial under-the-original reading aid on the hub itself — translation-agnostic. A Token is an actual translation's word. Reverse-interlinear (a translation's words under the original) is a separate, derived thing.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: name the four labels on an Original Word and what each one is — and the one-line distinction between lemma and Strong's."
+  answer="1) Lemma — the dictionary form, the lexicon's spine that occurrence stats and future dictionaries hang off (lemma_id). 2) Strong's — a numbered lexical id (G####/H####) in its own number space, a join key only and never an anchor (strong_id). 3) Morphology — a raw parse_code on the word (the truth), decoded to features by a small code-keyed table. 4) Gloss — one editorial under-the-original cue, stored inline on the hub, translation-agnostic. Lemma vs Strong's: both say 'which word', but they are two separate id spaces — the lemma is the dictionary headword, Strong's is a fixed concordance number that lumps and splits differently."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md">ADR-0007</a> (#6–#8) is the canonical "why" for lemma-as-spine, Strong's-as-numbered-key, the morphology decode table, and the inline gloss; <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Lemma</em>, <em>Strong's</em>, <em>Morphology</em>, and <em>Gloss</em>. The P3 tables (`lemma · strongs · morphology`) are in <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>.
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "what's a Hebrew root, and why
+    isn't it a lemma?", "show me a verb parse code", or "why is a gloss not just a tiny translation?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0009-down-to-the-original-word">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 9 — Down to the original word</span>
+    </a>
+    <a href="/lessons/0011-re-sourceable-by-design">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 11 — Re-sourceable by design →</span>
+    </a>
+  </div>
+</div>

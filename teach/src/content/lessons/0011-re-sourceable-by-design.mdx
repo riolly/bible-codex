@@ -1,0 +1,178 @@
+---
+title: "Re-sourceable by design: external ids & three tiers"
+module: 3
+order: 11
+eyebrow: Module 3 · Phase 3 — Lexicon · Lesson 11
+here: Module 3 · Phase 3 · Lesson 11
+lede: Why the original-language layer is a separate, swappable hub and lexicon — opaque external ids, three tiers joined by string keys, and an honest look at the one risk that isn't the schema.
+summary: ADR-0007's storage shape. ow_id is an opaque external id from a maintained corpus, never self-minted or parsed, so it never renumbers under us — the NASB licensing lesson applied to reference data. Three tiers (corpus → hub → lexicon) join by stable string keys with FK only within a tier, so the lexicon re-sources and ships separately. The cost is no DB-enforced cross-tier integrity, so an ingest-time validation pass must check every key — and sourcing a redistributable corpus, not the schema, is the open risk.
+completeId: "check-lexicon"
+---
+import ThreeTiers from '../../components/diagrams/ThreeTiers.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">The last piece of Phase 3</span>
+  <p>You have the <span class="term">Original Word</span> hub, <span class="term">Alignment</span>,
+  and the four labels. One question is left, and it's the one that plays to your home turf: <em>how
+  is this stored so the Greek/Hebrew layer can be swapped, re-sourced, and licensed cleanly without
+  disturbing the reading text or your marks?</em> The answer is a shape you'll recognise from
+  Phase 2 — two worlds joining by coordinate, not by foreign key — now stretched across three tiers.</p>
+</div>
+
+## Bible idea: whose Greek is it?
+
+The English translations are one kind of data — the app ships them. But the Greek and Hebrew
+*underneath*, with their Strong's numbers and parsings, are **somebody else's scholarship**:
+maintained corpora like MACULA, STEPBible, or the Open Scriptures Hebrew Bible. That has two
+consequences a paper interlinear never worries about:
+
+- **You may want to swap the source.** A better-aligned corpus appears, or one you're using changes
+  its licence. You should be able to re-source the original-language layer without rebuilding the
+  reading text.
+- **It must be licensable to redistribute.** This is the **same discipline as the NASB lesson** from
+  the data-sources note: you can only bundle what you're allowed to ship. The reference data has to
+  be chosen for its licence, not just its quality.
+
+## App idea: opaque ids and three tiers
+
+Two storage decisions make the layer swappable
+([ADR-0007](https://github.com/riolly/bible-codex/blob/main/docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md) #1, #4):
+
+- **`ow_id` is an opaque *external* id — never self-minted, never parsed.** It comes straight from
+  the maintained corpus. We don't invent our own word numbering (re-segmenting Hebrew would renumber
+  it, and `ow_id` is migration-fatal — every word-grain Mark and Note since Phase 2 would orphan).
+  Because we never *parse* it, swapping corpora is just a remap table. This is the Anchor's old
+  refusal — "don't store something that renumbers under you" — applied to word ids.
+- **Three tiers, joined by stable string keys; a real FK only *within* a tier.** The data is
+  `corpus → hub → lexicon`. Anything crossing a boundary — `token.ow_id`,
+  `alignment.original_word_id`, `original_word.lemma_id` / `strong_id` / `parse_code` — is a string
+  key with **no foreign key**. The only real FK is corpus-internal (`alignment.token_id → token.id`),
+  and it regenerates on every ingest, exactly like `block_id` did in Phase 1.
+
+<figure>
+  <ThreeTiers />
+  <figcaption>Corpus, hub, and lexicon are three tiers joined by string keys, with no foreign key
+  across a boundary. The only real FK lives inside the corpus tier. So the lexicon versions and
+  re-sources on its own — and can even ship as a separate attachable file.</figcaption>
+</figure>
+
+That seam is the **same idea you met in Phase 2** — the user layer joining the corpus by coordinate
+instead of a foreign key — now applied across three tiers. The payoff: the lexicon and hub
+**version independently** of the reading text. Re-ingest the corpus and the string keys still point;
+re-source Strong's and nothing in the corpus moves.
+
+<div class="callout">
+  <span class="tag">Teaching honesty — the real open questions (OVERVIEW §5)</span>
+  <p>Naming the open risk is honest teaching, not a gap. Three are worth holding:</p>
+  <ul>
+    <li><strong>Sourcing is the open risk, not the schema.</strong> A redistributable interlinear
+    corpus still has to be <em>chosen and licence-checked</em> — the schema is ready; the data isn't
+    picked.</li>
+    <li><strong>"Lemma is the spine" depends on the source.</strong> If a corpus ships Strong's but
+    no lemma id, <code>lemma_id</code> is null at launch and statistics hang off <code>strong_id</code>
+    instead — additive, no migration.</li>
+    <li><strong>There is no DB-enforced cross-tier integrity.</strong> Because the cross-tier links
+    are string keys, the database can't enforce them. An <strong>ingest-time validation pass</strong>
+    must assert every <code>ow_id</code> / <code>strong_id</code> / <code>lemma_id</code> /
+    <code>parse_code</code> resolves. That's the price of separability.</li>
+  </ul>
+</div>
+
+## Match each decision to the reason it exists
+
+<Connect
+  client:idle
+  title="Lesson 11 — decision ↔ reason"
+  hint="Click a storage decision on the left, then the re-sourcing or licensing reason it's made that way."
+  pairs={[
+    { left: "ow_id is an opaque external id, never self-minted", right: "An outside corpus won't renumber under us — so word-grain marks never orphan" },
+    { left: "ow_id is never parsed", right: "Swapping source corpora is just a remap table" },
+    { left: "Tiers join by string keys, FK only within a tier", right: "The lexicon re-sources and ships separately without touching the corpus" },
+    { left: "No DB-enforced integrity across tiers", right: "An ingest-time validation pass checks every key resolves" },
+    { left: "Choose the corpus for its licence", right: "Only redistributable reference data can ship — the NASB lesson again" },
+  ]}
+/>
+
+## Check yourself — and finish Phase 3
+
+<Quiz
+  client:idle
+  title="Lesson 11 — recall (completes Module 3)"
+  completeId="check-lexicon"
+  questions={[
+    {
+      stem: "Why is ow_id an opaque external id rather than a coordinate the app mints itself?",
+      options: [
+        "External ids are shorter to store",
+        "A self-minted id renumbers when Hebrew is re-segmented, which would orphan every word-grain mark; an external maintained id won't renumber under us",
+        "The app can't generate unique numbers",
+        "So the corpus can foreign-key into the lexicon",
+      ],
+      answer: 1,
+      explain: "Stability is outsourced to a maintained corpus. A self-minted original-text coordinate would renumber on re-segmentation, and ow_id is migration-fatal — every word-grain Mark/Note since Phase 2 would orphan. Never parsing it means a corpus swap is just a remap table.",
+    },
+    {
+      stem: "The three tiers join by string keys with a foreign key only within a tier. What does that buy?",
+      options: [
+        "Faster joins at render time",
+        "The lexicon and hub re-source and version independently of the corpus, and can even ship as a separate attachable file",
+        "It removes the need for an ingest step",
+        "It lets the corpus edit the lexicon",
+      ],
+      answer: 1,
+      explain: "Cross-tier links are string keys (no FK), so physical packaging stays reversible and the lexicon re-sources without touching the corpus. The only real FK is corpus-internal (alignment.token_id → token.id), regenerated on ingest like block_id.",
+    },
+    {
+      stem: "What is the price of having no database-enforced integrity across the tiers?",
+      options: [
+        "Queries return wrong results at runtime",
+        "An ingest-time validation pass must assert every ow_id / strong_id / lemma_id / parse_code resolves",
+        "The lexicon can never be updated",
+        "Every read has to re-validate the keys",
+      ],
+      answer: 1,
+      explain: "String keys can't be enforced by the DB, so integrity moves to ingest time: a validation pass checks every cross-tier key resolves (and that token.ow_id is actually in the alignment set). That's the deliberate cost of keeping the tiers separable.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: why is ow_id an opaque external id, how do the three tiers join, and what is the honest open risk?"
+  answer="ow_id is an opaque external id from a maintained corpus (MACULA / STEPBible / OSHB class), never self-minted and never parsed — so it doesn't renumber under us (which would orphan every word-grain mark) and a source swap is just a remap table; it's the NASB licensing lesson and the Anchor's 'don't store something that renumbers' applied to word ids. The three tiers — corpus → hub → lexicon — join by stable string keys with a real FK only within a tier (the corpus-internal alignment.token_id → token.id, regenerated on ingest), so the lexicon re-sources and ships separately. The open risk is sourcing, not the schema: a redistributable interlinear corpus must still be chosen and licence-checked; 'lemma is the spine' depends on the source supplying a lemma id; and because there's no DB-enforced cross-tier integrity, an ingest-time validation pass must assert every key resolves."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md">ADR-0007</a> (#1, #4 + Consequences) is the canonical "why" for the opaque external id and the three-tier string-key shape; <a href="https://github.com/riolly/bible-codex/blob/main/OVERVIEW.md">OVERVIEW.md</a> §5 holds the open questions. The tier boundaries are drawn in <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>, and the licensing discipline is the same one from <a href="https://github.com/riolly/bible-codex/blob/main/data-architecture.md">data-architecture.md</a>'s sourcing notes.
+</PrimarySource>
+
+<div class="callout key">
+  <span class="tag">That's Phase 3</span>
+  <p>You can now explain why the original Greek/Hebrew lives in a separate, <strong>morpheme-grained,
+  externally-keyed hub</strong>, why translations meet it through <strong>many-to-many alignment</strong>,
+  what the <strong>four labels</strong> (lemma · Strong's · morphology · gloss) each are, and why the
+  <strong>three tiers join by string keys</strong> so the lexicon is re-sourceable and licence-clean.
+  Finishing the quiz above completes Module 3 — and lights up <strong>Module 4 · Advanced</strong> on
+  the course hub.</p>
+</div>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Phase 3 down.</strong> Ask me anything before we move on — or say
+    <strong>"start Phase 4"</strong> when you're ready for Portal, Journey, and reading as an adventure.
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0010-naming-the-word">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 10 — Naming the word</span>
+    </a>
+    <a href="/">
+      <span class="label">Course home</span>
+      <span class="title">See Module 4 unlock →</span>
+    </a>
+  </div>
+</div>
