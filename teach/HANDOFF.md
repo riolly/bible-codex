@@ -10,6 +10,9 @@
 > module authored (lessons `0003`–`0005` with new diagrams). Games hydrate `client:idle` (not
 > `client:visible`) so they're reliable in headless preview. Run via the `teach` launch config
 > (Node ≥22.12 — see `.node-version`). This file is kept as the record of the spec that was built.
+>
+> **Next:** Module 2 · Phase 2 — Annotation is specced for the next agent in
+> [`HANDOFF-phase2-annotation.md`](HANDOFF-phase2-annotation.md).
 
 ---
 
