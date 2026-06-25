@@ -1,0 +1,151 @@
+---
+title: "Two kinds of marks: Markup & Ink"
+module: 2
+order: 6
+eyebrow: Module 2 · Phase 2 — Annotation · Lesson 6
+here: Module 2 · Phase 2 · Lesson 6
+lede: The two ways you mark a Bible — a clean underline vs a freehand pen scribble — are two different "physics" in the app. Why one is built first, and why the other waits for a tablet.
+summary: User marks split into two classes with opposite physics — Markup (a re-rendered reference {target, style} that reflows, ports across translations, is queryable, and runs on the web) and Ink (freehand strokes glued to one layout, the physical-Bible feel, tablet-only). Markup is built first.
+completeId: "0006"
+---
+import TwoPhysics from '../../components/diagrams/TwoPhysics.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Where we are — Phase 2 begins</span>
+  <p>Phase 1 was the <strong>text</strong> itself — a <span class="term">Token</span> stream with
+  <span class="term">Block</span> overlays, addressed by <span class="term">Canonical Verse</span>,
+  set by a rules layer. The spine under all of it is the <span class="term">Anchor</span>: a mark
+  stores a scripture <em>coordinate</em>, never pixels. Phase 2 is the second world —
+  <strong>your marks</strong> — and it's the Anchor idea applied to everything you draw.</p>
+</div>
+
+## Bible idea: marking a physical study Bible
+
+Give a reader a paper study Bible for a few years and it fills with layers. Four moves cover almost
+all of it:
+
+- **Underline or highlight** a phrase — "these words matter."
+- **Write a margin note** — your own words, beside the verse.
+- **Draw an arrow** joining two verses that speak to each other.
+- **Doodle freehand** in the margin — a sketch, a bracket, a scribble only you can read.
+
+Now the pain. Buy a **different translation**, or a **large-print edition**, and every one of those
+marks is stranded — they were tied to *that* page, that printing. The Module 0 promise was that
+**your marks survive**. Phase 2 is where the app delivers that for annotations.
+
+And notice two *felt* categories already. A clean underline or arrow is **semantic** — it means
+"emphasise these words," and it would mean the same thing in any edition. A freehand pen scribble is
+**expressive** — its whole value *is* the exact hand-drawn strokes. That difference is the seed of
+the app's split.
+
+## App idea: two classes, two physics
+
+bible-codex stores marks as two classes with opposite physics ([ADR-0002](https://github.com/riolly/bible-codex/blob/main/docs/adr/0002-two-annotation-classes-markup-first.md)):
+
+- <span class="term">Markup</span> stores a **reference** — `{ target, style }` — and lets the app
+  **re-render** it. Because it's a reference and not pixels, it **reflows** when you change the
+  font, **ports** across translations (its Anchor resolves in the new one), is **queryable** by
+  research mode, **syncs as tiny rows**, and **runs in a browser**. Underline, highlight, box,
+  circle, strike, arrow, and the margin note all live here.
+- <span class="term">Ink</span> stores the **strokes themselves** — freehand pen captured over
+  *one* translation's rendered layout. That's the physical-Bible feel, the product's emotional
+  differentiator. But it's **glued to that layout**: not portable across translations, replayed
+  whole rather than queried, and **tablet-only**.
+
+So the build order falls out of the physics: **Markup is built first** (it works on web and desktop,
+and it's the class that genuinely reflows and ports); **Ink is a later, tablet-native phase**.
+
+<figure>
+  <TwoPhysics />
+  <figcaption>One stream of words, two ways to mark it. Markup stores a reference and is
+  re-rendered (so it travels); Ink stores strokes glued to one layout (so it stays put).</figcaption>
+</figure>
+
+## Sort each trait into its class
+
+<Connect
+  client:idle
+  title="Lesson 6 — which physics is this?"
+  hint="Click a thing you'd want to do on the left, then the class that makes it possible."
+  pairs={[
+    { left: "Bump the font size up", right: "Markup reflows — it’s re-rendered from a reference" },
+    { left: "Open the same passage in another translation", right: "Markup ports — its Anchor resolves there too" },
+    { left: "Find every verse you ever boxed", right: "Markup is queryable — it’s structured data" },
+    { left: "Keep the exact hand-drawn pen feel", right: "Ink — raw strokes over one rendered layout" },
+    { left: "Draw only on a tablet, glued to the page", right: "Ink is scoped — bound to those pixels" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 6 — recall"
+  completeId="0006"
+  questions={[
+    {
+      stem: "What does a Markup mark actually store, and who draws it on screen?",
+      options: [
+        "The drawn pixels; the app just displays them",
+        "A reference { target, style }; the app re-renders it each time",
+        "A screenshot of the verse with the mark baked in",
+        "Nothing — it edits the corpus text directly",
+      ],
+      answer: 1,
+      explain: "Markup stores a reference to its target plus a style, and the app re-renders it. Because it's a reference and not pixels, it reflows across fonts, ports across translations, and is queryable.",
+    },
+    {
+      stem: "Why is Ink tablet-only and not portable across translations?",
+      options: [
+        "Tablets simply have bigger screens",
+        "It is captured as freehand strokes over one translation's rendered layout — glued to those pixels",
+        "Phones can't store enough data for strokes",
+        "Ink is encrypted and only tablets hold the key",
+      ],
+      answer: 1,
+      explain: "Ink's value is the exact strokes, captured over one layout's pixels. Change the font or the translation and the substrate moves out from under it — so it stays bound to where it was drawn.",
+    },
+    {
+      stem: "Why is Markup built before Ink?",
+      options: [
+        "Ink is harder to draw on a screen",
+        "Markup is the class that reflows and ports, and it runs on web/desktop where most reading happens",
+        "Ink was cut from the product entirely",
+        "Markup needs no Anchor, so it's simpler",
+      ],
+      answer: 1,
+      explain: "Markup genuinely reflows and ports, runs everywhere (web + desktop), and syncs as tiny rows. Ink is the later tablet-native phase — and our own roadmap (fonts, translations) would silently break v1 Ink glued to a fixed layout.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: name the two annotation classes, what each one stores, and the one-word reason their build order is what it is."
+  answer="Markup stores a reference { target, style } and is re-rendered by the app — so it reflows, ports across translations, is queryable, and runs on the web. Ink stores the freehand strokes themselves over one rendered layout — the physical-Bible feel, but glued to that layout and tablet-only. Build order: portability. Markup is the class that travels, so it's built first; Ink is a later tablet-native phase."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0002-two-annotation-classes-markup-first.md">ADR-0002</a> is the canonical "why" for the two classes and the Markup-first order; <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Markup</em> and <em>Ink</em>. The Phase-2 row in <a href="https://github.com/riolly/bible-codex/blob/main/data-architecture.md">data-architecture.md</a> shows where both land.
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "what exactly is in a style?",
+    "could Ink ever reflow?", or "why can't a phone do Ink?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0005-your-layout-your-rules">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 5 — Your layout, your rules</span>
+    </a>
+    <a href="/lessons/0007-marks-that-point-not-pixels">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 7 — Marks that point, not pixels →</span>
+    </a>
+  </div>
+</div>

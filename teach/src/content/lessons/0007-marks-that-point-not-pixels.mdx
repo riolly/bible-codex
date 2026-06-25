@@ -1,0 +1,161 @@
+---
+title: "Marks that point, not pixels: the scene graph"
+module: 2
+order: 7
+eyebrow: Module 2 · Phase 2 — Annotation · Lesson 7
+here: Module 2 · Phase 2 · Lesson 7
+lede: How Markup is wired underneath — Mark, Note, and Connector as a tiny scene graph whose positions resolve from a scripture Anchor, never from canvas coordinates. The whiteboard, inverted.
+summary: Markup is a small scene graph (Mark, Note, Connector) where endpoints and pins bind to a target through a separate Binding record, so any element can be a target — and no element stores canvas x/y; every position resolves from a scripture Anchor at render. The whiteboard model, inverted, so marks survive reflow and translation change.
+completeId: "0007"
+---
+import SceneGraph from '../../components/diagrams/SceneGraph.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Sequence from '../../islands/Sequence.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Picking up from Lesson 6</span>
+  <p>You met the portable class — <span class="term">Markup</span> — that stores a reference and is
+  re-rendered. This lesson opens it up: <em>how</em> a reference points at the right words, even
+  after the page reflows or the translation changes. The answer is one idea you already know,
+  wearing a new hat.</p>
+</div>
+
+## Bible idea: your marks compose
+
+On paper, marks don't just sit there — they **relate**. You box a phrase, write a note beside it,
+then draw an **arrow from the note to a verse two pages over**. The arrow's whole meaning is "this
+connects to that." A reader's marked-up Bible is a little graph of pointers, not a flat list.
+
+The app keeps that. But it has to survive something paper never faces: the page underneath **moves**.
+Change the font and lines reflow; switch translation and the words are *replaced*. On paper an arrow
+is drawn at fixed spots; in the app, "fixed spots" is exactly the thing that would break.
+
+## App idea: a scene graph anchored to scripture
+
+Markup is a small **scene graph** of three element kinds ([ADR-0003](https://github.com/riolly/bible-codex/blob/main/docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md)):
+
+- <span class="term">Mark</span> — a decoration *on words* (underline, highlight, box, circle,
+  strike). It has no location of its own; its position is **derived from the words it targets**. A
+  Mark uses a **range** Anchor, so it can span a phrase — even *across a verse boundary*.
+- <span class="term">Note</span> — your own free text, **pinned** to a scripture point plus an
+  **offset** into the margin. It has its own identity, so it can itself be pointed at.
+- <span class="term">Connector</span> — an arrow or line joining two <span class="term">Endpoints</span>.
+  When it links two passages, it's a user-authored cross-reference.
+
+The wiring trick: an Endpoint (or a Note's pin) binds to its target through a separate
+<span class="term">Binding</span> record. Because the binding is its own record, **any element can
+be a target** — including an arrow *from a Token to a Note*. This is the `boundElements`
+back-reference idea borrowed straight from Excalidraw / tldraw.
+
+<figure>
+  <SceneGraph />
+  <figcaption>Mark, Note, and Connector resolve — through Binding records — down to a scripture
+  Anchor (book · chapter · verse · word-index). A binding's target may instead be another element's
+  id. Nothing stores canvas x/y.</figcaption>
+</figure>
+
+## The inversion (and the Module 0 callback)
+
+Here's what's borrowed from a whiteboard, and what's **inverted**. A whiteboard like Excalidraw
+stores every shape at absolute **canvas coordinates** — safe, because the canvas never moves. Our
+substrate *does* move: it reflows on a font change, re-paginates on a scroll-mode switch, and is
+**replaced** on a translation change. So we keep the bindings and back-references, but **invert the
+source of truth**: no element stores x/y — every position resolves from a scripture
+<span class="term">Anchor</span> (plus an offset for a free-placed Note), computed at render.
+
+<div class="callout key">
+  <span class="tag">This is the Anchor, again</span>
+  <p>Module 0's <span class="term">Anchor</span> said a mark stores a <em>coordinate</em>, not
+  pixels. Lesson 5 said a layout rule keys off a <em>semantic key</em>, not pixels. Now the whole
+  annotation scene graph says: an element's position is <em>resolved</em> from an Anchor, not
+  pixels. Same refusal, three times — and it's <strong>why your marks live through reflow,
+  scroll-mode switches, and translation swaps with no migration</strong>.</p>
+</div>
+
+## Watch a Mark survive a translation switch
+
+<Sequence
+  client:idle
+  title="Lesson 7 — how a box outlives a translation change"
+  hint="Tap the steps 1 → 5 in the order they happen."
+  items={[
+    "You draw a box over a phrase",
+    "App stores { anchor, style } — no pixels",
+    "You switch to another translation",
+    "The Anchor re-resolves to those words",
+    "The box is re-rendered in its new place",
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 7 — recall"
+  completeId="0007"
+  questions={[
+    {
+      stem: "What is stored on a Connector endpoint so that any element can be its target?",
+      options: [
+        "The pixel coordinates of the arrowhead",
+        "A separate Binding record whose target is a scripture Anchor or another element's id",
+        "A copy of the targeted verse's text",
+        "A direct foreign key into the corpus token table",
+      ],
+      answer: 1,
+      explain: "Each endpoint (and a Note's pin) binds through its own Binding record. Because the binding is first-class, the target can be a scripture Anchor or another element (mark | note) — so an arrow can point from a Token to a Note.",
+    },
+    {
+      stem: "A whiteboard stores shapes at absolute canvas coordinates. Why does bible-codex invert that?",
+      options: [
+        "Canvas coordinates use too much memory",
+        "The text substrate moves — it reflows, re-paginates, and is replaced — so absolute coordinates would orphan every mark",
+        "Designers preferred a different visual style",
+        "Anchors are faster to compute than coordinates",
+      ],
+      answer: 1,
+      explain: "A whiteboard's canvas never moves, so coordinates are safe. Our substrate reflows on font change, re-paginates on scroll-mode switch, and is replaced on translation change. Anchoring to scripture is what keeps marks alive and portable.",
+    },
+    {
+      stem: "Which element kind uses a RANGE anchor, letting one mark span a phrase across a verse boundary?",
+      options: [
+        "Note — its pin is a range",
+        "Connector — each endpoint is a range",
+        "Mark — it carries a start and an end (verse + word-index)",
+        "None — every anchor is a single point",
+      ],
+      answer: 2,
+      explain: "A Mark is a range anchor: start verse/word → end verse/word, so it can cover a phrase even across a verse boundary. A Note pin and a Connector endpoint are points.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: what does the annotation scene graph refuse to store, and what does each element's position resolve from instead — and why does that matter?"
+  answer="It refuses to store absolute canvas coordinates (x/y). Every element's position resolves from a scripture Anchor (book·chapter·verse·word-index), plus an offset for a free-placed Note, computed at render. It matters because the substrate moves — reflow on font change, re-pagination on scroll-mode switch, replacement on translation change — so stored pixels would orphan every mark, while a scripture Anchor re-resolves and keeps them alive and portable."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md">ADR-0003</a> is the canonical "why" for the scene graph and the coordinate inversion; <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Mark</em>, <em>Note</em>, <em>Connector</em>, <em>Endpoint</em>, and <em>Binding</em>. It refines <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0002-two-annotation-classes-markup-first.md">ADR-0002</a> (Markup as the umbrella over these kinds).
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "what happens to an arrow if
+    only one end resolves in the new translation?", "what's the offset on a Note?", or "show me the
+    Binding table".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0006-two-kinds-of-marks">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 6 — Two kinds of marks</span>
+    </a>
+    <a href="/lessons/0008-your-notes-everywhere">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 8 — Your notes, everywhere →</span>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+---
+// Lesson 8 — the user layer is a SYNC-FIRST store (ADR-0006). It is local-first,
+// offline-editable, synced across one user's devices. So: client-generated
+// UUIDv7 ids (no offline collision, time-sortable); it NEVER foreign-keys into
+// the corpus — it joins by COORDINATE (translation · book.slug · ch · verse ·
+// word_index), so a corpus re-ingest that renumbers integer pks orphans nothing;
+// and deletes are soft-delete TOMBSTONES (deleted_at) that propagate offline and
+// double as undo.
+---
+<svg viewBox="0 0 760 350" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="The read-only corpus and the sync-first user layer are joined only by coordinate, never by a foreign key, so a corpus re-ingest orphans nothing.">
+  <text class="ttl" x="40" y="32">TWO WORLDS, JOINED BY COORDINATE — never by a foreign key</text>
+
+  <!-- CORPUS -->
+  <rect class="world corpus" x="40" y="56" width="290" height="240" rx="8"/>
+  <text class="wh" x="58" y="84">CORPUS — read-only</text>
+  <text class="wl" x="58" y="106">integer primary keys</text>
+  <text class="wl" x="58" y="126">re-importable any time</text>
+  <text class="wl2" x="58" y="148">…a re-ingest renumbers every pk</text>
+
+  <!-- USER LAYER -->
+  <rect class="world layer" x="430" y="56" width="290" height="240" rx="8"/>
+  <text class="wh" x="448" y="84">USER LAYER — sync-first</text>
+  <text class="wl mono" x="448" y="106">client UUIDv7 ids</text>
+  <text class="wl2" x="448" y="124">offline-safe · time-sortable</text>
+  <text class="wl mono" x="448" y="150">created · updated · deleted_at</text>
+  <text class="wl2" x="448" y="168">soft-delete tombstone = sync + undo</text>
+  <text class="wl mono" x="448" y="194">Ink = Float32 BLOB</text>
+  <text class="wl2" x="448" y="212">bound to (translation, scroll_mode, hash)</text>
+
+  <!-- the coordinate join in the middle -->
+  <rect class="join" x="338" y="120" width="84" height="112" rx="8"/>
+  <text class="jh" x="380" y="146" text-anchor="middle">JOIN BY</text>
+  <text class="jh" x="380" y="162" text-anchor="middle">COORDINATE</text>
+  <text class="jl" x="380" y="186" text-anchor="middle">translation</text>
+  <text class="jl" x="380" y="200" text-anchor="middle">book.slug</text>
+  <text class="jl" x="380" y="214" text-anchor="middle">ch · verse · word</text>
+
+  <!-- the resolve, not a FK -->
+  <path class="bridge" d="M330,176 L338,176"/>
+  <path class="bridge" d="M422,176 L430,176"/>
+
+  <!-- the rejected FK, struck out -->
+  <rect class="fkbox" x="120" y="312" width="520" height="30" rx="6"/>
+  <text class="fk" x="380" y="332" text-anchor="middle">✗ rejected: a foreign key into the corpus — a re-ingest would orphan every mark</text>
+</svg>
+
+<style>
+  .ttl   { font:700 13px Georgia, serif; fill:#1a1714; letter-spacing:.3px; }
+  .world { stroke-width:1.6; }
+  .corpus{ fill:#f3ecdf; stroke:#b9ad93; }
+  .layer { fill:#eef1f4; stroke:#3a5a78; }
+  .wh    { font:700 14px Georgia, serif; fill:#1a1714; }
+  .wl    { font:13px Georgia, serif; fill:#1a1714; }
+  .wl.mono { font:600 12.5px ui-monospace, Menlo, monospace; fill:#1a1714; }
+  .wl2   { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+  .join  { fill:#fbf3dc; stroke:#9a7b27; stroke-width:1.8; }
+  .jh    { font:700 11px Georgia, serif; fill:#9a7b27; letter-spacing:.4px; }
+  .jl    { font:11px Georgia, serif; fill:#4a443d; }
+  .bridge{ fill:none; stroke:#9a7b27; stroke-width:2.4; }
+  .fkbox { fill:#fff; stroke:#9a3b2f; stroke-width:1.3; stroke-dasharray:5 4; }
+  .fk    { font:italic 12px Georgia, serif; fill:#9a3b2f; }
+</style>

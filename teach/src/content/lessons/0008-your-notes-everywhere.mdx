@@ -1,0 +1,164 @@
+---
+title: "Your notes, everywhere: the sync-first layer"
+module: 2
+order: 8
+eyebrow: Module 2 · Phase 2 — Annotation · Lesson 8
+here: Module 2 · Phase 2 · Lesson 8
+lede: How your marks live on every device, edited offline, and never get orphaned by a corpus update. The storage choices that fall out of "local-first," and the honest list of what's still open.
+summary: The user layer is a sync-first store (ADR-0006) — client UUIDv7 ids (no offline collision, time-sortable), no foreign key into the corpus (it joins by coordinate so a re-ingest orphans nothing), soft-delete tombstones (propagate offline, double as undo), and Ink as an opaque Float32 BLOB bound to one layout. A Layer toggles a whole group on or off.
+completeId: "check-annotation"
+---
+import SyncFirstStore from '../../components/diagrams/SyncFirstStore.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">The last piece of Phase 2</span>
+  <p>You have the two classes (<span class="term">Markup</span> vs <span class="term">Ink</span>)
+  and how Markup is wired (a scene graph resolving to an <span class="term">Anchor</span>). One
+  promise is left: your marks should be on <em>every</em> device, editable offline, and never
+  broken by a corpus update. This lesson is the storage shape that delivers that.</p>
+</div>
+
+## Bible idea: the same Bible, in every pocket
+
+A paper Bible is one object — its marks go where it goes, and nowhere else. The app's promise is the
+opposite: mark a verse on your **phone on the train**, and it's there on your **tablet at home** and
+your **laptop at work** — even if you made the mark with no signal. And if you delete a note by
+mistake, you can get it back. That "local-first, synced, undoable" experience is a set of demands,
+and each one forces a storage decision.
+
+## App idea: a sync-first, coordinate-anchored store
+
+Because the user layer is **local-first, offline-editable, and synced across one user's devices**, it
+diverges sharply from the read-only corpus ([ADR-0006](https://github.com/riolly/bible-codex/blob/main/docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md)):
+
+- **Client-generated `UUIDv7` ids, not autoincrement.** Two devices creating marks offline can't be
+  handed colliding numbers by a server they can't reach — so each row mints its own id locally. v7
+  is **time-sortable**, giving free created-order and good index locality.
+- **The layer never foreign-keys into the corpus.** It joins the corpus by stable **coordinate** —
+  translation + `book.slug` + chapter + verse + word-index — exactly the <span class="term">Anchor</span>
+  again. So when the corpus is **re-ingested** and its integer keys renumber, **nothing is orphaned**.
+- **Deletes are soft-delete tombstones.** Every row carries `created_at` / `updated_at` /
+  `deleted_at`. A hard `DELETE` can't propagate to an offline device (it never learns the row is
+  gone); a tombstone can — and it **doubles as undo**.
+- **Ink is opaque.** Its stroke points are packed as a `Float32` **BLOB** (never one row per point,
+  never JSON) — strokes are replayed whole, never queried point-by-point — bound to a layout by
+  `(translation, scroll_mode)` + a `layout_hash`.
+
+One more piece of furniture: a <span class="term">Layer</span> — a named, toggleable group of marks
+with a `visible` flag. It's the "notes on / off" switch, and it spans both Markup and Ink.
+
+<figure>
+  <SyncFirstStore />
+  <figcaption>The corpus (read-only, integer keys, re-importable) and the user layer (UUIDv7 rows,
+  tombstones) are joined only by coordinate — never a foreign key. That seam is what makes a corpus
+  re-ingest safe.</figcaption>
+</figure>
+
+## Match each storage choice to the reason it exists
+
+<Connect
+  client:idle
+  title="Lesson 8 — decision ↔ reason"
+  hint="Click a storage decision on the left, then the offline/sync reason it's made that way."
+  pairs={[
+    { left: "Client-generated UUIDv7 ids", right: "Offline devices can’t collide — and ids sort by time" },
+    { left: "No foreign key into the corpus", right: "A re-ingest renumbers pks but orphans nothing" },
+    { left: "Soft-delete tombstone (deleted_at)", right: "A delete reaches an offline device — and is undo" },
+    { left: "Ink packed as a Float32 BLOB", right: "Strokes are replayed whole, never queried per point" },
+    { left: "A Layer with a visible flag", right: "Flip a whole group of marks on or off at once" },
+  ]}
+/>
+
+<div class="callout">
+  <span class="tag">Teaching honesty — what's still open (OVERVIEW §5)</span>
+  <p>Naming an open question is honest teaching, not a gap. Still undecided in v1: the exact
+  <strong>target set</strong> a Mark may bind to (Verse · Token range · Original Word) and whether
+  free placement is <strong>snap-only</strong>; the <strong>style vocabulary</strong> (which marks
+  and colours ship first); <strong>Ink's reflow policy</strong> on a font change and the
+  <strong>first pen platform</strong>; and the <strong>sync backend</strong> (PowerSync vs Electric).
+  One thing <em>is</em> locked: <strong>no CRDT</strong> — last-write-wins on <code>updated_at</code>
+  plus tombstones.</p>
+</div>
+
+## Check yourself — and finish Phase 2
+
+<Quiz
+  client:idle
+  title="Lesson 8 — recall (completes Module 2)"
+  completeId="check-annotation"
+  questions={[
+    {
+      stem: "Why are annotation primary keys client-generated UUIDv7 instead of autoincrement integers?",
+      options: [
+        "UUIDs are shorter than integers",
+        "Offline devices can't be handed colliding ids by a server they can't reach; v7 is also time-sortable",
+        "Integers aren't supported by the sync backend",
+        "So the corpus can foreign-key into them",
+      ],
+      answer: 1,
+      explain: "A row created offline must own its identity before any server sees it, and two offline devices must never collide. UUIDv7 gives that, and being time-sortable it yields free created-order and good index locality.",
+    },
+    {
+      stem: "The user layer joins the corpus by coordinate instead of a foreign key. What does that buy?",
+      options: [
+        "Faster joins at render time",
+        "A corpus re-ingest can renumber its integer keys and orphan nothing",
+        "It lets the corpus edit user marks",
+        "It removes the need for an Anchor",
+      ],
+      answer: 1,
+      explain: "Coordinate joins (translation + book.slug + chapter + verse + word-index) are re-ingest-safe: the corpus can be re-imported and renumbered without orphaning a single mark. A foreign key into renumbered pks would break every mark.",
+    },
+    {
+      stem: "Why are deletes stored as soft-delete tombstones rather than hard DELETEs?",
+      options: [
+        "Tombstones save disk space",
+        "A hard delete can't propagate to an offline device, while a tombstone can — and it doubles as undo",
+        "The database forbids deleting rows",
+        "Tombstones make sync faster",
+      ],
+      answer: 1,
+      explain: "An offline device never learns about a hard DELETE. A tombstone (deleted_at) syncs like any other change so every device converges — and because the row still exists, it's also undo.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: list the four storage choices the sync-first layer makes, and the one-line reason for each."
+  answer="1) Client-generated UUIDv7 ids — offline devices can't collide, and v7 is time-sortable. 2) No foreign key into the corpus; join by coordinate — a re-ingest renumbers corpus pks but orphans nothing. 3) Soft-delete tombstones (created/updated/deleted_at) — a delete propagates to offline devices and doubles as undo. 4) Ink as an opaque Float32 BLOB bound to (translation, scroll_mode, layout_hash) — strokes are replayed whole, never queried per point. (Plus: a Layer with a visible flag toggles a group; and no CRDT — last-write-wins + tombstones.)"
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md">ADR-0006</a> is the canonical "why" for every storage choice here; <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Layer</em>; the P2 tables (`layer · mark · note · connector · binding · ink_annotation · ink_stroke`) live in <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>, and <a href="https://github.com/riolly/bible-codex/blob/main/OVERVIEW.md">OVERVIEW.md</a> §5 holds the open questions.
+</PrimarySource>
+
+<div class="callout key">
+  <span class="tag">That's Phase 2</span>
+  <p>You can now explain why user marks split into <strong>Markup vs Ink</strong> (two physics),
+  why Markup is a <strong>scripture-anchored scene graph</strong> (never canvas coordinates), and
+  why the user layer is a <strong>sync-first store</strong> (UUIDv7, coordinate joins, tombstones).
+  Finishing the quiz above completes Module 2 — and lights up <strong>Phase 3 · Lexicon</strong> on
+  the course hub.</p>
+</div>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Phase 2 down.</strong> Ask me anything before we move on — or say
+    <strong>"start Phase 3"</strong> when you're ready to go down to the original Greek and Hebrew.
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0007-marks-that-point-not-pixels">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 7 — Marks that point, not pixels</span>
+    </a>
+    <a href="/">
+      <span class="label">Course home</span>
+      <span class="title">See Phase 3 unlock →</span>
+    </a>
+  </div>
+</div>

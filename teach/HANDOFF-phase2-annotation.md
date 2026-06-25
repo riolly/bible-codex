@@ -6,7 +6,16 @@
 > **teaching content**, not infra: follow the learner's ZPD and ground every claim in the repo
 > ADRs/CONTEXT (cite them). Read §0–§1 for the lay of the land, then execute §2–§7.
 >
-> **Created:** 2026-06-25 · **Decided by:** project owner (riolly) · **Status:** not started.
+> **Created:** 2026-06-25 · **Decided by:** project owner (riolly) · **Status:** ✅ **DONE** (2026-06-25).
+> Module 2 authored: lessons `0006` (Two kinds of marks — Markup vs Ink), `0007` (Marks that point,
+> not pixels — the scene graph), `0008` (Your notes, everywhere — the sync-first layer), with three
+> new diagrams (`TwoPhysics`, `SceneGraph`, `SyncFirstStore`). `0008`'s terminal quiz carries
+> `completeId="check-annotation"` → flips Module 2 → Done and unlocks Module 3. Manifest `m2` got its
+> `href` + `lessonHints`. All games verified via preview (Connect/Sequence/Quiz reach success; the
+> check lands in `localStorage`; the hub flips). `pnpm -C teach build` is clean. No learning record
+> written — the learner has not yet *demonstrated* the material (authoring ≠ learning), and no
+> glossary terms pre-seeded (same reason). **Next:** Phase 3 — Lexicon, specced in
+> [`HANDOFF-phase3-lexicon.md`](HANDOFF-phase3-lexicon.md).
 
 ---
 

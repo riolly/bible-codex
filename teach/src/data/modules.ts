@@ -57,6 +57,9 @@ export const modules: ModuleDef[] = [
     title: 'Phase 2 — Annotation',
     pairBible: 'marking a Bible — underline, note, connect, draw freehand.',
     pairApp: 'Markup vs Ink (the two physics) · scripture-anchored scene graph · Layer.',
+    lessonHints:
+      'Lesson 6 — Two kinds of marks · Lesson 7 — Marks that point, not pixels · Lesson 8 — Your notes, everywhere',
+    href: '/lessons/0006-two-kinds-of-marks',
     checkId: 'check-annotation',
     unlockBy: 'check-reading',
     lockedBadge: 'Upcoming',

@@ -1,0 +1,72 @@
+---
+// Lesson 6 — the two annotation classes have opposite "physics" (ADR-0002).
+// MARKUP stores a reference {target, style} and is re-rendered by the app, so it
+// reflows, ports across translations, is queryable, syncs as tiny rows, and runs
+// on the web. INK is freehand pen strokes captured over ONE translation's
+// rendered layout — the physical-Bible feel, but glued to that layout: not
+// portable, tablet-only. Markup is built first; Ink is a later tablet phase.
+const markup = [
+  'reflows across font changes',
+  'ports across translations',
+  'queryable by research mode',
+  'syncs as tiny rows',
+  'runs in a browser',
+];
+const ink = [
+  'the physical-Bible pen feel',
+  'bound to one layout’s pixels',
+  'not portable across translations',
+  'replayed whole, never queried',
+  'tablet-only (Android, then iPad)',
+];
+const row = (i: number) => 150 + i * 30;
+---
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Two annotation classes with opposite physics: portable Markup, stored as a reference and re-rendered; and scoped Ink, freehand strokes glued to one layout. Markup is built first.">
+  <text class="ttl" x="40" y="34">TWO PHYSICS — one stream of words, two ways to mark it</text>
+
+  <!-- MARKUP column -->
+  <rect class="col markup" x="40" y="56" width="330" height="280" rx="8"/>
+  <text class="ch" x="58" y="84">MARKUP <tspan class="badge">built first</tspan></text>
+  <text class="cs" x="58" y="106">stores a reference</text>
+  <rect class="ref" x="58" y="116" width="200" height="24" rx="4"/>
+  <text class="reft" x="68" y="133">{'{ target, style }'}</text>
+  <text class="csub" x="270" y="133">re-rendered by the app</text>
+  {markup.map((t, i) => (
+    <g>
+      <text class="ok" x="60" y={row(i)}>✓</text>
+      <text class="li" x="78" y={row(i)}>{t}</text>
+    </g>
+  ))}
+
+  <!-- INK column -->
+  <rect class="col ink" x="390" y="56" width="330" height="280" rx="8"/>
+  <text class="ch" x="408" y="84">INK <tspan class="badge later">later, tablet-native</tspan></text>
+  <text class="cs" x="408" y="106">stores the strokes</text>
+  <path class="stroke" d="M408,124 q14,-12 28,0 t28,0 t28,0 t28,0" />
+  <text class="csub" x="560" y="129">captured over one layout</text>
+  {ink.map((t, i) => (
+    <g>
+      <text class={i === 0 ? 'ok' : 'no'} x="410" y={row(i)}>{i === 0 ? '✓' : '✗'}</text>
+      <text class="li" x="428" y={row(i)}>{t}</text>
+    </g>
+  ))}
+</svg>
+
+<style>
+  .ttl   { font:700 13px Georgia, serif; fill:#1a1714; letter-spacing:.3px; }
+  .col   { stroke-width:1.6; }
+  .markup{ fill:#f4f0e4; stroke:#9a7b27; }
+  .ink   { fill:#eef1f4; stroke:#3a5a78; }
+  .ch    { font:700 15px Georgia, serif; fill:#1a1714; }
+  .badge { font:italic 11px Georgia, serif; fill:#2f6b3f; }
+  .badge.later { fill:#7a6a3a; }
+  .cs    { font:italic 12px Georgia, serif; fill:#4a443d; }
+  .csub  { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+  .ref   { fill:#fff; stroke:#9a7b27; stroke-width:1.2; }
+  .reft  { font:600 12px ui-monospace, Menlo, monospace; fill:#1a1714; }
+  .stroke{ fill:none; stroke:#3a5a78; stroke-width:2.2; stroke-linecap:round; }
+  .ok    { font:700 13px Georgia, serif; fill:#2f6b3f; }
+  .no    { font:700 13px Georgia, serif; fill:#9a3b2f; }
+  .li    { font:13px Georgia, serif; fill:#1a1714; }
+</style>
