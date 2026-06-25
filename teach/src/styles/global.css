@@ -209,7 +209,7 @@ th { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; colo
 .toc {
   display: none; /* revealed by the width query below */
 }
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
   .toc {
     display: block;
     position: fixed;
@@ -276,6 +276,131 @@ th { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; colo
 .toc-item a:hover { color: var(--gilt); }
 .toc-item.past a { color: var(--rule); }
 .toc-item.active a { color: var(--ink); font-weight: 700; }
+
+/* ============================================================================
+   COURSE RAIL — always-visible course tree in the LEFT margin (CourseRail.tsx).
+   Mirrors the right TOC (same top, same 2rem offset, same width query). A spine
+   of module dots labelled "Module N · Title"; each expands/collapses to reveal
+   its lessons. Current module open + ringed, current lesson marked, done dots
+   fill gilt, locked dots dim.
+   ============================================================================ */
+.rail {
+  display: none; /* revealed by the width query below */
+}
+@media (min-width: 1280px) {
+  .rail {
+    display: block;
+    position: fixed;
+    top: 6.5rem; /* aligned with the right TOC */
+    /* sit 2rem left of the 46rem column's left edge (23rem = half of it); the
+       rail extends leftward from there into the margin */
+    right: calc(50% + 23rem + 2rem);
+    width: 13rem;
+    /* room for the .here dot's 3px glow ring, else overflow-x clips it */
+    padding-left: 0.3rem;
+    max-height: calc(100vh - 9rem);
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+}
+.rail-h {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gilt);
+  font-weight: 700;
+  margin: 0 0 0.85rem;
+}
+.rail-mods { position: relative; list-style: none; margin: 0; padding: 0; }
+/* the spine threaded down through the dot centres */
+.rail-mods::before {
+  content: "";
+  position: absolute;
+  left: 0.7rem;
+  top: 0.9rem;
+  bottom: 0.9rem;
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--rule);
+  border-radius: 2px;
+}
+.rail-mod { position: relative; }
+
+/* module row — the dot + label + caret; a <button> when it toggles lessons */
+.rail-mtoggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0.28rem 0;
+  color: var(--ink-soft);
+  position: relative;
+  z-index: 1;
+}
+span.rail-mtoggle { cursor: default; }
+.rail-mtitle { flex: 1 1 auto; font-size: 0.82rem; line-height: 1.28; }
+.rail-caret { flex: 0 0 auto; font-size: 0.62rem; color: var(--ink-soft); opacity: 0.55; }
+.rail-mtoggle:hover .rail-mtitle { color: var(--gilt); }
+.rail-mod.here .rail-mtitle { color: var(--ink); font-weight: 700; }
+.rail-mod.locked .rail-mtitle,
+.rail-mod.locked .rail-caret { opacity: 0.5; }
+
+/* the dot */
+.rail-dot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: lining-nums;
+  background: var(--parchment);
+  border: 1.5px solid var(--rule);
+  color: var(--ink-soft);
+  transition: border-color 0.12s, color 0.12s, box-shadow 0.12s;
+}
+.rail-mod.open .rail-dot { border-color: var(--gilt-soft); }
+.rail-mod.done .rail-dot { background: var(--gilt); border-color: var(--gilt); color: #fff; }
+.rail-mod.locked .rail-dot { border-style: dashed; opacity: 0.5; }
+.rail-mod.here .rail-dot {
+  border-color: var(--gilt);
+  color: var(--ink);
+  box-shadow: 0 0 0 3px var(--gilt-soft);
+}
+.rail-mod.here.done .rail-dot { color: #fff; }
+
+/* a module's lessons, indented past the dot/spine */
+.rail-lessons { list-style: none; margin: 0 0 0.3rem; padding: 0 0 0.1rem 2rem; }
+.rail-lesson { margin: 0; }
+.rail-lesson a {
+  position: relative;
+  display: block;
+  border: 0;
+  text-decoration: none;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  padding: 0.16rem 0;
+  line-height: 1.3;
+}
+.rail-lesson a:hover { color: var(--gilt); }
+.rail-lesson.now a { color: var(--ink); font-weight: 700; }
+/* marker sits in the lessons' left gutter so the title never shifts */
+.rail-lesson.now a::before {
+  content: "▸";
+  position: absolute;
+  left: -0.9rem;
+  color: var(--gilt);
+}
 
 /* ============================================================================
    COURSE HUB — module cards (was inline in the old index.html)
@@ -474,7 +599,7 @@ a.module:hover { border-color: var(--gilt); box-shadow: 0 2px 10px rgba(154,123,
    ============================================================================ */
 @media print {
   body { background: #fff; color: #000; font-size: 11pt; max-width: none; padding: 0; }
-  .toc { display: none; }
+  .toc, .rail { display: none; }
   .course-nav, .next-links, .ask-teacher, .recall button.flip, .quiz-opt { display: revert; }
   a { color: #000; border: 0; }
   .callout, .quiz, .recall, .primary-source { break-inside: avoid; border-color: #999; }

@@ -12,9 +12,9 @@ export async function getStaticPaths() {
 
 const { lesson } = Astro.props;
 const { Content } = await render(lesson);
-const { title, eyebrow, lede, here } = lesson.data;
+const { title, eyebrow, lede, here, module } = lesson.data;
 ---
-<Layout title={`${title} · bible-codex`} here={here} footer={false}>
+<Layout title={`${title} · bible-codex`} here={here} moduleNum={module} lessonId={lesson.id} footer={false}>
   {eyebrow && <p class="eyebrow">{eyebrow}</p>}
   <h1>{title}</h1>
   <p class="lede" set:html={lede} />

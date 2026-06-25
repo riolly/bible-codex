@@ -2,8 +2,11 @@
 // The single page chrome: <head>, global styles, the one nav, the
 // ask-teacher footer. Every page and lesson routes through here so the
 // header can no longer drift between files.
+import { getCollection } from 'astro:content';
 import CourseNav from '../components/CourseNav.astro';
 import Toc from '../islands/Toc.tsx';
+import CourseRail from '../islands/CourseRail.tsx';
+import { modules } from '../data/modules';
 import '../styles/global.css';
 
 interface Props {
@@ -12,10 +15,30 @@ interface Props {
   eyebrow?: string;
   /** current-location breadcrumb shown at the end of the nav */
   here?: string;
+  /** the module this page belongs to — lights its dot in the left course rail */
+  moduleNum?: number;
+  /** the lesson id this page is — highlights its row in the rail flyout */
+  lessonId?: string;
   /** hide the shared ask-teacher footer (e.g. the hub supplies its own) */
   footer?: boolean;
 }
-const { title, here, footer = true } = Astro.props;
+const { title, here, moduleNum, lessonId, footer = true } = Astro.props;
+
+// The course spine for the left rail: each module plus its lessons (sorted),
+// computed once here so the rail island gets a plain, serialisable tree and the
+// lesson↔module mapping stays in the content collection, not duplicated.
+const lessons = await getCollection('lessons');
+const courseTree = modules.map((m) => ({
+  num: m.num,
+  title: m.title,
+  href: m.href ?? null,
+  checkId: m.checkId ?? null,
+  unlockBy: m.unlockBy ?? null,
+  lessons: lessons
+    .filter((l) => l.data.module === m.num)
+    .sort((a, b) => a.data.order - b.data.order)
+    .map((l) => ({ id: l.id, order: l.data.order, title: l.data.title })),
+}));
 ---
 <!doctype html>
 <html lang="en">
@@ -27,6 +50,7 @@ const { title, here, footer = true } = Astro.props;
   </head>
   <body>
     <CourseNav here={here} />
+    <CourseRail tree={courseTree} currentModule={moduleNum} currentLesson={lessonId} client:idle />
     <main>
       <slot />
     </main>
