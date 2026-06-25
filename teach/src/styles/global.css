@@ -74,7 +74,6 @@ body {
 .course-nav a { color: var(--ink-soft); text-decoration: none; border: 0; }
 .course-nav a:hover { color: var(--gilt); }
 .course-nav .sep { color: var(--rule); }
-.course-nav .here { color: var(--ink); }
 
 /* --- headings ------------------------------------------------------------ */
 h1, h2, h3 { font-weight: 700; line-height: 1.2; }

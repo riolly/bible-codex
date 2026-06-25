@@ -80,7 +80,7 @@ export const modules: ModuleDef[] = [
   {
     num: 4,
     id: 'm4',
-    title: 'Remaining — Advanced',
+    title: 'Phase 4 — Advanced',
     pairBible: 'reading as a journey and an adventure.',
     pairApp: 'Portal · Journey · Themes & tags · research mode · the journey-state engine.',
     lessonHints:

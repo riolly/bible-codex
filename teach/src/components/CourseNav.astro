@@ -1,12 +1,8 @@
 ---
 // ONE course nav — the single source of truth that fixes the old hand-copied
-// drift. Canonical links are always Course home · Architecture map · Glossary,
-// followed by an optional "here" breadcrumb for the current location.
-interface Props {
-  here?: string;
-}
-const { here } = Astro.props;
-
+// drift. Just the canonical links: Course home · Architecture map · Glossary.
+// The current location is shown by each page's eyebrow (above its H1), not a
+// breadcrumb here — that only duplicated the eyebrow and read like a 4th link.
 const links = [
   { href: '/', label: 'Course home' },
   { href: '/reference/architecture-map', label: 'Architecture map' },
@@ -20,10 +16,4 @@ const links = [
       <a href={l.href}>{l.label}</a>
     </>
   ))}
-  {here && (
-    <>
-      <span class="sep">·</span>
-      <span class="here">{here}</span>
-    </>
-  )}
 </nav>

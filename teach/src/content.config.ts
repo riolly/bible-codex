@@ -10,11 +10,10 @@ const lessons = defineCollection({
     title: z.string(),
     module: z.number(),
     order: z.number(),
+    /** the "you are here" line above the H1, e.g. "Phase 1 — Reading · Lesson 3" */
     eyebrow: z.string().optional(),
     lede: z.string(),
     summary: z.string(),
-    /** breadcrumb shown in the nav, e.g. "Module 0 · Overview · Lesson 1" */
-    here: z.string().optional(),
     /** id the lesson's check marks complete (defaults to the lesson id) */
     completeId: z.string().optional(),
   }),

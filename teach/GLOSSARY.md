@@ -48,12 +48,12 @@ through two shared **hubs** — the **Canonical Verse** (coarse, by passage) and
 Word (fine, by the underlying Greek/Hebrew word).
 _Avoid_: linking translations token-to-token
 
-**Original Word** *(met fully in Module 3)*:
+**Original Word** *(met fully in Phase 3)*:
 The single Greek/Hebrew word-occurrence that translations align to — the fine, word-grain
 hub. (A whole word in Greek; a morpheme in Hebrew.)
 _Avoid_: lemma (dictionary form), Strong's (the lexical id)
 
 ---
-*Module 0 · Overview complete: [Lesson 1 — The Anchor](/lessons/0001-the-anchor),
+*Overview complete: [Lesson 1 — The Anchor](/lessons/0001-the-anchor),
 [Lesson 2 — Two worlds & spokes](/lessons/0002-two-worlds-and-spokes). Phase-by-phase
-terms get added as each module is taught.*
+terms get added as each phase is taught.*

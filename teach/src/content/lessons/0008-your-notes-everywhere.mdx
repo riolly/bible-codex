@@ -2,8 +2,7 @@
 title: "Your notes, everywhere: the sync-first layer"
 module: 2
 order: 8
-eyebrow: Module 2 · Phase 2 — Annotation · Lesson 8
-here: Module 2 · Phase 2 · Lesson 8
+eyebrow: Phase 2 — Annotation · Lesson 8
 lede: How your marks live on every device, edited offline, and never get orphaned by a corpus update. The storage choices that fall out of "local-first," and the honest list of what's still open.
 summary: The user layer is a sync-first store (ADR-0006) — client UUIDv7 ids (no offline collision, time-sortable), no foreign key into the corpus (it joins by coordinate so a re-ingest orphans nothing), soft-delete tombstones (propagate offline, double as undo), and Ink as an opaque Float32 BLOB bound to one layout. A Layer toggles a whole group on or off.
 completeId: "check-annotation"
@@ -88,7 +87,7 @@ with a `visible` flag. It's the "notes on / off" switch, and it spans both Marku
 
 <Quiz
   client:idle
-  title="Lesson 8 — recall (completes Module 2)"
+  title="Lesson 8 — recall (completes Phase 2)"
   completeId="check-annotation"
   questions={[
     {
@@ -142,7 +141,7 @@ with a `visible` flag. It's the "notes on / off" switch, and it spans both Marku
   <p>You can now explain why user marks split into <strong>Markup vs Ink</strong> (two physics),
   why Markup is a <strong>scripture-anchored scene graph</strong> (never canvas coordinates), and
   why the user layer is a <strong>sync-first store</strong> (UUIDv7, coordinate joins, tombstones).
-  Finishing the quiz above completes Module 2 — and lights up <strong>Phase 3 · Lexicon</strong> on
+  Finishing the quiz above completes Phase 2 — and lights up <strong>Phase 3 · Lexicon</strong> on
   the course hub.</p>
 </div>
 

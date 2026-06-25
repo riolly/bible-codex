@@ -48,7 +48,7 @@ function Card({ m, s }: { m: ModuleDef; s: Status }) {
   const inner = (
     <>
       <h3>
-        Module {m.num} · {m.title} <span class={'badge ' + s.cls}>{s.label}</span>
+        {m.title} <span class={'badge ' + s.cls}>{s.label}</span>
       </h3>
       {m.blurb && <p class="pair">{m.blurb}</p>}
       {(m.pairBible || m.pairApp) && (
@@ -123,7 +123,7 @@ export default function Modules({ modules }: Props) {
       </div>
       {courseComplete ? (
         <a class="next-cta complete" href="/reference/architecture-map">
-          <span class="label">Course complete — all five modules done</span>
+          <span class="label">Course complete — every phase done</span>
           <span class="title">You've walked the whole blueprint · revisit the map →</span>
         </a>
       ) : (

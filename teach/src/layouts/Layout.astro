@@ -11,18 +11,16 @@ import '../styles/global.css';
 
 interface Props {
   title: string;
-  /** small uppercase kicker above the H1 */
+  /** small uppercase kicker above the H1 — also the page's "you are here" line */
   eyebrow?: string;
-  /** current-location breadcrumb shown at the end of the nav */
-  here?: string;
-  /** the module this page belongs to — lights its dot in the left course rail */
+  /** the phase this page belongs to — lights its dot in the left course rail */
   moduleNum?: number;
   /** the lesson id this page is — highlights its row in the rail flyout */
   lessonId?: string;
   /** hide the shared ask-teacher footer (e.g. the hub supplies its own) */
   footer?: boolean;
 }
-const { title, here, moduleNum, lessonId, footer = true } = Astro.props;
+const { title, moduleNum, lessonId, footer = true } = Astro.props;
 
 // The course spine for the left rail: each module plus its lessons (sorted),
 // computed once here so the rail island gets a plain, serialisable tree and the
@@ -49,7 +47,7 @@ const courseTree = modules.map((m) => ({
     <meta name="generator" content={Astro.generator} />
   </head>
   <body>
-    <CourseNav here={here} />
+    <CourseNav />
     <CourseRail tree={courseTree} currentModule={moduleNum} currentLesson={lessonId} client:idle />
     <main>
       <slot />
@@ -59,7 +57,7 @@ const courseTree = modules.map((m) => ({
       <div class="lesson-footer">
         <div class="ask-teacher">
           <strong>I'm your teacher.</strong> Ask anything that's unclear, or say
-          <strong>"start Phase 1"</strong> when you're ready for the next module.
+          <strong>"start Phase 1"</strong> when you're ready for the next phase.
         </div>
       </div>
     )}

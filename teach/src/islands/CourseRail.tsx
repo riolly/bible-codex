@@ -1,6 +1,6 @@
 // Left-margin course tree — always visible (mirrors the right TOC). A vertical
-// spine of module dots, each labelled "Module N · Title", that expands/collapses
-// to reveal its lessons ("Lesson N — title"). The current module is open by
+// spine of numbered dots, each labelled with its phase title, that expands/collapses
+// to reveal its lessons ("Lesson N — title"). The current phase is open by
 // default and the current lesson is marked. Reuses the same `completed` store +
 // unlock semantics as the hub (Modules.tsx), so the two never disagree.
 import { useEffect, useState } from 'preact/hooks';
@@ -68,7 +68,7 @@ export default function CourseRail({ tree, currentModule, currentLesson }: Props
           const dot = <span class="rail-dot">{done ? '✓' : m.num}</span>;
           const title = (
             <span class="rail-mtitle">
-              Module {m.num} · {m.title}
+              {m.title}
             </span>
           );
           return (

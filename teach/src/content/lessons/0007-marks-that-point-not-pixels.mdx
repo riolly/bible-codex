@@ -2,8 +2,7 @@
 title: "Marks that point, not pixels: the scene graph"
 module: 2
 order: 7
-eyebrow: Module 2 · Phase 2 — Annotation · Lesson 7
-here: Module 2 · Phase 2 · Lesson 7
+eyebrow: Phase 2 — Annotation · Lesson 7
 lede: How Markup is wired underneath — Mark, Note, and Connector as a tiny scene graph whose positions resolve from a scripture Anchor, never from canvas coordinates. The whiteboard, inverted.
 summary: Markup is a small scene graph (Mark, Note, Connector) where endpoints and pins bind to a target through a separate Binding record, so any element can be a target — and no element stores canvas x/y; every position resolves from a scripture Anchor at render. The whiteboard model, inverted, so marks survive reflow and translation change.
 completeId: "0007"
@@ -56,7 +55,7 @@ back-reference idea borrowed straight from Excalidraw / tldraw.
   id. Nothing stores canvas x/y.</figcaption>
 </figure>
 
-## The inversion (and the Module 0 callback)
+## The inversion (and the Overview callback)
 
 Here's what's borrowed from a whiteboard, and what's **inverted**. A whiteboard like Excalidraw
 stores every shape at absolute **canvas coordinates** — safe, because the canvas never moves. Our
@@ -67,7 +66,7 @@ source of truth**: no element stores x/y — every position resolves from a scri
 
 <div class="callout key">
   <span class="tag">This is the Anchor, again</span>
-  <p>Module 0's <span class="term">Anchor</span> said a mark stores a <em>coordinate</em>, not
+  <p>The Overview's <span class="term">Anchor</span> said a mark stores a <em>coordinate</em>, not
   pixels. Lesson 5 said a layout rule keys off a <em>semantic key</em>, not pixels. Now the whole
   annotation scene graph says: an element's position is <em>resolved</em> from an Anchor, not
   pixels. Same refusal, three times — and it's <strong>why your marks live through reflow,

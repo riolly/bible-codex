@@ -2,8 +2,7 @@
 title: "Re-sourceable by design: external ids & three tiers"
 module: 3
 order: 11
-eyebrow: Module 3 · Phase 3 — Lexicon · Lesson 11
-here: Module 3 · Phase 3 · Lesson 11
+eyebrow: Phase 3 — Lexicon · Lesson 11
 lede: Why the original-language layer is a separate, swappable hub and lexicon — opaque external ids, three tiers joined by string keys, and an honest look at the one risk that isn't the schema.
 summary: ADR-0007's storage shape. ow_id is an opaque external id from a maintained corpus, never self-minted or parsed, so it never renumbers under us — the NASB licensing lesson applied to reference data. Three tiers (corpus → hub → lexicon) join by stable string keys with FK only within a tier, so the lexicon re-sources and ships separately. The cost is no DB-enforced cross-tier integrity, so an ingest-time validation pass must check every key — and sourcing a redistributable corpus, not the schema, is the open risk.
 completeId: "check-lexicon"
@@ -101,7 +100,7 @@ re-source Strong's and nothing in the corpus moves.
 
 <Quiz
   client:idle
-  title="Lesson 11 — recall (completes Module 3)"
+  title="Lesson 11 — recall (completes Phase 3)"
   completeId="check-lexicon"
   questions={[
     {
@@ -156,7 +155,7 @@ re-source Strong's and nothing in the corpus moves.
   externally-keyed hub</strong>, why translations meet it through <strong>many-to-many alignment</strong>,
   what the <strong>four labels</strong> (lemma · Strong's · morphology · gloss) each are, and why the
   <strong>three tiers join by string keys</strong> so the lexicon is re-sourceable and licence-clean.
-  Finishing the quiz above completes Module 3 — and lights up <strong>Module 4 · Advanced</strong> on
+  Finishing the quiz above completes Phase 3 — and lights up <strong>Phase 4 · Advanced</strong> on
   the course hub.</p>
 </div>
 
@@ -172,7 +171,7 @@ re-source Strong's and nothing in the corpus moves.
     </a>
     <a href="/">
       <span class="label">Course home</span>
-      <span class="title">See Module 4 unlock →</span>
+      <span class="title">See Phase 4 unlock →</span>
     </a>
   </div>
 </div>

@@ -2,10 +2,9 @@
 title: "The earned cross-reference: Portal"
 module: 4
 order: 12
-eyebrow: Module 4 · Remaining — Advanced · Lesson 12
-here: Module 4 · Advanced · Lesson 12
+eyebrow: Phase 4 — Advanced · Lesson 12
 lede: "A word that quietly glows once you've earned it, then carries you to the passage it echoes. That's a Portal — and it adds nothing to the data model you already learned."
-summary: "A Portal is the wishlist's earned cross-reference. It rides entirely on primitives already locked: a Cross-reference (the editorial link between two Anchors) wrapped by a visibility gate (reading progress / collected clues) and a presentation skin (glow + transport). No new data model — a gate and a skin. The Genesis 1 to John 1 'beginning' thread is the worked example, and because Module 3 gave us word-grain, the glow can ride a single word. This is MISSION criterion #4 in its cleanest form, and the licence for it is ADR-0005's design-now-build-later."
+summary: "A Portal is the wishlist's earned cross-reference. It rides entirely on primitives already locked: a Cross-reference (the editorial link between two Anchors) wrapped by a visibility gate (reading progress / collected clues) and a presentation skin (glow + transport). No new data model — a gate and a skin. The Genesis 1 to John 1 'beginning' thread is the worked example, and because Phase 3 gave us word-grain, the glow can ride a single word. This is MISSION criterion #4 in its cleanest form, and the licence for it is ADR-0005's design-now-build-later."
 completeId: "0012"
 ---
 import PortalGate from '../../components/diagrams/PortalGate.astro';
@@ -16,7 +15,7 @@ import Recall from '../../islands/Recall.tsx';
 
 <div class="callout mission">
   <span class="tag">Where we are — Phase 4 begins, and the shape inverts</span>
-  <p>The first four modules each opened with a <em>locked</em> schema and asked "why is it built this
+  <p>Every phase so far opened with a <em>locked</em> schema and asked "why is it built this
   way?" Phase 4 is different on purpose: it is the <strong>least-decided</strong> phase — no dedicated
   ADR, just ideas parked in <a href="https://github.com/riolly/bible-codex/blob/main/WISHLIST.md">WISHLIST.md</a>.
   So the question flips. Instead of "here is a schema, defend it," it's <strong>"here is a feature you
@@ -37,7 +36,7 @@ That's the feel the app is chasing: reading as an **adventure**, where a cross-r
 
 ## App idea: a Portal is a gate + a skin over a Cross-reference
 
-Back in Module 2 you met the **Connector** — *your* hand-drawn arrow between two passages. Its
+Back in Phase 2 you met the **Connector** — *your* hand-drawn arrow between two passages. Its
 read-only, shipped-with-the-app sibling is the <span class="term">Cross-reference</span>: an
 **editorial link between two Anchors** (think the Treasury of Scripture Knowledge — "this verse
 connects to that one"). It's already in the data model.
@@ -64,7 +63,7 @@ A **Portal** is that exact Cross-reference with **two thin wrappers that store n
   <p><strong>No new data model. A Portal is a gate and a skin over a Cross-reference.</strong> That's
   why <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> can pin it
   in a single phrase — <em>"a Portal is a Cross-reference gated by reading progress"</em> — and why it
-  costs <strong>zero migration</strong> to add later. And because Module 3 gave the model
+  costs <strong>zero migration</strong> to add later. And because Phase 3 gave the model
   <strong>word-grain</strong> (the Original Word hub), the glow can ride a <em>single word</em>, not
   just a whole verse — "beginning" itself lights up.</p>
 </div>
@@ -79,7 +78,7 @@ A **Portal** is that exact Cross-reference with **two thin wrappers that store n
     { left: "The link between the two passages", right: "Cross-reference — the editorial link between two Anchors (already shipped)" },
     { left: "Show it only once you've earned it", right: "Reading progress / collected clues — a visibility gate" },
     { left: "The glow on the word + the transport", right: "Presentation — a skin, not a new store" },
-    { left: "The glow can land on one word, not just a verse", right: "The Original Word hub — word-grain, from Module 3" },
+    { left: "The glow can land on one word, not just a verse", right: "The Original Word hub — word-grain, from Phase 3" },
     { left: "Why it can wait for later with no migration", right: "Design-now-build-later — the four phases composed (ADR-0005)" },
   ]}
 />
@@ -130,7 +129,7 @@ A **Portal** is that exact Cross-reference with **two thin wrappers that store n
 <Recall
   client:idle
   prompt="From memory: what is a Portal, what are its two wrappers, and why does it cost zero new data model?"
-  answer="A Portal is the earned cross-reference: a word glows only once you've read your way to it, then carries you to the passage it echoes (the Genesis 1 ↔ John 1 'beginning' thread). Underneath it is a plain Cross-reference — the editorial, shipped link between two Anchors (the read-only sibling of a user's Connector) — wrapped by two things that store nothing new: a gate (reading progress / collected clues) that decides WHEN it shows, and a skin (glow + transport) that decides HOW it feels. So it adds no data model — 'a gate and a skin over a Cross-reference' — which is why CONTEXT pins it as 'a Cross-reference gated by reading progress' and why it defers with zero migration (ADR-0005's design-now-build-later). Because Module 3 added word-grain, the glow can ride a single Original Word, not just a verse."
+  answer="A Portal is the earned cross-reference: a word glows only once you've read your way to it, then carries you to the passage it echoes (the Genesis 1 ↔ John 1 'beginning' thread). Underneath it is a plain Cross-reference — the editorial, shipped link between two Anchors (the read-only sibling of a user's Connector) — wrapped by two things that store nothing new: a gate (reading progress / collected clues) that decides WHEN it shows, and a skin (glow + transport) that decides HOW it feels. So it adds no data model — 'a gate and a skin over a Cross-reference' — which is why CONTEXT pins it as 'a Cross-reference gated by reading progress' and why it defers with zero migration (ADR-0005's design-now-build-later). Because Phase 3 added word-grain, the glow can ride a single Original Word, not just a verse."
 />
 
 <PrimarySource>
