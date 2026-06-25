@@ -3,6 +3,7 @@
 // ask-teacher footer. Every page and lesson routes through here so the
 // header can no longer drift between files.
 import CourseNav from '../components/CourseNav.astro';
+import Toc from '../islands/Toc.tsx';
 import '../styles/global.css';
 
 interface Props {
@@ -26,7 +27,10 @@ const { title, here, footer = true } = Astro.props;
   </head>
   <body>
     <CourseNav here={here} />
-    <slot />
+    <main>
+      <slot />
+    </main>
+    <Toc client:idle />
     {footer && (
       <div class="lesson-footer">
         <div class="ask-teacher">

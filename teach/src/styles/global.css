@@ -102,6 +102,7 @@ h2 {
   margin: 2.8rem 0 0.8rem;
   padding-bottom: 0.3rem;
   border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 1.5rem; /* breathing room when the TOC jumps to a section */
 }
 h3 { font-size: 1.15rem; margin: 1.8rem 0 0.5rem; color: var(--ink-soft); }
 
@@ -199,6 +200,82 @@ th { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; colo
   margin: 1.8rem 0;
 }
 .primary-source .tag { color: var(--gilt); font-weight: 700; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ============================================================================
+   ON-THIS-PAGE RAIL — scroll-spy TOC parked in the right margin (Toc.tsx).
+   Fixed beside the centered 46rem column; only appears where the margin can
+   spare ~13rem. A gilt track fills with reading progress; current section lit.
+   ============================================================================ */
+.toc {
+  display: none; /* revealed by the width query below */
+}
+@media (min-width: 1200px) {
+  .toc {
+    display: block;
+    position: fixed;
+    top: 6.5rem;
+    /* 23rem = half the 46rem column; sit 2rem past its right edge */
+    left: calc(50% + 23rem + 2rem);
+    width: 12.5rem;
+    max-height: calc(100vh - 9rem);
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .toc::-webkit-scrollbar { display: none; }
+}
+.toc-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gilt);
+  font-weight: 700;
+  margin: 0 0 0.85rem;
+}
+.toc-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 1rem;
+}
+/* the unfilled track */
+.toc-list::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  bottom: 0.1rem;
+  width: 2px;
+  background: var(--rule);
+  border-radius: 2px;
+}
+/* the gilt fill — scaled by reading progress (0..1) set inline by the island */
+.toc-list::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  bottom: 0.1rem;
+  width: 2px;
+  background: var(--gilt);
+  border-radius: 2px;
+  transform: scaleY(var(--toc-progress, 0));
+  transform-origin: top;
+  transition: transform 0.1s linear;
+}
+.toc-item { margin: 0; line-height: 1.32; }
+.toc-item + .toc-item { margin-top: 0.55rem; }
+.toc-item a {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  border: 0;
+  text-decoration: none;
+  transition: color 0.12s;
+}
+.toc-item a:hover { color: var(--gilt); }
+.toc-item.past a { color: var(--rule); }
+.toc-item.active a { color: var(--ink); font-weight: 700; }
 
 /* ============================================================================
    COURSE HUB — module cards (was inline in the old index.html)
@@ -397,6 +474,7 @@ a.module:hover { border-color: var(--gilt); box-shadow: 0 2px 10px rgba(154,123,
    ============================================================================ */
 @media print {
   body { background: #fff; color: #000; font-size: 11pt; max-width: none; padding: 0; }
+  .toc { display: none; }
   .course-nav, .next-links, .ask-teacher, .recall button.flip, .quiz-opt { display: revert; }
   a { color: #000; border: 0; }
   .callout, .quiz, .recall, .primary-source { break-inside: avoid; border-color: #999; }
