@@ -116,6 +116,10 @@ debating non-migration-fatal details.
   are spokes and the corpus is re-ingestable. POC data is **hand-prepared, 4 chapters, no
   scraper** (and the NASB text is reproduced-from-memory, not edition-verified — internal only).
   Sources + licensing → [memory: bible-data-sources-licensing].
+- **Backup vs. sync (don't conflate):** **backup + device-migration ship in Phase 1**
+  (OS device backup of the user DB + a manual export/import file for cross-ecosystem moves) —
+  "single device" never means data trapped on one slab. **Concurrent multi-device sync** is the
+  separate, deferred concern → [ADR-0011](docs/adr/0011-user-data-is-portable-by-construction-backup-and-migration-precede-sync.md).
 - **Sync:** **Phase 1 assumes one account = one device — multi-device sync is deferred to Phase 4+**
   (with desktop). When it lands it is **never real-time / CRDT** (no collab), just bidirectional
   row sync; intended engine **PowerSync** (Electric rejected — read-path-only, alpha). Because
@@ -223,6 +227,7 @@ product, these are the live threads to re-interrogate:
 | [docs/adr/0008](docs/adr/0008-reading-app-is-expo-react-native-skia-over-a-framework-agnostic-engine.md) | Phase-1 app: Expo + react-native-skia, **tablet-native only (desktop/web deferred to P4+)**, framework-agnostic engine; Expo Router / Zustand / Vitest |
 | [docs/adr/0009](docs/adr/0009-persistence-is-two-sqlite-databases-behind-a-drizzle-seam.md) | Phase-1 persistence: two SQLite DBs (bundled read-only corpus + local user) behind a Drizzle seam; PowerSync is the intended later sync |
 | [docs/adr/0010](docs/adr/0010-corpus-and-versification-are-ingested-at-build-time-from-usfm.md) | Phase-1 ingest: build-time usfm-grammar → USJ → normalize → corpus SQLite; versification from .vrs/av11n |
+| [docs/adr/0011](docs/adr/0011-user-data-is-portable-by-construction-backup-and-migration-precede-sync.md) | User data portable by construction; **Phase-1 backup/restore (OS backup + export/import) before Phase-4+ sync**; invariants: client UUIDs, coordinate anchors, relative units, updatedAt + soft-delete |
 | [schema.dbml](schema.dbml) | Phase-1 corpus + presentation, Phase-2 annotation, **and Phase-3 Original Word hub + lexicon** tables (DBML, dbdiagram-visualizable) |
 | [drawing-architecture-plan.md](drawing-architecture-plan.md) | Annotation subsystem design, data models, roadmap |
 | [ink-app-comparison.md](ink-app-comparison.md) | Competitive landscape for cross-platform ink |
