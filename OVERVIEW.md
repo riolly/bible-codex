@@ -152,6 +152,12 @@ migration-fatal — lock them and do NOT over-design anything else.**
 **Reversible — defer freely, don't bikeshed:** sync backend, Skia layout details, typefaces,
 Markup style vocabulary, eraser semantics (POC picked vector whole-stroke), native pen
 escalation (PencilKit / androidx.ink), ML Kit handwriting, DB engine, exact translation set.
+*(The Phase-1 stack now has chosen — still reversible — defaults: app/engine
+[ADR-0008](docs/adr/0008-reading-app-is-expo-react-native-skia-over-a-framework-agnostic-engine.md),
+persistence + intended PowerSync sync
+[ADR-0009](docs/adr/0009-persistence-is-two-sqlite-databases-behind-a-drizzle-seam.md), build-time
+USFM ingest + versification
+[ADR-0010](docs/adr/0010-corpus-and-versification-are-ingested-at-build-time-from-usfm.md).)*
 
 ---
 
@@ -210,6 +216,9 @@ product, these are the live threads to re-interrogate:
 | [docs/adr/0005](docs/adr/0005-four-product-phases-design-all-build-in-order.md) | Four product phases; design the data model for all, build in order |
 | [docs/adr/0006](docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md) | Phase-2 annotation layer: client UUIDs, coordinate joins (no corpus FK), soft-delete |
 | [docs/adr/0007](docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md) | Phase-3 Original Word hub: morpheme grain, external opaque ids, three string-keyed tiers, re-sourceable lexicon |
+| [docs/adr/0008](docs/adr/0008-reading-app-is-expo-react-native-skia-over-a-framework-agnostic-engine.md) | Phase-1 app: Expo + react-native-skia, web=CanvasKit for desktop, framework-agnostic engine; Expo Router / Zustand / Vitest |
+| [docs/adr/0009](docs/adr/0009-persistence-is-two-sqlite-databases-behind-a-drizzle-seam.md) | Phase-1 persistence: two SQLite DBs (bundled read-only corpus + local user) behind a Drizzle seam; PowerSync is the intended later sync |
+| [docs/adr/0010](docs/adr/0010-corpus-and-versification-are-ingested-at-build-time-from-usfm.md) | Phase-1 ingest: build-time usfm-grammar → USJ → normalize → corpus SQLite; versification from .vrs/av11n |
 | [schema.dbml](schema.dbml) | Phase-1 corpus + presentation, Phase-2 annotation, **and Phase-3 Original Word hub + lexicon** tables (DBML, dbdiagram-visualizable) |
 | [drawing-architecture-plan.md](drawing-architecture-plan.md) | Annotation subsystem design, data models, roadmap |
 | [ink-app-comparison.md](ink-app-comparison.md) | Competitive landscape for cross-platform ink |
