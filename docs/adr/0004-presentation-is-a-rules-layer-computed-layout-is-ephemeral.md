@@ -32,3 +32,15 @@ separable.
   change — strictly a cache, never truth, never synced.
 - Override resolution precedence is `base preset < genre < role < book` (most specific wins);
   `scroll_mode` and `theme` are global, not part of the cascade.
+- **Computed layout is a pure function of `(rules + corpus + viewport)`** — so the engine is
+  **viewport-parametric from Phase 1**: it re-typesets correctly on tablet rotation
+  (portrait⇄landscape) and across device sizes (iPad ≠ Android tablet) with no special-casing. This
+  is required even on a single device and is the same property that lets settings **port across
+  devices by construction** when sync arrives ([ADR-0009](0009-persistence-is-two-sqlite-databases-behind-a-drizzle-seam.md)):
+  a second device recomputes layout for its own viewport from the same rules — there is never any
+  multi-device layout code.
+- **Adjustable layout magnitudes are stored in relative / scalable units** (e.g. `em`, fraction of
+  measure, character-count), **never absolute pixels** — so a preset tuned on one device or
+  orientation stays sane on another. Storing raw px would re-introduce the device-coupling this rules
+  layer exists to avoid. (The unit choice is a Phase-1 engine decision; the *cascade depth* remains
+  reversible.)

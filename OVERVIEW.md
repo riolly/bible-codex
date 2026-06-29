@@ -116,9 +116,13 @@ debating non-migration-fatal details.
   are spokes and the corpus is re-ingestable. POC data is **hand-prepared, 4 chapters, no
   scraper** (and the NASB text is reproduced-from-memory, not edition-verified — internal only).
   Sources + licensing → [memory: bible-data-sources-licensing].
-- **Sync:** multi-device (tablet ↔ desktop) wanted. Candidates PowerSync / Electric (local
-  SQLite → Postgres). No CRDT (no real-time collab). Infra deferred; the canonical-ref anchor is
-  designed now.
+- **Sync:** **Phase 1 assumes one account = one device — multi-device sync is deferred to Phase 4+**
+  (with desktop). When it lands it is **never real-time / CRDT** (no collab), just bidirectional
+  row sync; intended engine **PowerSync** (Electric rejected — read-path-only, alpha). Because
+  presentation is device-independent rules over a viewport-pure layout engine
+  ([ADR-0004](docs/adr/0004-presentation-is-a-rules-layer-computed-layout-is-ephemeral.md)), settings
+  **port across devices by construction** — no multi-device layout code, ever. The Phase-1 schema is
+  already sync-shaped at zero cost. → [ADR-0009](docs/adr/0009-persistence-is-two-sqlite-databases-behind-a-drizzle-seam.md).
 
 ### Annotations — two classes with opposite physics (Phase 2)
 - **Markup (semantic, built first within Phase 2):** underline / highlight / box / circle / strike / arrow,
@@ -216,7 +220,7 @@ product, these are the live threads to re-interrogate:
 | [docs/adr/0005](docs/adr/0005-four-product-phases-design-all-build-in-order.md) | Four product phases; design the data model for all, build in order |
 | [docs/adr/0006](docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md) | Phase-2 annotation layer: client UUIDs, coordinate joins (no corpus FK), soft-delete |
 | [docs/adr/0007](docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md) | Phase-3 Original Word hub: morpheme grain, external opaque ids, three string-keyed tiers, re-sourceable lexicon |
-| [docs/adr/0008](docs/adr/0008-reading-app-is-expo-react-native-skia-over-a-framework-agnostic-engine.md) | Phase-1 app: Expo + react-native-skia, web=CanvasKit for desktop, framework-agnostic engine; Expo Router / Zustand / Vitest |
+| [docs/adr/0008](docs/adr/0008-reading-app-is-expo-react-native-skia-over-a-framework-agnostic-engine.md) | Phase-1 app: Expo + react-native-skia, **tablet-native only (desktop/web deferred to P4+)**, framework-agnostic engine; Expo Router / Zustand / Vitest |
 | [docs/adr/0009](docs/adr/0009-persistence-is-two-sqlite-databases-behind-a-drizzle-seam.md) | Phase-1 persistence: two SQLite DBs (bundled read-only corpus + local user) behind a Drizzle seam; PowerSync is the intended later sync |
 | [docs/adr/0010](docs/adr/0010-corpus-and-versification-are-ingested-at-build-time-from-usfm.md) | Phase-1 ingest: build-time usfm-grammar → USJ → normalize → corpus SQLite; versification from .vrs/av11n |
 | [schema.dbml](schema.dbml) | Phase-1 corpus + presentation, Phase-2 annotation, **and Phase-3 Original Word hub + lexicon** tables (DBML, dbdiagram-visualizable) |
