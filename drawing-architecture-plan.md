@@ -3,9 +3,11 @@
 > Working reference for the prototype. Two annotation classes, the anchor model that ties them
 > to scripture, the engine strategy, the migration path, and the boundaries to get right up front.
 
-**Status:** Draft for prototype
+**Status:** Draft for prototype — **amended 2026-07-02**: Ink is Codex-mode rail-only in v1
+([ADR-0016](./docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md) +
+[reading-modes-research.md](./reading-modes-research.md)); the reflow/rotation open question (§8.5) is resolved.
 **Scope:** Annotation subsystem — **Markup** (semantic) and **Ink** (freehand). Not the whole app.
-**Last updated:** 2026-06-17
+**Last updated:** 2026-07-02
 **Related:** [`CONTEXT.md`](./CONTEXT.md) (Token, Verse, Original Word, Anchor, Cross-reference, Markup, Mark, Note, Connector, Endpoint, Binding, Ink, Layer) · [ADR-0001](./docs/adr/0001-three-layer-anchor-model.md) · [ADR-0002](./docs/adr/0002-two-annotation-classes-markup-first.md) · [ADR-0003](./docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md)
 
 ---
@@ -42,8 +44,7 @@ Markup is **data**; Ink is **pixels**. Everything you can do to Markup — reflo
 Both classes attach to the canonical **Anchor**, never to pixels — but they use it differently:
 
 - **Markup target = Anchor** (`Verse` | `Token range` | `Original Word`). The app draws the style under whatever Token rects the *current* layout produces. Change the font → re-drawn correctly. Open another translation → a verse-target re-draws by verse; a token-target re-draws via the **Original Word** hub where alignment exists. Fully portable and reflow-safe **by construction**.
-- **Ink = strokes** captured in coordinates normalized to the **laid-out passage block**, plus a coarse `Anchor` (the verse/passage the strokes sit over) and a `layoutHash`.
-  **Honest limit:** block-normalized stroke points do **not** truly reflow when words move *inside* the block. On a font change we can re-place strokes only at the **block grain** (best-effort), and we **never** transplant Ink to another translation. _(This corrects the earlier plan's "strokes reflow correctly across font sizes" claim — that property belongs to Markup, not Ink.)_
+- **Ink (v1 = Rail ink, ADR-0016)** — strokes live in the Codex-mode **margin rail**, **verse-slotted**: the blob's content never distorts; its slot follows the verse. Because page geometry is fixed (chapter-pages, letterboxed), rotation and device changes cannot orphan ink; a **typography change** creates a new edition and re-slots rail ink at verse grain — honestly. **In-text ink** (freehand over the words, bound to one edition's exact word positions) is a *later* sub-phase; in-text decoration is Markup's job meanwhile. We **never** transplant Ink to another translation. _(This supersedes the earlier block-normalized/`layoutHash` framing for v1; the engine-agnostic stroke model in §6 is unchanged.)_
 
 ---
 
@@ -111,7 +112,7 @@ The original drawing plan said "Android first; desktop/web = non-goal." The app 
 2. **Markup style vocabulary** — which kinds in v1 (underline + highlight first?), colors, hand-drawn vs clean rendering.
 3. **Sync backend** for the user layer (PowerSync / Electric candidates). Markup = tiny rows, Ink = heavy blobs — different treatment?
 4. **Ink eraser semantics** — vector (whole stroke) vs pixel.
-5. **Ink reflow policy** on font change — best-effort re-place at block grain vs lock layout when Ink exists on a passage.
+5. ~~**Ink reflow policy** on font change — best-effort re-place at block grain vs lock layout when Ink exists on a passage.~~ **RESOLVED** ([ADR-0016](./docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md)): v1 ink is rail-only and re-slots at verse grain; rotation/device change can't reflow the fixed chapter-page at all. Remaining sub-question: rail-slot semantics (multi-verse blobs, slot-internal placement) — P2 build grill.
 6. **Recognition scope** (later) — searchable handwriting linked to verses vs cleanup/export only.
 7. **First native Ink platform** if/when we escalate — Ink-modularity (Android) vs iPad premium expectation.
 

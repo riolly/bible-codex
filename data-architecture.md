@@ -75,7 +75,7 @@ Each schema is **architected now but built and populated only when its phase arr
 
 | Phase | Tables (in `schema.dbml`) | Decisions |
 |---|---|---|
-| **P1** reading + layout | `translation` · `book` · `block` · `token` · `versification_map` · `reading_settings` · `layout_preset` · `layout_override` | [ADR-0001](docs/adr/0001-three-layer-anchor-model.md), [ADR-0004](docs/adr/0004-presentation-is-a-rules-layer-computed-layout-is-ephemeral.md) |
+| **P1** reading + layout | `translation` · `book` · `block` · `token` · `versification_map` · `reading_settings` · `reading_position` · `layout_preset` · `layout_override` | [ADR-0001](docs/adr/0001-three-layer-anchor-model.md), [ADR-0004](docs/adr/0004-presentation-is-a-rules-layer-computed-layout-is-ephemeral.md), [ADR-0012](docs/adr/0012-reading-position-is-one-canonical-bookmark-per-book.md), [ADR-0013](docs/adr/0013-corpus-text-is-versioned-and-markup-carries-a-quote-witness.md), [ADR-0016](docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md) |
 | **P2** annotations | `layer` · `mark` · `note` · `connector` · `binding` · `ink_annotation` · `ink_stroke` | [ADR-0002](docs/adr/0002-two-annotation-classes-markup-first.md), [ADR-0003](docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md), [ADR-0006](docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md) |
 | **P3** OW hub + lexicon | `original_word` · `interlinear_alignment` · `lemma` · `strongs` · `morphology` | [ADR-0007](docs/adr/0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md) |
 | **P4** progress / advanced | *(none yet)* — Cross-reference / tags / journey state ride Anchor; add no bridge | [WISHLIST.md](WISHLIST.md) |

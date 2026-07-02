@@ -4,7 +4,8 @@
 > been decided, what's been proven, and what's still open to grill. Every section
 > links to the detailed doc that owns it — this file stays a map, not a duplicate.
 >
-> **Last updated:** 2026-06-24
+> **Last updated:** 2026-07-02 *(8-finding grill session: ADR-0012…0016,
+> [reading-modes-research.md](reading-modes-research.md))*
 
 ---
 
@@ -64,14 +65,22 @@ Full prototype verdict + caveats → [prototype/README.md](prototype/README.md).
 > architecture → [data-architecture.md](data-architecture.md).
 
 - **Phase 1 — Beautiful text + layout-adjust table.** *(most important)* Genre-aware literary
-  typesetting (prose / poetry / headings, driven by USFM **Blocks**), horizontal + vertical
-  scroll, one translation — plus a **layout-adjustment table**: user-tunable spacing, indent,
-  font, margins, line-height, synced across devices, referencing canonical structure (Block,
-  verse) and never pixels.
+  typesetting (prose / poetry / headings, driven by USFM **Blocks**), two **purpose-bound
+  reading modes** — 📖 **Codex** (portrait, chapter-pages, margin rail) and 📜 **Scroll**
+  (landscape, continuous columns), derived from orientation
+  ([ADR-0016](docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md) +
+  [reading-modes-research.md](reading-modes-research.md)) — one translation, a **reading
+  position** (one canonical bookmark per book,
+  [ADR-0012](docs/adr/0012-reading-position-is-one-canonical-bookmark-per-book.md)) — plus a
+  **layout-adjustment table**: user-tunable spacing, indent, font, margins, line-height,
+  referencing canonical structure (Block, verse) and never pixels.
 - **Phase 2 — Handwriting & notes.** *(most important)* The annotation layer. Portable
   **Markup** (Mark / Note / Connector — built first *within* this phase because it ports and
   runs everywhere) plus the headline **Ink** freehand handwriting (tablet-native, the emotional
-  differentiator). The authoring loop is already prototype-proven. →
+  differentiator; **v1 ink is rail-only** — verse-slotted in the Codex margin rail, in-text ink
+  later, ADR-0016). Copy/share-a-verse rides the Markup selection flow
+  ([ADR-0015](docs/adr/0015-accessibility-and-os-text-integration-are-consciously-deferred.md)).
+  The authoring loop is already prototype-proven. →
   [drawing-architecture-plan.md](drawing-architecture-plan.md).
 - **Phase 3 — Lexicon / Strong's.** The **Original Word** hub + interlinear alignment, and the
   Strong's Exhaustive Concordance **lexicon** as a *separate reference schema joined by
@@ -107,6 +116,13 @@ debating non-migration-fatal details.
 - **Corpus = per-translation token-stream + verse/block overlays, ingested from USFM/USX**
   (USFM encodes literary structure — `\q#` poetry indent, `\p` prose, titles, Psalm headers —
   a bare verse-list loses this and kills genre-aware typesetting).
+- **Corpus text is versioned; Markup carries a quote witness.** `translation.edition` is stamped
+  at ingest; every Markup anchor stores the quoted words + creation edition, and an edition
+  change triggers a consent-gated reconciliation (auto-repair same-verse-unique; else flagged
+  displaced) — so a translation revision can never silently rot user marks. The tokenization
+  policy is likewise part of the locked anchor seam. →
+  [ADR-0013](docs/adr/0013-corpus-text-is-versioned-and-markup-carries-a-quote-witness.md),
+  [ADR-0014](docs/adr/0014-tokenization-policy-is-part-of-the-locked-anchor-seam.md).
 - **Translations are spokes, never linked token-to-token.** Cross-translation relations route
   through two shared hubs only: the **Canonical Verse** (coarse) and the **Original Word** (fine,
   via interlinear alignment).
@@ -153,7 +169,9 @@ migration-fatal — lock them and do NOT over-design anything else.**
 
 **Migration-fatal — locked (→ [ADR-0001](docs/adr/0001-three-layer-anchor-model.md)):**
 1. **Canonical Anchor addressing keyed by COORDINATES** (verse + word-index + optional
-   Original-Word id), never internal DB ids → corpus stays freely re-ingestable.
+   Original-Word id), never internal DB ids → corpus stays freely re-ingestable. **Includes the
+   registered tokenization policy** ([ADR-0014](docs/adr/0014-tokenization-policy-is-part-of-the-locked-anchor-seam.md)) —
+   the word/punct rules define what the coordinates mean.
 2. **Corpus = token-stream + verse/block overlays from USFM.**
 3. **Annotations = a scripture-anchored scene graph, never canvas coords.**
 
@@ -181,8 +199,13 @@ product, these are the live threads to re-interrogate:
   vs. clean rendering.
 
 **Ink**
-- Reflow policy on font change — best-effort re-place at block grain vs. lock layout when Ink
-  exists on a passage.
+- ~~Reflow policy on font change / rotation~~ **RESOLVED** by
+  [ADR-0016](docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md): fixed
+  chapter-page geometry absorbs rotation/device change; v1 rail-only ink re-slots at verse
+  grain on typography change. Remaining: **rail-slot semantics** (multi-verse blobs,
+  slot-internal placement) — decide at the P2 build grill.
+- Psalm-title / heading-adjacent rail ink needs the deferred **block-grain heading anchor** —
+  on the P2 grill agenda (heading ordinals are fixture-locked from P1, ADR-0010).
 - First native pen platform if/when we escalate — Android/Ink modularity vs. iPad premium
   expectation. (Recognition scope, later: searchable handwriting vs. cleanup/export.)
 
@@ -227,7 +250,13 @@ product, these are the live threads to re-interrogate:
 | [docs/adr/0008](docs/adr/0008-reading-app-is-expo-react-native-skia-over-a-framework-agnostic-engine.md) | Phase-1 app: Expo + react-native-skia, **tablet-native only (desktop/web deferred to P4+)**, framework-agnostic engine; Expo Router / Zustand / Vitest |
 | [docs/adr/0009](docs/adr/0009-persistence-is-two-sqlite-databases-behind-a-drizzle-seam.md) | Phase-1 persistence: two SQLite DBs (bundled read-only corpus + local user) behind a Drizzle seam; PowerSync is the intended later sync |
 | [docs/adr/0010](docs/adr/0010-corpus-and-versification-are-ingested-at-build-time-from-usfm.md) | Phase-1 ingest: build-time usfm-grammar → USJ → normalize → corpus SQLite; versification from .vrs/av11n |
-| [docs/adr/0011](docs/adr/0011-user-data-is-portable-by-construction-backup-and-migration-precede-sync.md) | User data portable by construction; **Phase-1 backup/restore (OS backup + export/import) before Phase-4+ sync**; invariants: client UUIDs, coordinate anchors, relative units, updatedAt + soft-delete |
+| [docs/adr/0011](docs/adr/0011-user-data-is-portable-by-construction-backup-and-migration-precede-sync.md) | User data portable by construction; **Phase-1 backup/restore (OS backup + export/import) before Phase-4+ sync**; invariants: client UUIDs, coordinate anchors, relative units, updatedAt + soft-delete, self-describing export envelope |
+| [docs/adr/0012](docs/adr/0012-reading-position-is-one-canonical-bookmark-per-book.md) | Reading position: one canonical bookmark per book, verse grain; furthest-read-wins on future sync |
+| [docs/adr/0013](docs/adr/0013-corpus-text-is-versioned-and-markup-carries-a-quote-witness.md) | Corpus text editions + Markup quote witness + consent-gated reconciliation (revision-rot defense) |
+| [docs/adr/0014](docs/adr/0014-tokenization-policy-is-part-of-the-locked-anchor-seam.md) | Tokenization policy is part of locked seam #1; rule changes are anchor migrations |
+| [docs/adr/0015](docs/adr/0015-accessibility-and-os-text-integration-are-consciously-deferred.md) | A11y / OS text integration consciously deferred (personal use); copy/share ships with P2 Markup |
+| [docs/adr/0016](docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md) | Codex & Scroll purpose-bound modes; fixed chapter-pages; margin rail; v1 rail-only ink |
+| [reading-modes-research.md](reading-modes-research.md) | Research behind ADR-0016 — margins history (Masorah), pagination vs scroll evidence, sources |
 | [schema.dbml](schema.dbml) | Phase-1 corpus + presentation, Phase-2 annotation, **and Phase-3 Original Word hub + lexicon** tables (DBML, dbdiagram-visualizable) |
 | [drawing-architecture-plan.md](drawing-architecture-plan.md) | Annotation subsystem design, data models, roadmap |
 | [ink-app-comparison.md](ink-app-comparison.md) | Competitive landscape for cross-platform ink |

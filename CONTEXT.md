@@ -7,7 +7,7 @@ A local-first, literary Bible reader. This glossary fixes the language of the te
 ### Text units
 
 **Token**:
-A single **word- or punctuation-occurrence** in a *translation's* text — the unit of storage, rendering, and within-translation hit-testing. Whitespace is **not** a Token: spacing is a render/layout concern owned by the presentation layer, never corpus data. Per-translation — a KJV Token and a BSB Token are never the same object.
+A single **word- or punctuation-occurrence** in a *translation's* text — the unit of storage, rendering, and within-translation hit-testing. Whitespace is **not** a Token: spacing is a render/layout concern owned by the presentation layer, never corpus data. Per-translation — a KJV Token and a BSB Token are never the same object. The word/punct classification rules (possessives, hyphens, elisions, numbers) are **registered policy**, part of the locked anchor seam — changing them is an anchor migration (ADR-0014).
 _Avoid_: word (ambiguous with Original Word); treating whitespace as a Token
 
 **Original Word**:
@@ -33,12 +33,33 @@ A per-translation table reconciling that translation's Translation Verses to Can
 **Anchor**:
 The stable canonical address that any user mark or reading position attaches to: a Canonical Verse plus a word-index, optionally carrying an Original Word id. Never pixels.
 The **word-index** is the 0-based ordinal of a *word* Token within the verse (**punctuation excluded**); a punctuation Token is addressed by the word-index of the word it follows.
-There is no shared anchor table — the coordinate is a **column-group** inlined on each anchored entity and reused verbatim by later ones (cross_reference, tag). It comes in two shapes: a **point** anchor (a Note pin, a Connector endpoint — a single word or whole verse) and a **range** anchor (a Mark — a span that may cross a verse boundary, carrying an end verse + end word-index). User-mark anchors are **translation-bound** (they carry the translation they were drawn in and port from there); **editorial** anchors (the Original Word hub, a Cross-reference) are **canonical-only** — no translation — because they relate passages, not one translation's words.
+There is no shared anchor table — the coordinate is a **column-group** inlined on each anchored entity and reused verbatim by later ones (cross_reference, tag). It comes in two shapes: a **point** anchor (a Note pin, a Connector endpoint — a single word or whole verse) and a **range** anchor (a Mark — a span that may cross a verse boundary, carrying an end verse + end word-index). User-mark anchors are **translation-bound** (they carry the translation they were drawn in and port from there); **editorial** anchors (the Original Word hub, a Cross-reference) are **canonical-only** — no translation — because they relate passages, not one translation's words. One deliberate user-data exception: the **reading position** (one bookmark per book, ADR-0012) is canonical-only, because it relates the *reader* to the *passage* and must follow them across translations. Markup anchors also carry a **quote witness** — the anchored surface text plus the corpus edition it was minted against — used to detect and repair drift when a translation's text is revised (ADR-0013); the coordinate remains the anchor, the quote is proof.
 **Headings are not anchorable** (v1): heading Tokens carry no Canonical Verse, and an Anchor requires a verse — so titles/section headings cannot be marked, noted, or connected. A block-grain heading anchor is a deferred, additive extension.
 
 **Cross-reference**:
 An editorial, shipped link between two passages (e.g. from the Treasury of Scripture Knowledge) — read-only and authoritative; the app's own "this connects to that." Its user-authored sibling is the Connector. A Portal (see `WISHLIST.md`) is a Cross-reference gated by reading progress.
 _Avoid_: reference (a single address; a Cross-reference links two)
+
+### Reading surfaces (ADR-0016)
+
+**Codex mode**:
+The **portrait** reading surface — the *study* mode. Paged like a physical Bible (flip = chapter navigation); home of all annotation (Markup, Notes, Rail ink) and the Margin rail. Mode is derived from device orientation, never a stored setting.
+_Avoid_: vertical mode (describes pixels, not purpose)
+
+**Scroll mode**:
+The **landscape** reading surface — the *journey* mode. Continuous horizontal columns (the original scroll form), immersive reading, Portals, progress. Clean in v1: no Ink ever, no Markup authoring yet.
+_Avoid_: horizontal mode
+
+**Page**:
+One **chapter**, typeset at fixed geometry (measure and typography fixed per preset; the device letterboxes/scales). Taller-than-screen chapters scroll *within* the page; the canvas never reflows on rotation or device change — only a typography change creates a new *edition* and re-paginates. Semantic pagination: the chapter is the page break; no page-break algorithm exists.
+_Avoid_: screen (a page may span several screens)
+
+**Margin rail**:
+The first-class reserved margin region of a Codex-mode Page (journaling-Bible precedent) — home of Note pins and Rail ink. User expansion of the rail grows the page canvas *outward* and never squeezes the text measure, so it can never reflow text or invalidate ink.
+_Avoid_: whitespace, leftover margin
+
+**Rail ink**:
+v1's only Ink: freehand strokes living in the Margin rail, **verse-slotted** — the stroke blob never distorts; its slot follows the verse, so it survives re-pagination at verse grain. In-text ink (freehand over the words) is a later phase; in-text decoration is Markup's job.
 
 ### User marks
 
@@ -64,7 +85,7 @@ One end of a Connector (or a Note's pin). Binds to either a scripture Anchor or 
 The stored relationship between an Endpoint and its target, kept as its own record so any element can be a target. A Mark or Note is targeted as an element (by its id); a Token is targeted as a scripture Anchor with a word-index, not a distinct element kind.
 
 **Ink**:
-A freehand pen annotation captured as stroke points over one translation's rendered layout. Personal and expressive — the "physical Bible" feel — but bound to that layout and not portable across translations.
+A freehand pen annotation captured as stroke points — personal and expressive, the "physical Bible" feel. Lives only in **Codex mode**; never portable across translations. v1 Ink is **Rail ink only** (verse-slotted, in the Margin rail — survives typography changes at verse grain); in-text ink over the words themselves is a later phase bound to one typography edition (ADR-0016).
 _Avoid_: drawing (Markup also draws), stroke (one component of an Ink mark)
 
 **Layer**:

@@ -25,6 +25,13 @@ and no migration**.
 - **Every user row carries `updatedAt` + a soft-delete tombstone** — last-write-wins and deletion
   survive a future merge; unused by Phase 1's single writer but free to add now and painful to
   retrofit.
+- **The export file is self-describing.** Every export carries an envelope header: **schema
+  version** (which migrations the rows reflect), **app version** (diagnostics), **export
+  timestamp**, and the **corpus edition(s)** the anchors were minted against
+  ([ADR-0013](0013-corpus-text-is-versioned-and-markup-carries-a-quote-witness.md)). Import =
+  read header → run pending schema migrations on the imported rows → reconcile against the
+  current corpus edition (quote witness) → merge by UUID. A version-1 file must import cleanly
+  into a version-N app.
 
 ## Considered options
 
