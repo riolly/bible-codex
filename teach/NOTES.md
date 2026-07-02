@@ -27,9 +27,10 @@ Course hub = `src/pages/index.astro` (renders module cards + status badges, reac
 - **Module 1 · Phase 1 — Reading** — Token, Block, Canonical Verse, Versification, layout. *(DONE: lessons 0003–0005 + TokenBlockStream / Versification / LayoutRules diagrams.)*
 - **Module 2 · Phase 2 — Annotation** — Markup vs Ink, scene graph, Layer. *(DONE: lessons 0006–0008 + TwoPhysics / SceneGraph / SyncFirstStore diagrams.)*
 - **Module 3 · Phase 3 — Lexicon** — Original Word hub, Alignment, Strong's/lemma/morphology. *(DONE: lessons 0009–0011 + AlignmentHub / WordLabels / ThreeTiers diagrams. `0011`'s terminal quiz carries `completeId="check-lexicon"` → flips Module 3 Done, unlocks Module 4.)*
-- **Module 4 · Remaining — Advanced** — Portal, Journey, themes/tags, research mode. *(DONE: lessons 0012–0014 + PortalGate / JourneyLadder / OneEngine diagrams. `0014`'s terminal quiz carries `completeId="check-advanced"` → flips Module 4 Done and **completes the course**; the hub shows a green course-complete CTA when it's set.)*
+- **Module 4 · Remaining — Advanced** — Portal, Journey, themes/tags, research mode. *(DONE: lessons 0012–0014 + PortalGate / JourneyLadder / OneEngine diagrams. `0014`'s terminal quiz carries `completeId="check-advanced"` → flips Module 4 Done and unlocks Module 5.)*
+- **Module 5 · The Codex & the Scroll** — the 2026-07-02 blueprint update (ADR-0012…0016): Masorah margins → Codex/Scroll purpose split; *pagina* → fixed chapter-Page + Margin rail + Rail ink; Masoretic counting → editions + quote witness + tokenization seam. *(AUTHORED 2026-07-02, not yet learner-completed: lessons 0015–0017 + CodexScroll / MarginRail diagrams. `0017`'s terminal quiz carries `completeId="check-codex-scroll"` → flips Module 5 Done and **completes the course**; the hub derives the course-complete CTA from the LAST module's checkId, so adding a module moves the finish line automatically.)*
 
-**The 5-module course is complete (2026-06-25).** All four design phases are taught and composed; MISSION's four success criteria are each landed (criterion #4 — map a wishlist idea onto locked primitives with no new data model — is the spine of Module 4). No Phase-5 handoff.
+**Course status:** the original 5 modules were complete on 2026-06-25 against the then-current blueprint. The 2026-07-02 design session (ADR-0012…0016, `reading-modes-research.md`, CONTEXT.md "Reading surfaces") moved the blueprint, so Module 5 was added and stale statements in lessons 0001/0005/0006/0007/0008/0013/0014 were surgically corrected (scroll_mode toggle removed, Ink now edition-keyed rail ink, bookmark now the real `reading_position` table). Do **not** promote Module-5 terms to GLOSSARY.md until the learner passes the 0015–0017 checks.
 Lessons keep **global sequential numbering** (0001, 0002, …); the *module* grouping lives in the
 module manifest `src/data/modules.ts`. The hub computes Ready / Coming soon / Locked / Done from
 the persisted progress store and unlocks the next module's check.
@@ -39,6 +40,10 @@ Use games for checks, not just MCQ. Now Preact island components in `src/islands
 - **Connect.tsx** — connect-the-arrows matcher (click left term → right match; correct = green line). Great for term↔meaning, world↔role.
 - **Sequence.tsx** — tap chips into the correct order (e.g. the four phases; the layout cascade).
 - **Quiz.tsx** / **Recall.tsx** — MCQ with per-question feedback; free-recall flip card.
+- **TypeIn.tsx** *(learner request, 2026-07-02)* — typed-answer quiz: the learner *produces* the
+  term instead of recognising it (harder retrieval than MCQ — use for vocabulary that must come
+  to mind unprompted). Forgiving match (case/punctuation/whitespace-insensitive, multiple accepted
+  phrasings); a wrong try doesn't lock — retry or reveal; resolves on correct-or-reveal.
 Islands mark their `completeId` done on completion → drives the unlock store. Hydrate `client:idle`
 (deferred but reliable — the headless preview can't fire `client:visible`'s IntersectionObserver).
 Build new game types here as island components when a module needs them; never inline.

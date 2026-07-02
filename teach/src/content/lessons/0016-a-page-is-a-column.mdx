@@ -1,0 +1,207 @@
+---
+title: "A page is a column: fixed pages & the margin rail"
+module: 5
+order: 16
+eyebrow: Module 5 — The Codex & the Scroll · Lesson 16
+lede: 'The word "page" originally meant one column of a papyrus scroll — ancient reading was paged all along. Why the Codex page is one chapter at fixed geometry, what the margin rail is, and how rail ink survives everything except a font change.'
+summary: "Latin pagina named one column of a scroll — ancient scroll reading was column-at-a-time, so flip-vs-scroll is a false dichotomy; and early Christians drove the scroll→codex shift that made annotation culture possible. The reading research says spatial memory is the consistent win of pagination — what hurts is moving landmarks, not scrolling. So a Codex Page = one chapter at fixed geometry (internal scroll for overflow, no page-break engine), the Margin rail expands outward only, and v1 ink is Rail ink: verse-slotted strokes that survive rotation and device change by construction — but not a typography change, which mints a new edition."
+completeId: "0016"
+---
+import MarginRail from '../../components/diagrams/MarginRail.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import TypeIn from '../../islands/TypeIn.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">Where we are</span>
+  <p>Lesson 15 split the surfaces: <span class="term">Codex mode</span> for study,
+  <span class="term">Scroll mode</span> for journey. Today: what a Codex
+  <span class="term">Page</span> actually <em>is</em>, and where your pen lands on it —
+  the <span class="term">Margin rail</span> and <span class="term">Rail ink</span>.</p>
+</div>
+
+## Bible idea: the page was born inside a scroll
+
+Two pieces of history reframe the whole "flip or scroll?" debate:
+
+- **Latin *pagina* — the word "page" — originally named one column of writing in a papyrus
+  scroll.** An ancient reader unrolled with one hand and rolled up with the other, exposing
+  one or two columns at a time. *Reading a scroll was a paged experience.* Smooth continuous
+  scrolling is a modern web invention with no ancient precedent — so Scroll mode's horizontal
+  columns are already secretly pages, and "flip vs. scroll" is a false dichotomy.
+- **Early Christians were the codex's most aggressive early adopters.** Surviving early
+  Christian scripture is overwhelmingly codices — bound pages — while contemporary Jewish and
+  pagan literature stayed on scrolls. The codex is where annotation culture arrived: fixed
+  pages you can hold open, flip back to, and write beside. Both formats are authentically
+  part of this text's story — which is why an app named **bible-codex** offers both.
+
+And one piece of modern research: readers use **spatial position as a memory cue** — "that
+verse was top-left." Studies of paging vs. scrolling find paging readers re-find text faster
+and build a better mental model; what scrolling *measurably* hurts is those spatial landmarks.
+The key nuance: the research punishes **moving and reflowing** the landmarks, not scrolling
+itself. A fixed canvas you scroll *over* keeps its geography; a reflowing text does not.
+
+## App idea: Page = one chapter, at fixed geometry
+
+The Codex <span class="term">Page</span> makes three commitments
+([ADR-0016](https://github.com/riolly/bible-codex/blob/main/docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md)):
+
+1. **Fixed geometry.** A page is typeset like a *printed edition*: measure and typography
+   fixed per preset. The device merely **letterboxes and scales** it — so rotation and
+   changing devices are *viewing* operations. Ink cannot be orphaned by them, by
+   construction. (Every serious ink app — GoodNotes, Notability — inks onto fixed pages for
+   exactly this reason.)
+2. **The page is a chapter.** Semantic pagination: the chapter *is* the page break, so **no
+   page-break algorithm exists in v1** — no widows, orphans, or poem-splitting engine work.
+   A short psalm fits one screen; Psalm 119 is one tall fixed canvas you scroll *within* the
+   page. Your spatial landmarks stay valid, because the canvas never changes — only your
+   window over it moves. Flip = chapter navigation.
+3. **Margins expand outward only.** The <span class="term">Margin rail</span> is a
+   first-class reserved region beside the text (the wide-margin *journaling Bible*,
+   engineered). Widen it and the page grows **outward into letterbox space** — the text
+   measure is never squeezed, so expansion can never reflow text or invalidate ink.
+
+<figure>
+  <MarginRail />
+  <figcaption>One chapter, one page. The text measure never reflows; the rail lives beside it
+  and grows outward; a note pin and an ink blob each sit <em>slotted to a verse</em>.</figcaption>
+</figure>
+
+## And the pen: Rail ink, slotted to a verse
+
+v1's only Ink is <span class="term">Rail ink</span>: freehand strokes living in the rail,
+**verse-slotted**. The blob's *content* never distorts — it's your handwriting — but its
+*slot* follows the verse. That buys an honest survival story:
+
+- **Rotation / new device** → nothing happens at all (fixed geometry absorbs it).
+- **Typography change** (font, preset) → the text re-typesets — effectively a **new
+  edition** of the page — and rail ink **re-slots** beside its verse. This is the honest
+  limit, stated plainly: fixed pages absorb rotation and device change, *not* typography
+  change. It's also why `ink_annotation` now keys by **edition**, not by the old
+  `(translation, scroll_mode, layout_hash)` triple.
+- **In-text ink** (circling a word with the pen) would *not* survive a new edition — which
+  is exactly why v1 scopes it out. It returns as a deliberate later phase carrying the full
+  edition-bound fragility; meanwhile in-text decoration is <span class="term">Markup</span>'s
+  job, which reflows and ports *by design*. The two physics, still respected.
+
+<div class="callout">
+  <span class="tag">A Lesson-3 callback — headings, still special</span>
+  <p>Remember Psalm superscriptions ("A psalm of David")? In the <em>Hebrew</em> Bible many
+  of them are canonical text — verse 1 itself — but in English tradition they're headings,
+  whose Tokens carry <code>verse = NULL</code> and are <strong>not anchorable</strong>
+  (Lesson 3). Rail ink is verse-slotted, so ink <em>beside a heading</em> has no verse to
+  slot to — it waits on the deferred block-grain heading anchor (OVERVIEW §5). The old rule
+  you learned is now load-bearing in a brand-new feature.</p>
+</div>
+
+## Type the term
+
+<TypeIn
+  client:idle
+  title="Lesson 16 — produce the vocabulary (type, don't pick)"
+  questions={[
+    {
+      stem: "The Latin word that meant 'one column of writing in a scroll' — and became our word for a leaf of a book:",
+      accept: ["pagina"],
+      explain: "Pagina — ancient scroll reading exposed one or two columns (paginae) at a time, so reading a scroll was already a paged experience.",
+    },
+    {
+      stem: "In Codex mode, one Page equals one ______ (the unit that makes a page-break engine unnecessary):",
+      accept: ["chapter", "one chapter"],
+      explain: "Semantic pagination: the chapter is the page break. Short psalm = one screen; Psalm 119 = one tall fixed canvas scrolled within the page.",
+    },
+    {
+      stem: "A font or preset change re-typesets the page and effectively creates a new ______ (the thing ink_annotation is keyed by):",
+      accept: ["edition"],
+      explain: "Fixed pages absorb rotation and device change, not typography change — a preset change mints a new edition, and rail ink re-slots beside its verse.",
+    },
+    {
+      stem: "v1's only Ink — freehand strokes in the margin, slotted to a verse — is called ______:",
+      accept: ["rail ink", "the rail ink"],
+      explain: "Rail ink: the blob never distorts; its slot follows the verse. In-text ink is a later phase; in-text decoration is Markup's job.",
+    },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 16 — recall"
+  completeId="0016"
+  questions={[
+    {
+      stem: "Why is 'page-flip vs. continuous scroll' a false dichotomy for this app?",
+      options: [
+        "Because modern readers only ever scroll",
+        "Because pagina meant a column of a scroll — ancient scroll reading was column-at-a-time, already a paged experience",
+        "Because flipping is strictly faster than scrolling",
+        "Because the app removes both gestures",
+      ],
+      answer: 1,
+      explain: "The 'page' was born inside the scroll: readers exposed one or two columns at a time. Scroll mode's columns are already page-like; smooth continuous scrolling is the historical newcomer. Each mode gets the motion that fits its purpose.",
+    },
+    {
+      stem: "Psalm 119 is far taller than any screen. What does Codex mode do?",
+      options: [
+        "Shrinks the type until the chapter fits one screen",
+        "Splits it across many screen-sized pages with a page-break engine",
+        "Keeps it one fixed-geometry page you scroll within — landmarks stay valid because the canvas never changes",
+        "Shows only the first 40 verses",
+      ],
+      answer: 2,
+      explain: "Fit-to-page (shrinking type) and screen-sized pages (needing a break engine) were both rejected. The chapter is one tall fixed canvas; scrolling your window over a fixed canvas keeps spatial memory intact — the research punishes moving landmarks, not scrolling per se.",
+    },
+    {
+      stem: "Why can expanding the margin rail never invalidate ink or reflow text?",
+      options: [
+        "Because expansion is forbidden once ink exists",
+        "Because expansion grows the page outward into letterbox space — the text measure is never squeezed",
+        "Because ink is re-drawn by the app after each expansion",
+        "Because the rail is rendered on a separate screen",
+      ],
+      answer: 1,
+      explain: "Additive canvas: widening the rail grows the page outward; the measure and block geometry are untouched, so no reflow, no new edition, no orphaning. A margin design that squeezed the measure would re-paginate — that design was rejected.",
+    },
+    {
+      stem: "What survives a typography (font/preset) change, and how?",
+      options: [
+        "All ink, unchanged — fixed pages absorb everything",
+        "Rail ink, by re-slotting beside its verse — the page re-typesets as a new edition; in-text ink would not survive, which is why v1 excludes it",
+        "Nothing — all annotation is deleted",
+        "Only Scroll-mode annotations",
+      ],
+      answer: 1,
+      explain: "The honest limit: fixed geometry absorbs rotation and device change, not typography change. A preset change mints a new edition; verse-slotted rail ink re-slots (content undistorted), while in-text ink would be edition-bound — deferred to a later phase. Markup, as ever, just reflows.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: what is a Codex Page, what is the Margin rail, and what exactly does Rail ink survive?"
+  answer="A Page is one chapter typeset at fixed geometry — measure and typography fixed per preset, letterboxed and scaled by the device; taller-than-screen chapters scroll within the page, and the chapter is the page break (no page-break engine). The Margin rail is the first-class reserved region beside the text — the journaling-Bible margin — home of Note pins and Rail ink; expanding it grows the page outward and never touches the text measure. Rail ink is verse-slotted freehand: it survives rotation and device change by construction (fixed geometry), and survives typography changes at verse grain by re-slotting — but a font/preset change is a new edition, which is why in-text ink is deferred and ink_annotation keys by edition."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md">ADR-0016</a> pillars 2–5 are this lesson; <a href="https://github.com/riolly/bible-codex/blob/main/reading-modes-research.md">reading-modes-research.md</a> carries the evidence — the spatial-memory findings (<a href="https://repository.isls.org/bitstream/1/497/1/18.pdf">ISLS</a>, <a href="https://www.researchgate.net/publication/41668120_To_Scroll_or_Not_to_Scroll_Scrolling_Working_Memory_Capacity_and_Comprehending_Complex_Texts">Sanchez &amp; Wiley</a>, <a href="https://www.semanticscholar.org/paper/535a87a6697b6c83730acd3ddd0867a4c15e92a0">Chaparro &amp; Baker</a>) and the ink-app survey. <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> pins <em>Page</em>, <em>Margin rail</em>, <em>Rail ink</em>; the reshaped <code>ink_annotation</code> is in <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>.
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "what did an ancient
+    reader physically do with a scroll?", "why is OneNote the cautionary tale?", or "what
+    happens to my rail ink if a chapter re-paginates?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0015-two-margins-two-jobs">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 15 — Two margins, two jobs</span>
+    </a>
+    <a href="/lessons/0017-when-the-words-themselves-move">
+      <span class="label">Up next — the module check</span>
+      <span class="title">Lesson 17 — When the words themselves move →</span>
+    </a>
+  </div>
+</div>

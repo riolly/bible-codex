@@ -90,4 +90,19 @@ export const modules: ModuleDef[] = [
     unlockBy: 'check-lexicon',
     lockedBadge: 'Upcoming',
   },
+  {
+    num: 5,
+    id: 'm5',
+    title: 'Module 5 — The Codex & the Scroll',
+    pairBible:
+      'the Masoretes’ two margins, why a “page” is a column of a scroll, the codex as Christian history — and translations that quietly revise their own words.',
+    pairApp:
+      'Codex & Scroll modes · Page · Margin rail · Rail ink · editions + the quote witness · the tokenization seam.',
+    lessonHints:
+      'Lesson 15 — Two margins, two jobs · Lesson 16 — A page is a column · Lesson 17 — When the words themselves move',
+    href: '/lessons/0015-two-margins-two-jobs',
+    checkId: 'check-codex-scroll',
+    unlockBy: 'check-advanced',
+    lockedBadge: 'Upcoming',
+  },
 ];

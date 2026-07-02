@@ -504,6 +504,34 @@ a.module:hover { border-color: var(--gilt); box-shadow: 0 2px 10px rgba(154,123,
 .quiz-feedback.ok  { background: #e6f0e6; color: var(--good); }
 .quiz-feedback.no  { background: #f4e3e0; color: var(--bad); }
 
+/* --- typed-answer quiz (paired with src/islands/TypeIn.tsx) -------------- */
+.typein-row { display: flex; gap: 0.5rem; align-items: stretch; flex-wrap: wrap; }
+.typein-row input {
+  flex: 1;
+  min-width: 12rem;
+  font: inherit;
+  font-size: 0.98rem;
+  background: var(--parchment);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 0.6rem 0.8rem;
+}
+.typein-row input:focus { outline: none; border-color: var(--gilt-soft); }
+.typein-row input:disabled { color: var(--ink-soft); }
+.typein-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.9rem;
+  background: var(--gilt);
+  color: #fff;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.typein-btn:disabled { cursor: default; opacity: 0.55; }
+.typein-btn.ghost { background: var(--parchment); color: var(--ink); border: 1px solid var(--rule); }
+.typein-btn.ghost:hover { border-color: var(--gilt-soft); }
+
 /* --- retrieval flip card (free recall practice) -------------------------- */
 .recall {
   margin: 1.6rem 0;

@@ -1,0 +1,98 @@
+---
+// Lesson 15 — the two purpose-bound reading surfaces (ADR-0016). CODEX mode:
+// portrait, paged by chapter, the study surface — all annotation (Markup,
+// Notes, Rail ink) lives here, in and around the margin rail. SCROLL mode:
+// landscape, continuous horizontal columns, the journey surface — immersive
+// reading, Portals, progress; clean in v1 (no Ink ever, no Markup authoring).
+// Rotation is the mode switch: upright = "I'm studying", sideways = "I'm reading".
+const codex = [
+  'paged — flip = chapter',
+  'margin rail (side)',
+  'Markup · Notes · Rail ink',
+  'fixed page geometry',
+];
+const scroll = [
+  'continuous columns',
+  'top/bottom bands (meta)',
+  'Portals · progress',
+  'no Ink — clean surface',
+];
+const row = (i: number) => 236 + i * 26;
+---
+<svg viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Two purpose-bound reading surfaces: Codex mode, a portrait paged study surface with a side margin rail holding all annotation; and Scroll mode, a landscape surface of continuous horizontal columns kept clean for immersive reading. Rotating the device switches purpose.">
+  <text class="ttl" x="40" y="30">TWO SURFACES, TWO PURPOSES — rotation is the switch</text>
+
+  <!-- CODEX (portrait) -->
+  <rect class="col codexc" x="40" y="48" width="330" height="320" rx="8"/>
+  <text class="ch" x="58" y="76">📖 CODEX <tspan class="badge">portrait · study</tspan></text>
+  <!-- portrait device -->
+  <rect class="dev" x="120" y="90" width="110" height="120" rx="6"/>
+  <!-- text measure -->
+  {[0, 1, 2, 3, 4, 5].map((i) => (
+    <line class="tx" x1="132" y1={106 + i * 16} x2="196" y2={106 + i * 16} />
+  ))}
+  <!-- margin rail -->
+  <rect class="rail" x="202" y="98" width="20" height="104" rx="3"/>
+  <path class="inkblob" d="M206,132 q5,-6 10,0 t-4,8" />
+  <circle class="pin" cx="212" cy="112" r="3.4"/>
+  <text class="lbl" x="240" y="130">margin</text>
+  <text class="lbl" x="240" y="144">rail</text>
+  <path class="arr" d="M236,136 L226,140" />
+  <text class="flip" x="120" y="224">⇠ flip ⇢  one page = one chapter</text>
+  {codex.map((t, i) => (
+    <g>
+      <text class="ok" x="60" y={row(i)}>✓</text>
+      <text class="li" x="78" y={row(i)}>{t}</text>
+    </g>
+  ))}
+  <text class="mas" x="58" y="350">Masorah parva’s home — short, word-adjacent</text>
+
+  <!-- SCROLL (landscape) -->
+  <rect class="col scrollc" x="390" y="48" width="330" height="320" rx="8"/>
+  <text class="ch" x="408" y="76">📜 SCROLL <tspan class="badge later">landscape · journey</tspan></text>
+  <!-- landscape device -->
+  <rect class="dev" x="430" y="100" width="250" height="100" rx="6"/>
+  <!-- top / bottom bands -->
+  <rect class="band" x="436" y="106" width="238" height="12" rx="2"/>
+  <rect class="band" x="436" y="182" width="238" height="12" rx="2"/>
+  <!-- columns -->
+  {[0, 1, 2].map((c) => (
+    <g>
+      {[0, 1, 2].map((i) => (
+        <line class="tx" x1={444 + c * 80} y1={132 + i * 16} x2={500 + c * 80} y2={132 + i * 16} />
+      ))}
+    </g>
+  ))}
+  <text class="flip" x="430" y="224">⟵ columns glide — <tspan font-style="italic">pagina</tspan> = one column</text>
+  {scroll.map((t, i) => (
+    <g>
+      <text class={i === 3 ? 'no' : 'ok'} x="410" y={row(i)}>{i === 3 ? '✗' : '✓'}</text>
+      <text class="li" x="428" y={row(i)}>{t}</text>
+    </g>
+  ))}
+  <text class="mas" x="408" y="350">Masorah magna’s home — long, passage-level</text>
+</svg>
+
+<style>
+  .ttl    { font:700 13px Georgia, serif; fill:#1a1714; letter-spacing:.3px; }
+  .col    { stroke-width:1.6; }
+  .codexc { fill:#f4f0e4; stroke:#9a7b27; }
+  .scrollc{ fill:#eef1f4; stroke:#3a5a78; }
+  .ch     { font:700 15px Georgia, serif; fill:#1a1714; }
+  .badge  { font:italic 11px Georgia, serif; fill:#2f6b3f; }
+  .badge.later { fill:#3a5a78; }
+  .dev    { fill:#fff; stroke:#4a443d; stroke-width:1.4; }
+  .tx     { stroke:#b9b0a2; stroke-width:2.4; stroke-linecap:round; }
+  .rail   { fill:#f8ecc8; stroke:#9a7b27; stroke-width:1; }
+  .inkblob{ fill:none; stroke:#9a3b2f; stroke-width:1.8; stroke-linecap:round; }
+  .pin    { fill:#2f6b3f; }
+  .band   { fill:#dfe6ec; stroke:#3a5a78; stroke-width:.8; }
+  .lbl    { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+  .arr    { stroke:#7a6a3a; stroke-width:1; }
+  .flip   { font:italic 11px Georgia, serif; fill:#4a443d; }
+  .ok     { font:700 13px Georgia, serif; fill:#2f6b3f; }
+  .no     { font:700 13px Georgia, serif; fill:#9a3b2f; }
+  .li     { font:13px Georgia, serif; fill:#1a1714; }
+  .mas    { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+</style>

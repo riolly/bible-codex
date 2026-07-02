@@ -1,0 +1,175 @@
+---
+title: "Two margins, two jobs: Codex & Scroll"
+module: 5
+order: 15
+eyebrow: Module 5 — The Codex & the Scroll · Lesson 15
+lede: The scribes who guarded the Hebrew Bible gave different margins different jobs — and that thousand-year-old convention is why the app's two reading layouts just became two purpose-bound modes.
+summary: "The Masoretes put short word-adjacent notes (Masorah parva) in the side margins and long passage-level lists (Masorah magna) top and bottom — margin position encoded the annotation's kind. ADR-0016 adopts the same move: Codex mode (portrait, paged, study — all annotation) and Scroll mode (landscape, continuous columns, journey — clean), hard-bound to orientation. Assign purpose instead of pretending margin spaces transform into each other."
+completeId: "0015"
+---
+import CodexScroll from '../../components/diagrams/CodexScroll.astro';
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">A new module — the blueprint moved under you</span>
+  <p>You finished the course on the <em>2026-06-25</em> blueprint. A design session on
+  <em>2026-07-02</em> produced five new ADRs (0012–0016) and a new family of terms —
+  <span class="term">Codex mode</span>, <span class="term">Scroll mode</span>,
+  <span class="term">Page</span>, <span class="term">Margin rail</span>,
+  <span class="term">Rail ink</span>. This module teaches what changed and why. As always:
+  the biblical reality first, then the mechanic built on it.</p>
+</div>
+
+## Bible idea: the Masoretes gave each margin a different job
+
+Between roughly the 6th and 10th centuries, Jewish scribe-scholars called the **Masoretes**
+guarded the Hebrew Bible's text with a web of marginal notes — the **Masorah** ("tradition").
+Their notes came in two kinds, and they *never* mixed the two margins:
+
+- **Masorah parva** ("small") — terse, abbreviation-dense guard-notes ("this word occurs
+  3 times spelled this way") — written in the **side margins**, right beside the word they
+  guard.
+- **Masorah magna** ("large") — the expansive lists and cross-references backing those
+  notes — written in the **top and bottom margins**, where there is room to stretch out.
+
+Same tradition, two margin regions, two content grains: **side = short and word-adjacent;
+top/bottom = long and passage-level.** Medieval Christian manuscripts made the same move
+(the *Glossa Ordinaria*: word-glosses between the lines, passage commentary in the margin),
+and the Talmud page is the extreme case — concentric zones, each a different voice. The
+margin's *position* encoded the annotation's *kind*. That's a thousand-year-old design
+convention, not a workaround.
+
+## App idea: don't transform the margins — assign them
+
+Here's the problem that forced this. <span class="term">Ink</span> is layout-bound (you know
+this from Lesson 6). A vertical layout has **left/right** margin space; a horizontal-column
+layout has **top/bottom** margin space. Ink drawn in one has no honest home in the other —
+the spaces don't transform into each other. And on a tablet, **rotation** forces the question
+*daily*.
+
+[ADR-0016](https://github.com/riolly/bible-codex/blob/main/docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md)
+answers with the Masoretes' move: **don't transform — assign.** The two layouts stop being
+interchangeable orientations of one surface and become two **purpose-bound modes**, each
+hard-bound to a device orientation:
+
+- **📖 Codex mode (portrait)** — the ***study*** surface. Paged like a physical Bible; home
+  of *all* annotation — Markup, Notes, and ink — in and around a **side margin rail** (the
+  Masorah *parva* position: short, word-adjacent).
+- **📜 Scroll mode (landscape)** — the ***journey*** surface. Continuous horizontal columns,
+  immersive reading, Portals, progress. Its top/bottom bands carry passage-level and meta
+  content (the Masorah *magna* position) — and it stays **clean** in v1: no ink ever, no
+  Markup authoring yet.
+
+<figure>
+  <CodexScroll />
+  <figcaption>Two surfaces, two purposes. Codex = portrait, paged, annotated (the side-margin
+  tradition); Scroll = landscape, flowing, clean (the top/bottom-margin tradition). Rotating
+  the device is the mode switch.</figcaption>
+</figure>
+
+<div class="callout key">
+  <span class="tag">Rotation becomes a meaningful gesture</span>
+  <p>Upright = <em>"I'm studying."</em> Sideways = <em>"I'm reading."</em> And the
+  rotation-orphans-ink problem doesn't get <em>mitigated</em> — it <strong>cannot occur</strong>:
+  ink exists only in Codex mode, whose page geometry doesn't reflow on rotation. The old open
+  question ("what's Ink's reflow policy?") isn't answered; it's <strong>dissolved</strong>.</p>
+</div>
+
+This is the project's **two-physics discipline** one level up. Every good decision in this
+blueprint has the same shape: when two things have different physics, refuse to pretend
+they're one thing (Markup/Ink, corpus/user-data, rules/computed-layout). Transforming
+side-margin ink into top-margin ink would be pretending. Two deliberate refusals worth
+knowing: the **inverse assignment** (study in landscape) was rejected — writing posture is
+portrait (every notebook and journaling Bible), and landscape's wide sweep is exactly what
+makes multi-column feel like a scroll; and **free mode choice in any orientation** was
+rejected — the moment both modes exist in both orientations, the orphaning problem
+un-dissolves. One naming rule: the modes are named by *purpose*, never by pixels — say
+**Codex mode** and **Scroll mode**, not "vertical/horizontal mode."
+
+## Match the tradition to the mechanic
+
+<Connect
+  client:idle
+  title="Lesson 15 — margin tradition ↔ app surface"
+  hint="Click a piece of the manuscript tradition on the left, then the app mechanic that inherits it."
+  pairs={[
+    { left: "Masorah parva — terse notes beside the word", right: "The Codex margin rail — short, word-adjacent annotation" },
+    { left: "Masorah magna — long lists, top & bottom", right: "Scroll mode’s bands — passage-level & meta content" },
+    { left: "The margin’s position encodes the note’s kind", right: "Mode is part of an annotation’s meaning — assign, don’t transform" },
+    { left: "Writing posture — every journaling Bible is upright", right: "Why study got portrait, not landscape" },
+  ]}
+/>
+
+## Check yourself
+
+<Quiz
+  client:idle
+  title="Lesson 15 — recall"
+  completeId="0015"
+  questions={[
+    {
+      stem: "The Masoretes wrote Masorah parva in the side margins and Masorah magna top/bottom. What principle does bible-codex take from that?",
+      options: [
+        "Margins should be as wide as possible",
+        "Margin position encodes the annotation's kind — so assign each mode a purpose instead of transforming ink between margin spaces",
+        "All annotations belong at the bottom of the page",
+        "Notes should be written in abbreviations to save space",
+      ],
+      answer: 1,
+      explain: "Side = short + word-adjacent (parva); top/bottom = long + passage-level (magna). The margin's position encoded the note's kind — ADR-0016 assigns purpose per mode the same way, instead of pretending side-margin ink can become top-margin ink.",
+    },
+    {
+      stem: "How does a reader switch between Codex mode and Scroll mode?",
+      options: [
+        "A toggle in reading_settings",
+        "They rotate the device — portrait is Codex (study), landscape is Scroll (journey); mode is never a stored setting",
+        "A long-press gesture on the page",
+        "It follows the time of day",
+      ],
+      answer: 1,
+      explain: "Mode is hard-bound to orientation (ADR-0016): upright = study, sideways = read. The old scroll_mode setting left the schema entirely. Free mode choice in any orientation was rejected — it would bring the ink-orphaning problem back.",
+    },
+    {
+      stem: "Why can the rotation-orphans-ink problem no longer occur?",
+      options: [
+        "Ink is automatically transformed to fit the new margins",
+        "Ink is hidden whenever the device rotates",
+        "Ink exists only in Codex mode, whose page geometry doesn't reflow on rotation — the problem is dissolved, not mitigated",
+        "Rotation is disabled while ink is on screen",
+      ],
+      answer: 2,
+      explain: "Scroll mode never has ink; Codex mode's fixed page absorbs rotation as a viewing operation (letterbox/scale). So there is no moment where ink faces a margin space it wasn't drawn in. The earlier mitigation policies (hide / best-effort re-place / indicator chip) were all superseded by this dissolution.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: what are the two modes, what is each one for, and what ancient precedent justifies the split?"
+  answer="Codex mode — portrait, the study surface: paged like a physical Bible, home of all annotation (Markup, Notes, rail ink) in the side margin rail. Scroll mode — landscape, the journey surface: continuous horizontal columns, immersive reading, Portals and progress, kept clean (no ink ever, no Markup authoring in v1). The precedent is the Masorah: parva (short, word-adjacent) lived in the side margins, magna (long, passage-level) top and bottom — margin position encoded the annotation's kind, so the app assigns each mode a purpose instead of transforming ink between margin spaces. Mode is hard-bound to orientation; rotation is the switch."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md">ADR-0016</a> is the decision; <a href="https://github.com/riolly/bible-codex/blob/main/reading-modes-research.md">reading-modes-research.md</a> is the research record behind it, with the historical sources: <a href="https://uasvbible.org/2025/10/17/the-role-of-marginalia-in-ancient-hebrew-manuscripts/">UASV on marginalia in Hebrew manuscripts</a>, <a href="https://uasvbible.org/2025/06/17/medieval-biblical-manuscripts-foundations-of-the-masoretic-tradition/">UASV on the Masoretic tradition</a>, and <a href="https://en.wikipedia.org/wiki/Marginalia">Wikipedia — Marginalia</a>. The new terms are pinned in <a href="https://github.com/riolly/bible-codex/blob/main/CONTEXT.md">CONTEXT.md</a> §Reading surfaces.
+</PrimarySource>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Got it, or want to dig in?</strong> Ask me anything — e.g. "what else did the
+    Masoretes count?", "why not let me choose the mode freely?", or "what happens to a note
+    made in Codex when I rotate to Scroll?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0014-one-engine-many-surfaces">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 14 — One engine, many surfaces</span>
+    </a>
+    <a href="/lessons/0016-a-page-is-a-column">
+      <span class="label">Up next</span>
+      <span class="title">Lesson 16 — A page is a column →</span>
+    </a>
+  </div>
+</div>
