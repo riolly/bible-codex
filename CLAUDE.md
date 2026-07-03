@@ -1,6 +1,20 @@
 # bible-codex
 
+Use /caveman always except when done or reporting/explaining to me.
+
 ## Agent skills
+
+Leverage these skills during development:
+/tdd
+/domain-modeling
+/codebase-design
+
+And these skill when needed:
+/diagnosing-bugs
+/prototype
+/research
+
+/code-review
 
 ### Issue tracker
 
