@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "reader",
-    "slug": "reader",
+    "name": "BibleCodex",
+    "slug": "biblecodex",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
-    "scheme": "reader",
+    "scheme": "biblecodex",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.riolly.reader"
     },
     "android": {
+      "package": "com.riolly.reader",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -31,11 +33,20 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-sqlite",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0b11b2ef-07cf-40f7-b13f-f1ce6b4c4a52"
+      }
     }
   }
 }
