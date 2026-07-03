@@ -1,0 +1,14 @@
+{
+  // Open THIS file in VSCode (File → Open Workspace from File), not a subfolder.
+  // Each project gets its own root (tasks, search, extensions scope per root)
+  // while git stays visible everywhere — the repo lives at the top-level root.
+  "folders": [
+    { "name": "bible-codex · root", "path": "." },
+    { "name": "app", "path": "app" },
+    { "name": "teach", "path": "teach" }
+  ],
+  "settings": {
+    // If a subfolder is ever opened directly, still attach the parent repo's git.
+    "git.openRepositoryInParentFolders": "always"
+  }
+}

@@ -4,7 +4,7 @@
 > **(1)** should the two scroll modes have distinct *purposes* (and distinct margin roles)
 > instead of being two interchangeable layouts? **(2)** page-flip or continuous scroll?
 >
-> **Status:** decisions recorded — [ADR-0016](docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md)
+> **Status:** decisions recorded — [ADR-0016](../adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md)
 > written; schema + CONTEXT/OVERVIEW/VISION/drawing-plan updated 2026-07-02. This doc remains
 > the research record behind the ADR.
 > Supersedes the "reflow policy on rotation" framing of the old Finding-5 discussion — the
@@ -176,7 +176,7 @@ themselves* would not — which is why v1 scopes it out (§Decisions #3).
 
 ## Docs updated (done 2026-07-02)
 
-- ✅ **[ADR-0016](docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md)** — the decision record for everything in this doc.
+- ✅ **[ADR-0016](../adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md)** — the decision record for everything in this doc.
 - ✅ `VISION.md` — Beauty-first paragraph now describes Codex/Scroll purpose-bound surfaces.
 - ✅ `OVERVIEW.md` — P1/P2 phase descriptions, open questions, document map.
 - ✅ `CONTEXT.md` — new "Reading surfaces" section (Codex mode, Scroll mode, Page, Margin rail,

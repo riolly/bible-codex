@@ -63,7 +63,7 @@ and no migration**.
   layout code.
 - **Phase 4+ sync is "continuous bidirectional restore"** over these same rows; **Phase-5 Ink**,
   though heavier, is already a neutral, block-normalized, UUID-identified stroke model
-  ([drawing-architecture-plan.md §6](../../drawing-architecture-plan.md)) — portable by the same
+  ([drawing-architecture-plan.md §6](../design/drawing-architecture-plan.md)) — portable by the same
   rules. The seam holds across phases, which is the point.
 - The export/import **file format** and the eventual sync backend remain **reversible**; the
   invariants above are the locked part.

@@ -29,4 +29,4 @@ Discovery becomes tangible through **Portals** (see [WISHLIST.md](WISHLIST.md)):
 - Language / glossary → [CONTEXT.md](CONTEXT.md)
 - Architecture decisions → [docs/adr/](docs/adr/)
 - Future feature ideas → [WISHLIST.md](WISHLIST.md)
-- Drawing / annotation design → [drawing-architecture-plan.md](drawing-architecture-plan.md)
+- Drawing / annotation design → [drawing-architecture-plan.md](docs/design/drawing-architecture-plan.md)

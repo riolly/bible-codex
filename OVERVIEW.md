@@ -5,7 +5,7 @@
 > links to the detailed doc that owns it — this file stays a map, not a duplicate.
 >
 > **Last updated:** 2026-07-02 *(8-finding grill session: ADR-0012…0016,
-> [reading-modes-research.md](reading-modes-research.md))*
+> [reading-modes-research.md](docs/design/reading-modes-research.md))*
 
 ---
 
@@ -26,7 +26,7 @@ Full philosophy → [VISION.md](VISION.md). Glossary of every domain term → [C
 ## 2. Where we are
 
 **The throwaway proof-of-concept prototype is built and the core bet is PROVEN.** Lives in
-[`prototype/`](prototype/README.md) (Vite + TS + `canvaskit-wasm` + Cardo). Skia `Paragraph`
+[`prototypes/canvaskit-reading/`](prototypes/canvaskit-reading/README.md) (Vite + TS + `canvaskit-wasm` + Cardo). Skia `Paragraph`
 renders genuinely beautiful literary scripture (Latin + polytonic Greek + pointed Hebrew in
 one font, RTL correct), with smooth scroll and the full vision-taste loop working:
 
@@ -45,7 +45,7 @@ one font, RTL correct), with smooth scroll and the full vision-taste loop workin
 rejection) on a **physical Android tablet** in Chrome — the pessimistic browser-wasm case the
 prototype exists to derisk. Mouse/trackpad on web cannot tell us this.
 
-Full prototype verdict + caveats → [prototype/README.md](prototype/README.md).
+Full prototype verdict + caveats → [prototype/README.md](prototypes/canvaskit-reading/README.md).
 
 **Next step after on-device validation:** `/to-prd` then `/to-issues` for the real RN-Skia v1.
 
@@ -58,7 +58,7 @@ Full prototype verdict + caveats → [prototype/README.md](prototype/README.md).
 > **"Phase" here = the product-feature axis**, and it is now the canonical meaning of "Phase"
 > in this repo. It is *orthogonal* to the **build track** (Stage A CanvasKit-wasm → Stage B
 > Expo/RN-Skia, under Stack below) and to the **annotation sub-steps** in
-> [drawing-architecture-plan.md §10](drawing-architecture-plan.md), which live *inside* Phase 2.
+> [drawing-architecture-plan.md §10](docs/design/drawing-architecture-plan.md), which live *inside* Phase 2.
 > The data model is architected for **all four phases now**; only the three migration-fatal
 > seams (§4) are locked, everything else is built when its phase arrives. Rationale →
 > [ADR-0005](docs/adr/0005-four-product-phases-design-all-build-in-order.md). Full data
@@ -69,7 +69,7 @@ Full prototype verdict + caveats → [prototype/README.md](prototype/README.md).
   reading modes** — 📖 **Codex** (portrait, chapter-pages, margin rail) and 📜 **Scroll**
   (landscape, continuous columns), derived from orientation
   ([ADR-0016](docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md) +
-  [reading-modes-research.md](reading-modes-research.md)) — one translation, a **reading
+  [reading-modes-research.md](docs/design/reading-modes-research.md)) — one translation, a **reading
   position** (one canonical bookmark per book,
   [ADR-0012](docs/adr/0012-reading-position-is-one-canonical-bookmark-per-book.md)) — plus a
   **layout-adjustment table**: user-tunable spacing, indent, font, margins, line-height,
@@ -81,7 +81,7 @@ Full prototype verdict + caveats → [prototype/README.md](prototype/README.md).
   later, ADR-0016). Copy/share-a-verse rides the Markup selection flow
   ([ADR-0015](docs/adr/0015-accessibility-and-os-text-integration-are-consciously-deferred.md)).
   The authoring loop is already prototype-proven. →
-  [drawing-architecture-plan.md](drawing-architecture-plan.md).
+  [drawing-architecture-plan.md](docs/design/drawing-architecture-plan.md).
 - **Phase 3 — Lexicon / Strong's.** The **Original Word** hub + interlinear alignment, and the
   Strong's Exhaustive Concordance **lexicon** as a *separate reference schema joined by
   relation* (lemma, root, morphology, semantic domains). Unlocks word study, reverse-interlinear,
@@ -157,8 +157,8 @@ debating non-migration-fatal details.
   no element stores absolute canvas coords; every position resolves from a scripture Anchor at
   render. → [ADR-0003](docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md).
 - Full subsystem design, data models, `DrawingSurface` contract, competitive landscape →
-  [drawing-architecture-plan.md](drawing-architecture-plan.md) +
-  [ink-app-comparison.md](ink-app-comparison.md).
+  [drawing-architecture-plan.md](docs/design/drawing-architecture-plan.md) +
+  [ink-app-comparison.md](docs/design/ink-app-comparison.md).
 
 ---
 
@@ -189,7 +189,7 @@ USFM ingest + versification
 
 ## 5. Open questions — ripe for the next grill
 
-Carried from [drawing-architecture-plan.md §8](drawing-architecture-plan.md) and the broader
+Carried from [drawing-architecture-plan.md §8](docs/design/drawing-architecture-plan.md) and the broader
 product, these are the live threads to re-interrogate:
 
 **Annotations / Markup**
@@ -256,10 +256,10 @@ product, these are the live threads to re-interrogate:
 | [docs/adr/0014](docs/adr/0014-tokenization-policy-is-part-of-the-locked-anchor-seam.md) | Tokenization policy is part of locked seam #1; rule changes are anchor migrations |
 | [docs/adr/0015](docs/adr/0015-accessibility-and-os-text-integration-are-consciously-deferred.md) | A11y / OS text integration consciously deferred (personal use); copy/share ships with P2 Markup |
 | [docs/adr/0016](docs/adr/0016-codex-and-scroll-are-purpose-bound-reading-modes.md) | Codex & Scroll purpose-bound modes; fixed chapter-pages; margin rail; v1 rail-only ink |
-| [reading-modes-research.md](reading-modes-research.md) | Research behind ADR-0016 — margins history (Masorah), pagination vs scroll evidence, sources |
+| [reading-modes-research.md](docs/design/reading-modes-research.md) | Research behind ADR-0016 — margins history (Masorah), pagination vs scroll evidence, sources |
 | [schema.dbml](schema.dbml) | Phase-1 corpus + presentation, Phase-2 annotation, **and Phase-3 Original Word hub + lexicon** tables (DBML, dbdiagram-visualizable) |
-| [drawing-architecture-plan.md](drawing-architecture-plan.md) | Annotation subsystem design, data models, roadmap |
-| [ink-app-comparison.md](ink-app-comparison.md) | Competitive landscape for cross-platform ink |
+| [drawing-architecture-plan.md](docs/design/drawing-architecture-plan.md) | Annotation subsystem design, data models, roadmap |
+| [ink-app-comparison.md](docs/design/ink-app-comparison.md) | Competitive landscape for cross-platform ink |
 | [WISHLIST.md](WISHLIST.md) | Post-POC ideas (Portal, Journey, Themes, Research mode) |
-| [prototype/README.md](prototype/README.md) | Phase-1 throwaway prototype — the question it answers + verdict |
+| [prototype/README.md](prototypes/canvaskit-reading/README.md) | Phase-1 throwaway prototype — the question it answers + verdict |
 | [CLAUDE.md](CLAUDE.md) | Agent/repo conventions (issue tracker, triage, domain docs) |
