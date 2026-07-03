@@ -1,0 +1,4 @@
+# React Native / Metro needs a flat, hoisted node_modules — pnpm's default
+# symlinked layout breaks native module + Metro resolution. Kept here (pnpm's
+# own config) rather than .npmrc so npm doesn't warn on the unknown key.
+nodeLinker: hoisted
