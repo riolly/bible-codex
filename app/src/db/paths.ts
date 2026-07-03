@@ -22,3 +22,14 @@ export const BACKUP_INCLUDED_DIR = Paths.document;
 
 /** NON-backed-up, rebuildable cache. Computed layout (#7+) goes here. */
 export const CACHE_DIR = Paths.cache;
+
+/**
+ * Where the corpus DB's working copy MUST live (#6). expo-sqlite's
+ * `assetSource` copies the bundled asset into its default SQLite dir, which is
+ * under the backed-up document sandbox — that default violates ADR-0011
+ * (corpus is backed up by neither path) and, on Android, a 100MB+ corpus blows
+ * the ~25MB Auto Backup quota, silently killing the backup of user.db too.
+ * Open the corpus with a `directory` override to this NON-backed-up location;
+ * if the OS purges it, the asset is simply re-copied on next open.
+ */
+export const CORPUS_DIR = `${Paths.cache.uri}corpus`;

@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@shopify/react-native-skia": "2.6.2",
-    "drizzle-orm": "^v1.0.0-rc.4",
+    "drizzle-orm": "1.0.0-rc.4-5d5b77c",
     "expo": "^57",
     "expo-constants": "~57.0.2",
     "expo-dev-client": "~57.0.4",
@@ -47,7 +47,7 @@
     "@testing-library/react-native": "^14.0.1",
     "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
-    "drizzle-kit": "^v1.0.0-rc.4",
+    "drizzle-kit": "1.0.0-rc.4-ca0f029",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.0",
     "jest": "^29.7.0",
