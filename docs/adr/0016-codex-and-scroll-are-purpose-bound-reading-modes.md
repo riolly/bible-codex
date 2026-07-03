@@ -2,7 +2,7 @@
 
 The two reading layouts stop being interchangeable orientations of one surface and become two
 **purpose-bound modes**, hard-bound to device orientation. Full research and sources:
-[reading-modes-research.md](../../reading-modes-research.md).
+[reading-modes-research.md](../design/reading-modes-research.md).
 
 - **📖 Codex mode (portrait)** — the *study* surface. Paged like a physical Bible; a page is a
   **chapter** typeset at fixed geometry (semantic pagination), scrolled internally when taller
@@ -24,7 +24,7 @@ The pillars:
    fixed per preset); the device letterboxes/scales it. Rotation and device changes become
    *viewing* operations — ink cannot be orphaned by them, **by construction**. This dissolves
    (not mitigates) the rotation-reflow problem. Every serious ink app (GoodNotes, Notability —
-   see [ink-app-comparison.md](../../ink-app-comparison.md)) is page-based for this reason.
+   see [ink-app-comparison.md](../design/ink-app-comparison.md)) is page-based for this reason.
 3. **Page = chapter; overflow scrolls.** No page-break algorithm exists in v1 — the chapter is
    the break (no widows/orphans/poem-splitting engine work). Spatial landmarks stay valid when
    a long chapter scrolls because the *canvas* geometry is fixed — the reading research

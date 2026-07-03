@@ -36,5 +36,9 @@ policy**:
 - Scope: **translation corpora only.** Phase-3 original-language segmentation is outsourced to
   external per-occurrence ids ([ADR-0007](0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md))
   precisely so we never own that numbering.
-- The rules join CONTEXT.md's Token entry by pointer once fixed; until then the prototype-usfm
-  ingester's behavior is **provisional**, not policy.
+- The rules join CONTEXT.md's Token entry by pointer once fixed; until then the retired
+  prototype-usfm ingester's behavior — preserved at
+  [prototype-usfm/src/usfm.ts@e7accb1](https://github.com/riolly/bible-codex/blob/e7accb1501fa0b5329d57b3f83ba77ac5ab96fd4/prototype-usfm/src/usfm.ts)
+  (tokenizer regex, role vocabulary, heading `verse = NULL` logic) — is **provisional**, not
+  policy. The directory itself was deleted 2026-07-03 once its findings were folded into
+  schema.dbml comments and issue #6.

@@ -31,4 +31,4 @@ hub (P3)** — the opposite of what "research tool first" intuition suggests.
   ordering *internal to P2*, not a top-level phase ordering.
 - "Phase" now denotes the **product-feature axis** repo-wide. The prototype technology path
   (CanvasKit-wasm → Expo/RN-Skia) is the orthogonal **build track** (Stage A/B), and the
-  annotation roadmap in `drawing-architecture-plan.md §10` is a set of **sub-steps inside P2**.
+  annotation roadmap in `docs/design/drawing-architecture-plan.md` §10 is a set of **sub-steps inside P2**.

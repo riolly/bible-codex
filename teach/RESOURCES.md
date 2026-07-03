@@ -12,7 +12,7 @@ why," start here.
 - [CONTEXT.md](../CONTEXT.md) — the complete domain glossary + the rules binding the terms. *Reach for: any term you don't know.*
 - [data-architecture.md](../data-architecture.md) — the four-schema / two-bridge shape. *Reach for: how the data worlds fit together.*
 - [docs/adr/](../docs/adr/) — the Architecture Decision Records (the "why" of each choice). *Reach for: ADR-0001 (Anchor), ADR-0002 (Markup vs Ink), ADR-0007 (Original Word hub), ADR-0016 (Codex/Scroll modes).*
-- [reading-modes-research.md](../reading-modes-research.md) — the 2026-07-02 research record behind ADR-0016: Masorah margins, *pagina*, scroll-vs-page reading research, with cited sources. *Reach for: Module 5's historical claims.*
+- [reading-modes-research.md](../docs/design/reading-modes-research.md) — the 2026-07-02 research record behind ADR-0016: Masorah margins, *pagina*, scroll-vs-page reading research, with cited sources. *Reach for: Module 5's historical claims.*
 - [VISION.md](../VISION.md) + [WISHLIST.md](../WISHLIST.md) — the philosophy and the post-v1 ideas (Portal, Journey). *Reach for: the "why build it at all," and Phase 4.*
 - [schema.dbml](../schema.dbml) — the table shapes themselves (visualizable at dbdiagram.io). *Reach for: exact columns.*
 

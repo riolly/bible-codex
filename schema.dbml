@@ -9,8 +9,11 @@
 // The seams that let them bolt on without migration are noted as `// SEAM Pn` comments.
 //
 // STATUS: Phase-1 shapes resolved via grill Q1–Q6 (see `Qn RESOLVED` comments); the
-// token model mirrors the validated ingester (prototype-usfm/src/usfm.ts).
-// (The older prototype/src/model/types.ts predates the grills — it still carries `space`
+// token model mirrors the validated pressure-test ingester (prototype-usfm, retired
+// 2026-07-03; provisional rules preserved at
+// https://github.com/riolly/bible-codex/blob/e7accb1501fa0b5329d57b3f83ba77ac5ab96fd4/prototype-usfm/src/usfm.ts
+// — the real ingester is issue #6).
+// (The older prototypes/canvaskit-reading/src/model/types.ts predates the grills — it still carries `space`
 //  tokens and a non-morpheme OriginalWord; it is NOT the shape of record.) Phase-2
 // shapes resolved via a second grill (Q1 ids · Q2 inline anchor · Q3 binding ·
 // Q4 lifecycle · Q5 ink blob · Q6 ink layout · Q7 enums/style) → see ADR-0006.
@@ -21,7 +24,7 @@
 // AMENDED 2026-07-02 (8-finding grill session): reading_position added (ADR-0012);
 // translation.edition + Markup quote witnesses (ADR-0013); tokenization policy declared part
 // of the anchor seam (ADR-0014); scroll_mode REMOVED — modes are purpose-bound and
-// orientation-derived, ink is Codex-mode rail-only in v1 (ADR-0016, reading-modes-research.md).
+// orientation-derived, ink is Codex-mode rail-only in v1 (ADR-0016, docs/design/reading-modes-research.md).
 
 //============================================================
 // Enums
@@ -118,10 +121,11 @@ Table block {
   id             integer  [pk, increment]
   translation_id integer  [not null]
   book_id        integer  [not null]
-  chapter        integer  [not null]               // added after prototype-usfm proved block.seq is per-chapter
+  chapter        integer  [not null]               // added after the prototype-usfm pressure test proved block.seq is per-chapter
   genre          genre    [not null]               // typesetting branch
   role           varchar                            // USFM subtype → presentation maps to typography. See ROLE VOCABULARY below.
-  // ROLE VOCABULARY (#7) — the CONTRACT between the ingester (prototype-usfm/src/usfm.ts) and the
+  // ROLE VOCABULARY (#7) — the CONTRACT between the ingester (issue #6; validated by the retired
+  // prototype-usfm pressure test) and the
   // presentation cascade (layout_override.scope_value when scope_kind='role'). varchar, not an enum,
   // so it can grow without migration — but the value set is REGISTERED here and the ingester MUST
   // emit exactly these strings (else a role override silently misses):

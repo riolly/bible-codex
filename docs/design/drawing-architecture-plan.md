@@ -135,7 +135,7 @@ The original drawing plan said "Android first; desktop/web = non-goal." The app 
 ## 10. Phased roadmap (resequenced)
 
 > **Naming:** these are **sub-steps inside product Phase 2** (Handwriting & notes) in
-> [OVERVIEW.md](OVERVIEW.md), *not* the top-level product phases. Read "Phase N" below as
+> [OVERVIEW.md](../../OVERVIEW.md), *not* the top-level product phases. Read "Phase N" below as
 > "Phase 2 · step N."
 
 - **Phase 0 — Foundations.** Lock the `Anchor` model (`CONTEXT.md`) + `Mark` / `Note` / `Connector` schema + `Layer` model. Coordinate spaces: Markup = canonical Anchor; Ink = block-normalized strokes.
@@ -183,12 +183,12 @@ interface DrawingSurface {
 
 The persisted shapes for `layer` / `mark` / `note` / `connector` / `binding` / `ink_annotation` /
 `ink_stroke` — and the `Anchor` coordinate they hang on — are **owned by
-[`schema.dbml`](schema.dbml)** (Phase-2 section), with the storage decisions in
-[ADR-0006](docs/adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md) and the
+[`schema.dbml`](../../schema.dbml)** (Phase-2 section), with the storage decisions in
+[ADR-0006](../adr/0006-annotation-layer-is-a-sync-first-coordinate-anchored-store.md) and the
 scene-graph rationale in
-[ADR-0003](docs/adr/0003-annotations-are-a-scripture-anchored-scene-graph.md). The `Anchor`
-column-group itself is defined once in [CONTEXT.md](CONTEXT.md) (vocabulary) +
-[`schema.dbml`](schema.dbml) (columns). This doc deliberately no longer restates them — the only TS
+[ADR-0003](../adr/0003-annotations-are-a-scripture-anchored-scene-graph.md). The `Anchor`
+column-group itself is defined once in [CONTEXT.md](../../CONTEXT.md) (vocabulary) +
+[`schema.dbml`](../../schema.dbml) (columns). This doc deliberately no longer restates them — the only TS
 contract it owns is the runtime `DrawingSurface` in Appendix A (which is not a persisted shape).
 
 ## Appendix C — Key libraries & references

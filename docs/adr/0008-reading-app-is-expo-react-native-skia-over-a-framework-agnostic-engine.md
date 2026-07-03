@@ -23,7 +23,7 @@ tablet simulator/device** — not a web build. Confirms the build track in
   (Phase 2) must anchor to exact token rects in the *same* coordinate space as the text
   ([ADR-0003](0003-annotations-are-a-scripture-anchored-scene-graph.md)); two text engines means
   two layout truths. The cost — a custom typesetting engine on Skia `Paragraph` — is already paid
-  and proven in `prototype/`.
+  and proven in `prototypes/canvaskit-reading/`.
 - **Ship desktop in Phase 1 (web build via CanvasKit, or RN macOS/Windows)** — rejected: desktop is
   **deferred to Phase 4+**. Shipping it now would cost a dual render path (native Skia vs CanvasKit),
   manual web font loading, a ~2.9 MB wasm payload, and a native-only-API avoidance discipline — all

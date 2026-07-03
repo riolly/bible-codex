@@ -40,7 +40,7 @@ Built and observed working (see the build session screenshots):
 
 The tool palette (right edge) lets you **create** the annotations that were
 previously pre-placed. It splits along the two classes from
-[`drawing-architecture-plan.md`](../drawing-architecture-plan.md) / ADR-0002,
+[`drawing-architecture-plan.md`](../../docs/design/drawing-architecture-plan.md) / ADR-0002,
 which have **opposite physics** — and the prototype shows the difference live:
 
 - **Note** (Markup) — tap a word → type in a small parchment editor → it commits
