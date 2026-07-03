@@ -31,14 +31,37 @@ policy**:
   punctuation far more often than words (modernized quotes, commas), so punctuation-excluded
   indexes are immune to the most common class of edition churn (ADR-0013).
 
+## The registered policy (v1 — fixed 2026-07-04, issue #6)
+
+Implemented and guarded in `app/scripts/ingest/tokenize.ts` (the single tokenizer both KJV and
+BSB ingest through); adversarial fixtures in `app/scripts/ingest/tokenize.test.ts` and the
+golden fixture pin every rule. **A failing tokenizer test is an anchor migration, not a test to
+update.**
+
+1. A **word token** is a maximal run of letters/digits joined by *internal* apostrophes
+   (`'`/`’`) or hyphens (`-`); it must **begin and end alphanumeric**. Possessives (*LORD's*)
+   and hyphenated compounds (*father-in-law*) are ONE word — one tap target.
+2. A **grouped number** — digits joined by `,` or `.` (*144,000*, *3.5*) — is ONE word token.
+3. A **trailing bare apostrophe** (*disciples’*) and a **leading elision apostrophe** (*’Twas*)
+   are punct, not part of the word — a quote-style revision (`'` → `’`) at a word edge touches
+   only punct text, never a word (ADR-0013 immunity for the most common edition churn).
+4. Everything else non-space is **punct**; a maximal run of punct characters (`,”`, `—`)
+   collapses into a **single punct token**, addressed by the word it follows.
+5. **Whitespace is never a token** (CONTEXT.md).
+
+One clarification the real sources forced (BSB Zech 12): a heading never **inherits** the
+preceding verse, but an **explicit `\v` inside a heading para** (a *versified* `\d` descriptive
+title) keeps its verse and word indexes — otherwise that verse would vanish from the
+translation and be unanchorable. Unversed headings (Psalm titles, `\s`, `\mt`, `\qa`) still
+carry `verse = NULL`.
+
 ## Consequences
 
 - Scope: **translation corpora only.** Phase-3 original-language segmentation is outsourced to
   external per-occurrence ids ([ADR-0007](0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md))
   precisely so we never own that numbering.
-- The rules join CONTEXT.md's Token entry by pointer once fixed; until then the retired
-  prototype-usfm ingester's behavior — preserved at
-  [prototype-usfm/src/usfm.ts@e7accb1](https://github.com/riolly/bible-codex/blob/e7accb1501fa0b5329d57b3f83ba77ac5ab96fd4/prototype-usfm/src/usfm.ts)
-  (tokenizer regex, role vocabulary, heading `verse = NULL` logic) — is **provisional**, not
-  policy. The directory itself was deleted 2026-07-03 once its findings were folded into
-  schema.dbml comments and issue #6.
+- The retired prototype-usfm tokenizer (preserved at
+  [prototype-usfm/src/usfm.ts@e7accb1](https://github.com/riolly/bible-codex/blob/e7accb1501fa0b5329d57b3f83ba77ac5ab96fd4/prototype-usfm/src/usfm.ts))
+  was provisional and is now superseded by the registered policy above. Two deliberate
+  departures from it: a word must *end* alphanumeric (trailing `’` became punct), and grouped
+  numbers became one token — both fixed **before** any anchor was ever minted, so no migration.

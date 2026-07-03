@@ -36,7 +36,8 @@
       ],
       "expo-font",
       "expo-sqlite",
-      "expo-status-bar"
+      "expo-status-bar",
+      "./plugins/with-android-backup-rules"
     ],
     "experiments": {
       "typedRoutes": true,

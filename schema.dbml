@@ -129,11 +129,12 @@ Table block {
   // presentation cascade (layout_override.scope_value when scope_kind='role'). varchar, not an enum,
   // so it can grow without migration — but the value set is REGISTERED here and the ingester MUST
   // emit exactly these strings (else a role override silently misses):
-  //   heading: "book_title" (\mt) · "major_section" (\ms) · "section" (\s) · "psalm_title" (\d)
+  //   heading: "book_title" (\mt) · "major_section" (\ms) · "section" (\s) · "psalm_title" (\d) · "acrostic" (\qa, Psalm 119)
   //   prose:   null (\p plain paragraph) · "margin" (\m) · "no_break" (\nb) · "indented" (\pi) · "list_item" (\li)
-  //   poetry:  null (role unused; block.indent carries line depth)
+  //            · "embedded_opening" (\pmo) · "centered" (\pc, inscriptions)
+  //   poetry:  null (plain line; block.indent carries depth) · "refrain" (\qr, right-aligned)
   //   guard:   "implicit" (text seen with no block marker)
-  // RESERVED (not yet emitted — additive when detection lands): "acrostic" (e.g. Psalm 119).
+  // (\qa/\pmo/\pc/\qr registered 2026-07-04 when the real ingester (#6) hit them in the BSB source.)
   indent         integer  [not null, default: 0]  // poetry line depth; 0 for prose/heading
   seq            integer  [not null]               // render order within the chapter (= seq of its first token)
   // Q2 RESOLVED: membership — tokens FK to block via token.block_id (blocks partition

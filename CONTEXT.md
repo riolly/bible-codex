@@ -7,7 +7,7 @@ A local-first, literary Bible reader. This glossary fixes the language of the te
 ### Text units
 
 **Token**:
-A single **word- or punctuation-occurrence** in a *translation's* text — the unit of storage, rendering, and within-translation hit-testing. Whitespace is **not** a Token: spacing is a render/layout concern owned by the presentation layer, never corpus data. Per-translation — a KJV Token and a BSB Token are never the same object. The word/punct classification rules (possessives, hyphens, elisions, numbers) are **registered policy**, part of the locked anchor seam — changing them is an anchor migration (ADR-0014).
+A single **word- or punctuation-occurrence** in a *translation's* text — the unit of storage, rendering, and within-translation hit-testing. Whitespace is **not** a Token: spacing is a render/layout concern owned by the presentation layer, never corpus data. Per-translation — a KJV Token and a BSB Token are never the same object. The word/punct classification rules (possessives, hyphens, elisions, numbers) are **registered policy**, part of the locked anchor seam — changing them is an anchor migration. The v1 rules are fixed in ADR-0014 §"The registered policy" and implemented in `app/scripts/ingest/tokenize.ts`.
 _Avoid_: word (ambiguous with Original Word); treating whitespace as a Token
 
 **Original Word**:

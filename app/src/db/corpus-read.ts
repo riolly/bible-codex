@@ -1,0 +1,80 @@
+import { and, asc, eq, inArray } from 'drizzle-orm';
+import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
+
+import type { Block, Token } from '../model/corpus';
+import * as schema from './corpus-schema';
+
+/**
+ * Chapter read across the ADR-0009 Drizzle seam. Driver-agnostic over the
+ * SYNC sqlite drivers: the app calls it with drizzle(expo-sqlite), the ingest
+ * round-trip test with drizzle(better-sqlite3) — same schema, same query.
+ *
+ * The corpus is addressed by SEMANTIC KEYS (translation abbrev + book slug),
+ * never by storage ids (ADR-0001/0004).
+ */
+
+/** Driver-agnostic bound satisfied by both sync drizzle drivers. */
+type SyncSqliteDb = BaseSQLiteDatabase<'sync', any, any, any, any>;
+
+export interface Chapter {
+  blocks: Block[];
+  tokens: Token[];
+}
+
+/**
+ * Read one chapter's Block + Token rows, in render order. Chapter 1 also
+ * includes chapter 0 — the book's front matter (\mt book title), which the
+ * ingest stores before \c 1 and the first Page renders above chapter 1.
+ */
+export function readChapter(
+  db: SyncSqliteDb,
+  translationAbbrev: string,
+  bookSlug: string,
+  chapter: number,
+): Chapter {
+  const chapters = chapter === 1 ? [0, 1] : [chapter];
+  const scoped = <C extends typeof schema.block | typeof schema.token>(table: C) =>
+    and(
+      eq(schema.translation.abbrev, translationAbbrev),
+      eq(schema.book.slug, bookSlug),
+      inArray(table.chapter, chapters),
+    );
+
+  const blocks: Block[] = db
+    .select({
+      id: schema.block.id,
+      chapter: schema.block.chapter,
+      genre: schema.block.genre,
+      role: schema.block.role,
+      indent: schema.block.indent,
+      seq: schema.block.seq,
+    })
+    .from(schema.block)
+    .innerJoin(schema.translation, eq(schema.block.translationId, schema.translation.id))
+    .innerJoin(schema.book, eq(schema.block.bookId, schema.book.id))
+    .where(scoped(schema.block))
+    .orderBy(asc(schema.block.chapter), asc(schema.block.seq))
+    .all();
+
+  const tokens: Token[] = db
+    .select({
+      id: schema.token.id,
+      blockId: schema.token.blockId,
+      chapter: schema.token.chapter,
+      verse: schema.token.verse,
+      wordIndex: schema.token.wordIndex,
+      seq: schema.token.seq,
+      kind: schema.token.kind,
+      text: schema.token.text,
+      verseStart: schema.token.verseStart,
+      owId: schema.token.owId,
+    })
+    .from(schema.token)
+    .innerJoin(schema.translation, eq(schema.token.translationId, schema.translation.id))
+    .innerJoin(schema.book, eq(schema.token.bookId, schema.book.id))
+    .where(scoped(schema.token))
+    .orderBy(asc(schema.token.chapter), asc(schema.token.seq))
+    .all();
+
+  return { blocks, tokens };
+}
