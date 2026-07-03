@@ -175,8 +175,10 @@ function placeChunks(chunks: readonly Chunk[], indentEm: number, spaceWidth: num
 const RTL_CHAR = /[\u0590-\u05FF\uFB1D-\uFB4F]/;
 
 /**
- * Direction of one item: word tokens by script; punctuation and verse-num
- * ornaments are neutral and inherit the run they follow.
+ * Direction of one item: word tokens by script. Punctuation and verse-num
+ * ornaments are neutral — but they bind to OPPOSITE sides: punctuation glues
+ * backward to the word it follows, a verse-num glues forward to the word it
+ * introduces (buildChunks prefixes it to that word's chunk).
  */
 function itemDirection(item: LineItem): 'ltr' | 'rtl' | null {
   if (item.kind !== 'token' || item.tokenKind !== 'word') return null;
@@ -194,21 +196,28 @@ function splitRuns(items: readonly LineItem[]): TokenRun[] {
   if (items.length === 0) return [];
 
   const runs: { direction: 'ltr' | 'rtl'; items: LineItem[] }[] = [];
-  let pending: LineItem[] = []; // leading neutrals awaiting a direction
+  let pending: LineItem[] = []; // forward-binding neutrals awaiting their word's run
   for (const item of items) {
     const dir = itemDirection(item);
     const current = runs[runs.length - 1];
     if (dir === null) {
-      if (current) current.items.push(item);
-      else pending.push(item);
+      // Verse-num binds FORWARD to the word it introduces; punctuation binds
+      // BACKWARD to the word it follows (leading punctuation waits forward).
+      if (item.kind === 'verse-num' || !current) pending.push(item);
+      else current.items.push(item);
     } else if (current && current.direction === dir) {
-      current.items.push(item);
+      current.items.push(...pending, item);
+      pending = [];
     } else {
       runs.push({ direction: dir, items: [...pending, item] });
       pending = [];
     }
   }
-  if (pending.length > 0) runs.push({ direction: 'ltr', items: pending });
+  if (pending.length > 0) {
+    const last = runs[runs.length - 1];
+    if (last) last.items.push(...pending);
+    else runs.push({ direction: 'ltr', items: pending });
+  }
 
   return runs.map((run) => {
     if (run.direction === 'ltr') return run;

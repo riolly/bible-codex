@@ -200,3 +200,41 @@ describe('layoutCodexPage — Page geometry & Margin rail (ADR-0016)', () => {
     expect(narrowed.rail.width).toBeCloseTo(rules.railWidth);
   });
 });
+
+describe('layoutCodexPage — verse-num binds to its word, not the preceding run', () => {
+  it('keeps a verse number with its verse-start RTL word, on the RTL leading side', () => {
+    // A paragraph Block spanning a verse boundary where verse 2 opens with a
+    // Hebrew word — handcrafted rows (ChapterBuilder is one-verse-per-block).
+    const block = { id: 1, chapter: 1, genre: 'prose', role: null, indent: 0, seq: 0 } as const;
+    const tok = (seq: number, text: string, verse: number, verseStart: boolean) => ({
+      id: seq + 1,
+      blockId: 1,
+      chapter: 1,
+      verse,
+      wordIndex: 0,
+      seq,
+      kind: 'word' as const,
+      text,
+      verseStart,
+      owId: null,
+    });
+    const tokens = [tok(0, 'say', 1, true), tok(1, 'אוֹר', 2, true), tok(2, 'good', 2, false)];
+    const p = layoutCodexPage({
+      chapter: 1,
+      blocks: [block],
+      tokens,
+      rules: resolveRules(),
+      metrics: fakeMetrics,
+    });
+    const runs = p.blocks[0].lines[0].runs;
+    expect(runs.map((r) => r.direction)).toEqual(['ltr', 'rtl', 'ltr']);
+    const rtl = runs[1];
+    const vn = rtl.items.find((i) => i.kind === 'verse-num');
+    // The v2 ornament travels WITH its Hebrew word into the rtl run…
+    expect(vn).toBeDefined();
+    if (vn?.kind === 'verse-num') expect(vn.verse).toBe(2);
+    // …and mirrors to the word's RIGHT — the leading side of an rtl run.
+    const word = rtl.items.find((i) => i.kind === 'token')!;
+    expect(vn!.x).toBeGreaterThan(word.x + word.width - 1e-9);
+  });
+});
