@@ -18,6 +18,10 @@
 // M:N alignment · Q3 string keys across tiers · Q4 dual-address hub · Q5 lemma+strongs ·
 // Q6 morphology decode table · Q7 morpheme-grain segments · Q8 inline gloss ·
 // Q9 bare alignment) → see ADR-0007.
+// AMENDED 2026-07-02 (8-finding grill session): reading_position added (ADR-0012);
+// translation.edition + Markup quote witnesses (ADR-0013); tokenization policy declared part
+// of the anchor seam (ADR-0014); scroll_mode REMOVED — modes are purpose-bound and
+// orientation-derived, ink is Codex-mode rail-only in v1 (ADR-0016, reading-modes-research.md).
 
 //============================================================
 // Enums
@@ -38,6 +42,10 @@ Enum token_kind {
   punct
   // Q1 RESOLVED: no `space` token. Whitespace is a render/layout concern (the
   // presentation layer), never corpus data. Punct stays persisted (it is content).
+  // TOKENIZATION POLICY (ADR-0014): the word/punct classification rules (possessives,
+  // hyphenated compounds, elisions, numbers) are REGISTERED POLICY — part of migration-fatal
+  // seam #1, since word_index counts word tokens. Changing a rule = an anchor migration.
+  // Exact rules are fixed during the real ingester build and recorded in ADR-0014.
 }
 
 Enum testament {
@@ -45,10 +53,8 @@ Enum testament {
   nt
 }
 
-Enum scroll_mode {
-  horizontal
-  vertical
-}
+// (the old `scroll_mode` enum is GONE — ADR-0016: Codex/Scroll are purpose-bound modes
+//  derived from device orientation, never a stored user setting. Ink is Codex-only.)
 
 //---- Phase 2 (annotations) ----
 
@@ -92,6 +98,12 @@ Table translation {
   year         integer
   license      varchar
   versification varchar     [not null]            // e.g. "av11n"; ties to versification_map
+  edition      varchar      [not null]            // TEXT EDITION stamp (ADR-0013): identifies the
+                                                   // source text this ingest was built from (upstream
+                                                   // version tag or source checksum). Markup rows
+                                                   // record the edition they were minted against; an
+                                                   // edition change triggers the consent-gated
+                                                   // quote-witness reconciliation pass.
 }
 
 Table book {
@@ -213,15 +225,38 @@ Table versification_map {
 //============================================================
 
 // Global, app-wide reading settings (one active row per user; synced).
-// Q5: scroll_mode + theme are GLOBAL — not per-preset, not per-scope.
+// Q5: theme is GLOBAL — not per-preset, not per-scope.
+// (scroll_mode REMOVED — ADR-0016: mode (Codex/Scroll) derives from device orientation,
+//  it is not a stored preference.)
 Table reading_settings {
   id               varchar     [pk]               // UUIDv7 (#4)
-  scroll_mode      scroll_mode [not null, default: 'vertical']
   theme            varchar     [not null, default: 'light']
   active_preset_id varchar     // → layout_preset.id (the currently selected typography preset)
   created_at       integer     [not null]
   updated_at       integer     [not null]
   deleted_at       integer                          // soft-delete tombstone; null = live
+}
+
+// Reading position — ONE live bookmark per book (ADR-0012): "each scroll keeps its place."
+// CANONICAL-ONLY point anchor at VERSE grain — the deliberate exception to translation-bound
+// user anchors: the bookmark relates the READER to the PASSAGE, so it ports across
+// translations via the canonical verse. NO pixel/scroll offset stored (ADR-0004/0011);
+// sub-verse scroll restoration was considered and dropped.
+// A bookmark is UPDATED, never deleted, in normal use; deleted_at exists for the uniform sync
+// convention only. DDL enforces one-per-book as a PARTIAL unique index (WHERE deleted_at IS NULL).
+// FUTURE research pins (many per book, static) are a SEPARATE entity — do not relax this table.
+// SYNC (Phase 4+): merge rule is FURTHEST-READ WINS, not last-write-wins (ADR-0012).
+Table reading_position {
+  id         varchar [pk]                // UUIDv7 (ADR-0011)
+  book_slug  varchar [not null]          // canonical book id (book.slug)
+  chapter    integer [not null]          // canonical (av11n)
+  verse      integer [not null]          // canonical; verse grain — no word_index by design
+  created_at integer [not null]
+  updated_at integer [not null]
+  deleted_at integer
+  indexes {
+    (book_slug) [unique]                 // one live bookmark per book (partial in DDL, see above)
+  }
 }
 
 // A named typography bundle the user can switch between ("Reading", "Study", "Large
@@ -335,6 +370,11 @@ Table mark {
   //   Cross-verse phrase → word_index=lo, verse_end=v2, word_index_end=hi. (Replaces the old
   //   single-verse-only target_word_count, which could not cross a verse boundary.)
   target_ow_id       varchar                // SEAM P3 (head OW of the START word)
+  // WITNESS (ADR-0013): the coordinate is the anchor; the quote PROVES what it pointed at.
+  // Checked by the consent-gated reconciliation pass on corpus edition change; auto-repair
+  // only on an exact single match within the same verse, else flagged displaced.
+  target_quote       varchar   [not null]   // surface text of the anchored range at creation
+  corpus_edition     varchar   [not null]   // translation.edition this anchor was minted against
   // style:
   color              varchar   [not null]   // sRGB hex
   weight             real
@@ -358,6 +398,8 @@ Table note {
   pin_verse       integer [not null]
   pin_word_index  integer                  // null = whole verse
   pin_ow_id       varchar                  // SEAM P3
+  pin_quote       varchar [not null]       // WITNESS (ADR-0013): pinned word / verse text at creation
+  corpus_edition  varchar [not null]       // translation.edition at creation (ADR-0013)
   offset_dx       real    [not null]       // normalized into margin/whitespace
   offset_dy       real    [not null]
   text            varchar [not null]       // translation-agnostic content
@@ -406,6 +448,8 @@ Table binding {
   anchor_verse       integer
   anchor_word_index  integer                       // null = whole verse
   anchor_ow_id       varchar                       // SEAM P3
+  anchor_quote       varchar                       // WITNESS (ADR-0013); set iff target_kind='scripture'
+  corpus_edition     varchar                       // translation.edition at creation; iff scripture
   // when target is an element:
   target_element_id  varchar                       // → mark.id | note.id
   created_at         integer        [not null]
@@ -417,20 +461,26 @@ Table binding {
   }
 }
 
-// InkAnnotation — freehand strokes over one passage in ONE layout. Bound to a layout,
-// never ports (ADR-0002). Anchor by coordinate (no block_id FK, ADR-0004);
-// (translation, scroll_mode) gate visibility; layout_hash mismatch → re-place at block
-// grain or hide (Q6). v1 treats the inked passage as one coarse box.
+// InkAnnotation — freehand strokes in the CODEX-MODE margin rail (ADR-0016). v1 ink is
+// RAIL-ONLY: verse-slotted — the stroke blob never distorts; its slot follows the verse, so
+// rail ink survives re-pagination (typography/edition change) at verse grain honestly.
+// In-text ink (over the words) is a LATER sub-phase; in-text decoration is Markup's job.
+// Ink never appears in Scroll mode and never ports across translations (ADR-0002).
+// Anchor by coordinate (no block_id FK, ADR-0004). edition_hash = the typography edition
+// (preset resolution + measure) the ink was drawn in; rotation/device changes do NOT change
+// it (fixed page geometry, ADR-0016) — only a typography change does, which re-slots the rail.
+// SLOT SEMANTICS (multi-verse-tall blobs, slot-internal placement): decided at the P2 build
+// grill — see ADR-0016 consequences.
 Table ink_annotation {
   id                 varchar     [pk]
   layer_id           varchar     [not null]
   anchor_translation varchar     [not null]   // Ink is translation-bound; this IS the layout's translation
   anchor_book_slug   varchar     [not null]
   anchor_chapter     integer     [not null]
-  anchor_verse       integer     [not null]
+  anchor_verse       integer     [not null]   // the rail SLOT this blob aligns to
   anchor_verse_end   integer                  // null = single verse
-  scroll_mode        scroll_mode [not null]   // layout context (match key)
-  layout_hash        varchar     [not null]   // fine invalidation
+  edition_hash       varchar     [not null]   // typography edition drawn in (ADR-0016); replaces the
+                                               // old (scroll_mode, layout_hash) context key
   created_at         integer     [not null]
   updated_at         integer     [not null]
   deleted_at         integer

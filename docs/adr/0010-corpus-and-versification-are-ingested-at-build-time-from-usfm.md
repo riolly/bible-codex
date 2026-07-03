@@ -34,10 +34,21 @@ engine or USFM parser ships in the app** — the device only reads normalized SQ
 - The ingest pipeline is **pure Node TS** → tested with **golden fixtures** (USFM in → expected
   Token stream + Block overlays), asserting the invariants in `CONTEXT.md`: Blocks **partition** the
   token stream, whitespace is **never** a Token, heading Tokens carry `verse = NULL` and no
-  word-index.
+  word-index. Fixtures are **adversarial on tokenization** (possessives, hyphens, elisions,
+  numbers) because the word/punct rules are part of the locked anchor seam
+  ([ADR-0014](0014-tokenization-policy-is-part-of-the-locked-anchor-seam.md)), and they assert
+  **deterministic per-chapter heading ordinals** (the stable key the deferred block-grain heading
+  anchor will rely on).
 - A deliberately **divergent versification fixture** (Psalm titles, Joel, Malachi, Revelation
   12/13) validates the native↔canonical round-trip now, even though KJV/BSB barely exercise it —
-  clearing the OVERVIEW §5 risk before a real translation is bundled.
+  clearing the OVERVIEW §5 risk before a real translation is bundled. **This is a P1 acceptance
+  criterion (hard gate), not a promise: P1 does not ship until this fixture round-trips an anchor
+  through `versification_map` in both directions.** (KJV + BSB are both ≈ canonical, so the
+  production map stays nearly empty — the fixture is the *only* thing that ever exercises the code
+  path every anchor depends on.)
+- The pipeline **stamps `translation.edition`** (upstream version tag or source checksum) so a
+  text revision is detectable and triggers the quote-witness reconciliation
+  ([ADR-0013](0013-corpus-text-is-versioned-and-markup-carries-a-quote-witness.md)).
 - Re-ingest reproduces the corpus asset wholesale; because presentation rules and user anchors key
   on **semantic keys / canonical coordinates, not `token.id`**
   ([ADR-0004](0004-presentation-is-a-rules-layer-computed-layout-is-ephemeral.md),

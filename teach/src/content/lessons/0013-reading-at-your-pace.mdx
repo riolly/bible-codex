@@ -50,6 +50,18 @@ Look closely and the Journey introduces **nothing new** ([WISHLIST](https://gith
 </figure>
 
 <div class="callout key">
+  <span class="tag">Update (2026-07-02) — the bookmark got its table</span>
+  <p>When this lesson was written, "reading progress" was a design intention. It's now a real
+  Phase-1 table: <code>reading_position</code>
+  (<a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0012-reading-position-is-one-canonical-bookmark-per-book.md">ADR-0012</a>)
+  — <strong>one live row per book</strong>, a canonical point anchor at verse grain. Two decisions
+  worth knowing: the bookmark is <strong>canonical-only</strong> (it relates the <em>reader</em> to
+  the <em>passage</em>, not to one translation's words — switch KJV → BSB and you land in the same
+  place), and the recorded sync merge rule is <strong>furthest-read wins</strong>, not
+  last-write-wins — scrolling back to re-read is never a regression of progress.</p>
+</div>
+
+<div class="callout key">
   <span class="tag">You've been inside a Journey this whole time</span>
   <p>The course hub is literally a Journey: it started with the <strong>Overview open</strong>, each
   phase kept your place, and finishing a phase's check <strong>unlocked the next</strong>. The
@@ -149,7 +161,7 @@ next lesson.
 />
 
 <PrimarySource>
-  The Journey and themes/tags are specified in <a href="https://github.com/riolly/bible-codex/blob/main/WISHLIST.md">WISHLIST.md</a>; the "library of scrolls" feel is in <a href="https://github.com/riolly/bible-codex/blob/main/VISION.md">VISION.md</a>. A tag reuses the Anchor column-group from <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0001-three-layer-anchor-model.md">ADR-0001</a> (the <code>tag</code> entity in <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>), and deferring all of it with no migration is the bet in <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0005-four-product-phases-design-all-build-in-order.md">ADR-0005</a>.
+  The Journey and themes/tags are specified in <a href="https://github.com/riolly/bible-codex/blob/main/WISHLIST.md">WISHLIST.md</a>; the "library of scrolls" feel is in <a href="https://github.com/riolly/bible-codex/blob/main/VISION.md">VISION.md</a>; the one-bookmark-per-book table is <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0012-reading-position-is-one-canonical-bookmark-per-book.md">ADR-0012</a>. A tag reuses the Anchor column-group from <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0001-three-layer-anchor-model.md">ADR-0001</a> (the <code>tag</code> entity in <a href="https://github.com/riolly/bible-codex/blob/main/schema.dbml">schema.dbml</a>), and deferring all of it with no migration is the bet in <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0005-four-product-phases-design-all-build-in-order.md">ADR-0005</a>.
 </PrimarySource>
 
 <div class="lesson-footer">

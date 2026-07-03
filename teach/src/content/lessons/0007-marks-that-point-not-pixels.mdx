@@ -59,7 +59,7 @@ back-reference idea borrowed straight from Excalidraw / tldraw.
 
 Here's what's borrowed from a whiteboard, and what's **inverted**. A whiteboard like Excalidraw
 stores every shape at absolute **canvas coordinates** — safe, because the canvas never moves. Our
-substrate *does* move: it reflows on a font change, re-paginates on a scroll-mode switch, and is
+substrate *does* move: it reflows on a font change, re-paginates on a typography-preset change, and is
 **replaced** on a translation change. So we keep the bindings and back-references, but **invert the
 source of truth**: no element stores x/y — every position resolves from a scripture
 <span class="term">Anchor</span> (plus an offset for a free-placed Note), computed at render.
@@ -70,7 +70,7 @@ source of truth**: no element stores x/y — every position resolves from a scri
   pixels. Lesson 5 said a layout rule keys off a <em>semantic key</em>, not pixels. Now the whole
   annotation scene graph says: an element's position is <em>resolved</em> from an Anchor, not
   pixels. Same refusal, three times — and it's <strong>why your marks live through reflow,
-  scroll-mode switches, and translation swaps with no migration</strong>.</p>
+  typography changes, and translation swaps with no migration</strong>.</p>
 </div>
 
 ## Watch a Mark survive a translation switch
@@ -115,7 +115,7 @@ source of truth**: no element stores x/y — every position resolves from a scri
         "Anchors are faster to compute than coordinates",
       ],
       answer: 1,
-      explain: "A whiteboard's canvas never moves, so coordinates are safe. Our substrate reflows on font change, re-paginates on scroll-mode switch, and is replaced on translation change. Anchoring to scripture is what keeps marks alive and portable.",
+      explain: "A whiteboard's canvas never moves, so coordinates are safe. Our substrate reflows on font change, re-paginates on a typography change, and is replaced on translation change. Anchoring to scripture is what keeps marks alive and portable.",
     },
     {
       stem: "Which element kind uses a RANGE anchor, letting one mark span a phrase across a verse boundary?",
@@ -134,7 +134,7 @@ source of truth**: no element stores x/y — every position resolves from a scri
 <Recall
   client:idle
   prompt="From memory: what does the annotation scene graph refuse to store, and what does each element's position resolve from instead — and why does that matter?"
-  answer="It refuses to store absolute canvas coordinates (x/y). Every element's position resolves from a scripture Anchor (book·chapter·verse·word-index), plus an offset for a free-placed Note, computed at render. It matters because the substrate moves — reflow on font change, re-pagination on scroll-mode switch, replacement on translation change — so stored pixels would orphan every mark, while a scripture Anchor re-resolves and keeps them alive and portable."
+  answer="It refuses to store absolute canvas coordinates (x/y). Every element's position resolves from a scripture Anchor (book·chapter·verse·word-index), plus an offset for a free-placed Note, computed at render. It matters because the substrate moves — reflow on font change, re-pagination on a typography change, replacement on translation change — so stored pixels would orphan every mark, while a scripture Anchor re-resolves and keeps them alive and portable."
 />
 
 <PrimarySource>

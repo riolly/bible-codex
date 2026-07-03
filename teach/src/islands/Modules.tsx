@@ -111,8 +111,10 @@ export default function Modules({ modules }: Props) {
       !(m.checkId && doneIds.includes(m.checkId)),
   );
 
-  // the terminal module's check doubles as the course-completion signal
-  const courseComplete = doneIds.includes('check-advanced');
+  // the terminal module's check doubles as the course-completion signal —
+  // derived from the spine, so adding a module moves the finish line with it
+  const lastCheck = modules[modules.length - 1]?.checkId;
+  const courseComplete = !!lastCheck && doneIds.includes(lastCheck);
 
   return (
     <>

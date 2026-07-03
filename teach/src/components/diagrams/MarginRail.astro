@@ -1,0 +1,84 @@
+---
+// Lesson 16 — anatomy of a Codex-mode Page (ADR-0016). A page is ONE CHAPTER
+// typeset at fixed geometry: the text measure never reflows on rotation or
+// device change (only a typography change re-typesets — a new "edition").
+// The margin rail is a first-class reserved region beside the measure: home
+// of Note pins and verse-slotted Rail ink. User expansion widens the page
+// OUTWARD into letterbox space — the measure is never squeezed, so expansion
+// can never reflow text or invalidate ink.
+const verses = [1, 2, 3, 4, 5];
+const vy = (i: number) => 120 + i * 38;
+---
+<svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Anatomy of a Codex-mode page: a fixed text measure with verse-numbered lines, a margin rail beside it holding a note pin and a verse-slotted ink blob, and an expansion arrow showing the rail growing outward into letterbox space without touching the text.">
+  <text class="ttl" x="40" y="30">THE PAGE — one chapter, fixed geometry, rail at its side</text>
+
+  <!-- letterbox / device space -->
+  <rect class="letterbox" x="40" y="52" width="680" height="300" rx="10"/>
+  <text class="lbx" x="56" y="76">device screen — letterboxes &amp; scales the page</text>
+
+  <!-- the page canvas -->
+  <rect class="page" x="120" y="88" width="420" height="248" rx="6"/>
+  <text class="ph" x="136" y="110">PAGE = ONE CHAPTER</text>
+
+  <!-- text measure -->
+  <rect class="measure" x="136" y="120" width="270" height="200" rx="4"/>
+  {verses.map((v, i) => (
+    <g>
+      <text class="vn" x="146" y={vy(i) + 18}>{v}</text>
+      <line class="tx" x1="162" y1={vy(i) + 14} x2="390" y2={vy(i) + 14} />
+      <line class="tx short" x1="162" y1={vy(i) + 26} x2="330" y2={vy(i) + 26} />
+    </g>
+  ))}
+  <text class="cap" x="140" y="334">the text measure — never squeezed, never reflowed</text>
+
+  <!-- the margin rail -->
+  <rect class="rail" x="414" y="120" width="110" height="200" rx="4"/>
+  <text class="rh" x="424" y="138">MARGIN RAIL</text>
+  <!-- note pin slotted at verse 2 -->
+  <circle class="pin" cx="432" cy={vy(1) + 14} r="4.5"/>
+  <text class="rlbl" x="442" y={vy(1) + 18}>note pin</text>
+  <!-- rail ink slotted at verse 4 -->
+  <path class="inkblob" d={`M424,${vy(3) + 8} q10,-12 22,-2 t18,6 q-8,10 -22,6 t-18,-10`} />
+  <text class="rlbl" x="470" y={vy(3) + 18}>rail ink</text>
+  <!-- slot tie -->
+  <line class="slot" x1="414" y1={vy(3) + 14} x2="396" y2={vy(3) + 14} />
+  <text class="slotlbl" x="418" y={vy(3) + 34}>slotted to verse 4</text>
+
+  <!-- expansion arrow -->
+  <path class="expand" d="M528,220 L648,220" marker-end="url(#arrow)"/>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 z" fill="#9a7b27"/>
+    </marker>
+  </defs>
+  <text class="exlbl" x="536" y="208">rail expands</text>
+  <text class="exlbl" x="536" y="244">outward only —</text>
+  <text class="exlbl" x="536" y="258">into letterbox space</text>
+
+  <!-- bottom note -->
+  <text class="foot" x="40" y="382">Taller chapter than screen? You scroll <tspan font-style="italic">within</tspan> the page — the canvas never changes, so your spatial landmarks (“that verse was top-left”) stay true.</text>
+</svg>
+
+<style>
+  .ttl     { font:700 13px Georgia, serif; fill:#1a1714; letter-spacing:.3px; }
+  .letterbox { fill:#efece3; stroke:#b9b0a2; stroke-width:1.2; stroke-dasharray:5 4; }
+  .lbx     { font:italic 11px Georgia, serif; fill:#8a8172; }
+  .page    { fill:#fff; stroke:#9a7b27; stroke-width:1.6; }
+  .ph      { font:700 12px Georgia, serif; fill:#9a7b27; letter-spacing:.4px; }
+  .measure { fill:#faf7ee; stroke:#d8d0be; stroke-width:1; }
+  .vn      { font:700 10px Georgia, serif; fill:#9a7b27; }
+  .tx      { stroke:#b9b0a2; stroke-width:2.6; stroke-linecap:round; }
+  .tx.short{ stroke-width:2.2; opacity:.8; }
+  .cap     { font:italic 10.5px Georgia, serif; fill:#7a6a3a; }
+  .rail    { fill:#f8ecc8; stroke:#9a7b27; stroke-width:1.2; }
+  .rh      { font:700 10.5px Georgia, serif; fill:#9a7b27; letter-spacing:.5px; }
+  .pin     { fill:#2f6b3f; }
+  .inkblob { fill:none; stroke:#9a3b2f; stroke-width:2; stroke-linecap:round; }
+  .rlbl    { font:italic 10.5px Georgia, serif; fill:#4a443d; }
+  .slot    { stroke:#9a3b2f; stroke-width:1; stroke-dasharray:3 3; }
+  .slotlbl { font:italic 10px Georgia, serif; fill:#9a3b2f; }
+  .expand  { stroke:#9a7b27; stroke-width:2; }
+  .exlbl   { font:italic 11px Georgia, serif; fill:#7a6a3a; }
+  .foot    { font:12px Georgia, serif; fill:#4a443d; }
+</style>

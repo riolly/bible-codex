@@ -4,7 +4,7 @@ A beautiful, local-first Bible that turns reading into **discovery**. Not a refe
 
 ## Principles
 
-**Beauty first.** Scripture is typeset to its literary form — narrative as prose, poetry as poetry — and can be read as a horizontal scroll (echoing the original) or vertically. Reading should feel like handling a fine physical book.
+**Beauty first.** Scripture is typeset to its literary form — narrative as prose, poetry as poetry — and read on two purpose-bound surfaces: the **Codex** (portrait — chapter-pages you flip, a margin rail you write in, the study surface) and the **Scroll** (landscape — one continuous ribbon of columns echoing the original, the journey surface). Turning the tablet *is* the mode switch: upright to study, sideways to read. Reading should feel like handling a fine physical book.
 
 **A collection of scrolls, not a bound book.** The Bible arrives not as one overwhelming volume but as what it originally was — a library of scrolls. You open a book and scroll it to your place; each keeps its own. Which scrolls are open to you grows with your journey, so you are never handed the whole library at once.
 

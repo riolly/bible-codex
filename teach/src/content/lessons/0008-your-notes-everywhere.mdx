@@ -4,7 +4,7 @@ module: 2
 order: 8
 eyebrow: Phase 2 — Annotation · Lesson 8
 lede: How your marks live on every device, edited offline, and never get orphaned by a corpus update. The storage choices that fall out of "local-first," and the honest list of what's still open.
-summary: The user layer is a sync-first store (ADR-0006) — client UUIDv7 ids (no offline collision, time-sortable), no foreign key into the corpus (it joins by coordinate so a re-ingest orphans nothing), soft-delete tombstones (propagate offline, double as undo), and Ink as an opaque Float32 BLOB bound to one layout. A Layer toggles a whole group on or off.
+summary: The user layer is a sync-first store (ADR-0006) — client UUIDv7 ids (no offline collision, time-sortable), no foreign key into the corpus (it joins by coordinate so a re-ingest orphans nothing), soft-delete tombstones (propagate offline, double as undo), and Ink as an opaque Float32 BLOB keyed by edition and slotted to a verse in the margin rail (ADR-0016). A Layer toggles a whole group on or off.
 completeId: "check-annotation"
 ---
 import SyncFirstStore from '../../components/diagrams/SyncFirstStore.astro';
@@ -44,8 +44,9 @@ diverges sharply from the read-only corpus ([ADR-0006](https://github.com/riolly
   `deleted_at`. A hard `DELETE` can't propagate to an offline device (it never learns the row is
   gone); a tombstone can — and it **doubles as undo**.
 - **Ink is opaque.** Its stroke points are packed as a `Float32` **BLOB** (never one row per point,
-  never JSON) — strokes are replayed whole, never queried point-by-point — bound to a layout by
-  `(translation, scroll_mode)` + a `layout_hash`.
+  never JSON) — strokes are replayed whole, never queried point-by-point — keyed by **edition**
+  (translation + typography preset) and **slotted to a verse** in the margin rail
+  (ADR-0016; Module 5 tells the story).
 
 One more piece of furniture: a <span class="term">Layer</span> — a named, toggleable group of marks
 with a `visible` flag. It's the "notes on / off" switch, and it spans both Markup and Ink.
@@ -77,10 +78,11 @@ with a `visible` flag. It's the "notes on / off" switch, and it spans both Marku
   <p>Naming an open question is honest teaching, not a gap. Still undecided in v1: the exact
   <strong>target set</strong> a Mark may bind to (Verse · Token range · Original Word) and whether
   free placement is <strong>snap-only</strong>; the <strong>style vocabulary</strong> (which marks
-  and colours ship first); <strong>Ink's reflow policy</strong> on a font change and the
-  <strong>first pen platform</strong>; and the <strong>sync backend</strong> (PowerSync vs Electric).
-  One thing <em>is</em> locked: <strong>no CRDT</strong> — last-write-wins on <code>updated_at</code>
-  plus tombstones.</p>
+  and colours ship first); the <strong>first pen platform</strong>; and the <strong>sync
+  backend</strong> (PowerSync vs Electric). One question that <em>was</em> on this list —
+  <strong>Ink's reflow policy</strong> on a font change — got answered on 2026-07-02: v1 ink is
+  rail-only and verse-slotted (ADR-0016; Module 5). And one thing <em>is</em> locked:
+  <strong>no CRDT</strong> — last-write-wins on <code>updated_at</code> plus tombstones.</p>
 </div>
 
 ## Check yourself — and finish Phase 2
@@ -129,7 +131,7 @@ with a `visible` flag. It's the "notes on / off" switch, and it spans both Marku
 <Recall
   client:idle
   prompt="From memory: list the four storage choices the sync-first layer makes, and the one-line reason for each."
-  answer="1) Client-generated UUIDv7 ids — offline devices can't collide, and v7 is time-sortable. 2) No foreign key into the corpus; join by coordinate — a re-ingest renumbers corpus pks but orphans nothing. 3) Soft-delete tombstones (created/updated/deleted_at) — a delete propagates to offline devices and doubles as undo. 4) Ink as an opaque Float32 BLOB bound to (translation, scroll_mode, layout_hash) — strokes are replayed whole, never queried per point. (Plus: a Layer with a visible flag toggles a group; and no CRDT — last-write-wins + tombstones.)"
+  answer="1) Client-generated UUIDv7 ids — offline devices can't collide, and v7 is time-sortable. 2) No foreign key into the corpus; join by coordinate — a re-ingest renumbers corpus pks but orphans nothing. 3) Soft-delete tombstones (created/updated/deleted_at) — a delete propagates to offline devices and doubles as undo. 4) Ink as an opaque Float32 BLOB keyed by edition + verse slot (rail ink, ADR-0016) — strokes are replayed whole, never queried per point. (Plus: a Layer with a visible flag toggles a group; and no CRDT — last-write-wins + tombstones.)"
 />
 
 <PrimarySource>

@@ -1,0 +1,229 @@
+---
+title: "When the words themselves move: editions & the quote witness"
+module: 5
+order: 17
+eyebrow: Module 5 — The Codex & the Scroll · Lesson 17
+lede: The Masoretes counted every word to catch a drifting text. Translations still drift — the BSB publishes corrections — and even our own tokenizer could shift every word-index. Two new ADRs guard the anchor seam against both.
+summary: "Coordinate anchors assumed the text under them never changes — but translations publish revisions (BSB errata), and a revision that inserts a word silently slides every later word-index onto the wrong words. ADR-0013 stamps each corpus with an edition and stores a quote witness beside every Markup anchor (verify, auto-repair only on an exact unique match within the verse, else flag displaced). ADR-0014 declares the tokenization policy (what counts as one word — LORD's, father-in-law) part of the locked anchor seam: a rule change is an anchor migration, guarded by adversarial fixtures and the same reconciliation."
+completeId: "check-codex-scroll"
+---
+import PrimarySource from '../../components/PrimarySource.astro';
+import Connect from '../../islands/Connect.tsx';
+import TypeIn from '../../islands/TypeIn.tsx';
+import Quiz from '../../islands/Quiz.tsx';
+import Recall from '../../islands/Recall.tsx';
+
+<div class="callout mission">
+  <span class="tag">The module check — and a hidden assumption</span>
+  <p>Everything you've learned about the <span class="term">Anchor</span> rests on one quiet
+  assumption: that the <em>text underneath a coordinate never changes</em>. This lesson is
+  about the two ways that assumption breaks — and the two new ADRs that guard it. Finishing
+  the quiz completes Module 5.</p>
+</div>
+
+## Bible idea: the scribes counted every word — because texts drift
+
+Back to the Masoretes one last time. Their margin notes weren't commentary — they were
+**integrity checks**: *this word occurs exactly 3 times spelled this way; the middle word of
+the Torah is this one; this verse has 42 letters.* They counted words and letters so that a
+copyist's drift — one inserted word, one changed spelling — would be **caught against the
+count** instead of silently propagating into every future copy. The Masorah was, in software
+terms, a checksum on scripture.
+
+Texts still drift. Modern translations publish **textual revisions** — the BSB (one of the
+app's two launch translations) is actively maintained and issues corrections. And there's a
+subtler drift nobody publishes: **what counts as one word**. Is *LORD's* one word or two? Is
+*father-in-law* one word or three? Different answers renumber every word that follows.
+
+## App idea 1: an edition stamp + a quote witness (ADR-0013)
+
+Suppose a BSB revision inserts one word early in a verse you've highlighted. Your anchor
+says `word-index 4` — but word 4 is now a *different word*. No error, no orphan: every
+affected mark **silently slides onto the wrong words**, discovered months later. Three
+additions close the gap
+([ADR-0013](https://github.com/riolly/bible-codex/blob/main/docs/adr/0013-corpus-text-is-versioned-and-markup-carries-a-quote-witness.md)):
+
+1. **`translation.edition`** — an identifier stamped on the corpus at ingest. Now "which
+   text was this mark minted against?" has an answer.
+2. **A quote witness on every Markup anchor** — the *surface text of the anchored words*
+   stored beside the coordinate (`mark.target_quote`, `note.pin_quote`,
+   `binding.anchor_quote`), plus the edition it was minted against. The coordinate remains
+   the anchor; the quote is redundant **verification** data — a Masorah note beside your own
+   mark. (It's the W3C Web Annotation *TextQuoteSelector* pattern, as used by Hypothes.is.)
+3. **A consent-gated reconciliation pass** when the app first runs against a changed
+   edition: marks whose quote still matches pass untouched (the overwhelming majority); a
+   mismatch **auto-repairs only when the quote matches exactly once within the same verse**;
+   anything else is flagged *displaced* into a review list — surfaced honestly, never
+   guessed across verses.
+
+Why not verify at render time, forever? Because an edition change is a **rare, detectable
+event** — reconcile once, not on every frame. And why no witness on Ink? Rail ink is already
+edition-bound by its key (Lesson 16); any text revision invalidates that key anyway.
+
+## App idea 2: the tokenizer is part of the locked seam (ADR-0014)
+
+The second drift is self-inflicted. `word-index` means "the ordinal of a *word* Token,
+punctuation excluded" — but *what counts as a word* is decided by the ingest tokenizer. So
+the tokenization rules are **part of the meaning of every anchor coordinate**. Change a rule
+("let's split *LORD's* differently") and every later index in affected verses shifts —
+exactly like a text revision, except we did it to ourselves.
+[ADR-0014](https://github.com/riolly/bible-codex/blob/main/docs/adr/0014-tokenization-policy-is-part-of-the-locked-anchor-seam.md)
+declares migration-fatal seam #1 to **include the tokenization policy**:
+
+- The word/punct rules are **registered, versioned corpus policy** — never implicit in
+  ingester code, where a well-meaning "tokenizer bugfix" would ship an anchor migration
+  nobody noticed.
+- **Any rule change is an anchor migration**, treated with the gravity of changing the
+  anchor columns themselves — with ADR-0013's reconciliation as the safety net (one
+  mechanism guards both failure classes).
+- The ingest golden fixtures are **adversarial**: possessives, hyphenated compounds,
+  elisions, numbers, mixed punctuation — so rule drift fails tests *loudly*, not silently in
+  shipped anchors.
+
+There's even a payoff hiding in an old choice: word-indexes **exclude punctuation** — and
+real-world revisions touch punctuation (modernized quotes, commas) far more often than
+words. The existing rule makes anchors immune to the most common class of edition churn.
+
+<div class="callout">
+  <span class="tag">The rest of the 2026-07-02 batch — two smaller ADRs</span>
+  <p><strong>ADR-0012</strong> makes the "each scroll keeps its place" bookmark a real Phase-1
+  table: <code>reading_position</code>, one canonical-verse bookmark per book — Lesson 13's
+  reading-progress idea, now owned by a schema (revisit Lesson 13; it has the details).
+  <strong>ADR-0015</strong> records honestly that Skia renders <em>pictures, not text</em> —
+  so screen readers and OS text selection don't work — and consciously defers that
+  accessibility work while v1 is personal software, with a hard re-trigger: any move toward
+  public distribution reopens the ADR first. (Copy/share a verse still ships in Phase 2.)
+  A recorded deferral with a trigger; an omission would look identical to ignorance.</p>
+</div>
+
+## Match the threat to its guard
+
+<Connect
+  client:idle
+  title="Lesson 17 — drift ↔ defense"
+  hint="Click a way the text can move on the left, then the mechanism that catches it."
+  pairs={[
+    { left: "A BSB revision inserts a word into a verse", right: "The quote witness mismatches — reconcile, auto-repair or flag displaced" },
+    { left: "A 'tokenizer bugfix' re-splits LORD's", right: "Registered policy + adversarial fixtures — the change fails tests loudly" },
+    { left: "Which text was this mark minted against?", right: "translation.edition, stamped at ingest" },
+    { left: "A revision only modernizes commas and quotes", right: "Nothing — word-indexes exclude punctuation, so they don't shift" },
+    { left: "A copyist drops a word from the Torah", right: "The Masorah's counts — the scribal checksum that inspired the witness" },
+  ]}
+/>
+
+## Type the term
+
+<TypeIn
+  client:idle
+  title="Lesson 17 — produce the vocabulary"
+  questions={[
+    {
+      stem: "The surface text stored beside a Markup anchor's coordinate, used to verify the anchor after a text revision, is called the quote ______:",
+      accept: ["witness", "quote witness"],
+      explain: "The quote witness (target_quote / pin_quote / anchor_quote) — redundant verification data beside the coordinate; the W3C TextQuoteSelector pattern.",
+    },
+    {
+      stem: "The consent-gated pass that runs when the app first meets a changed edition — verifying every mark, repairing or flagging — is called ______:",
+      accept: ["reconciliation", "the reconciliation pass", "reconciliation pass"],
+      explain: "Reconciliation: quote matches → untouched; exactly one match within the same verse → auto-repair; anything else → flagged displaced for review, never guessed across verses.",
+    },
+    {
+      stem: "A mark whose quote no longer matches and can't be safely repaired is flagged ______ (the honest word for it):",
+      accept: ["displaced"],
+      explain: "Displaced — surfaced in a review list rather than silently sliding onto wrong words or being silently deleted.",
+    },
+  ]}
+/>
+
+## Check yourself — and finish Module 5
+
+<Quiz
+  client:idle
+  title="Lesson 17 — recall (completes Module 5)"
+  completeId="check-codex-scroll"
+  questions={[
+    {
+      stem: "A translation revision inserts one word early in a verse. Without ADR-0013, what happens to your highlight at word-index 4?",
+      options: [
+        "The app throws an orphaned-anchor error",
+        "It silently slides onto the wrong word — no error, no orphan, corrupted meaning discovered later",
+        "It is automatically deleted",
+        "Nothing — coordinates are immune to text changes",
+      ],
+      answer: 1,
+      explain: "That's the whole danger: coordinate stability silently assumed text stability. The index still resolves — to different words. The quote witness exists to detect exactly this silent class of corruption.",
+    },
+    {
+      stem: "When may reconciliation auto-repair a mismatched mark?",
+      options: [
+        "Whenever the quote appears anywhere in the book",
+        "Only when the quote matches exactly once within the same verse — anything else is flagged displaced for review",
+        "Always — the app guesses the closest position",
+        "Never — every mismatch requires manual review",
+      ],
+      answer: 1,
+      explain: "Auto-repair is deliberately narrow: exact match, unique, same verse. Guessing across verses is how you corrupt meaning while looking helpful; the honest fallback is a displaced-marks review list.",
+    },
+    {
+      stem: "Why is the tokenization policy (what counts as one word) part of the LOCKED anchor seam?",
+      options: [
+        "Because tokenizing is the slowest part of ingest",
+        "Because word-index counts words — change the counting rules and every later index in affected verses shifts, corrupting marks like a text revision we inflicted on ourselves",
+        "Because the tokenizer is written in a different language",
+        "Because Greek and Hebrew have no spaces",
+      ],
+      answer: 1,
+      explain: "The rules ARE part of every coordinate's meaning. So they're registered, versioned policy; any change is an anchor migration; adversarial fixtures (LORD's, father-in-law, elisions) make drift fail loudly. Original-language segmentation is exempt — ADR-0007 outsourced that numbering precisely so we never own it.",
+    },
+    {
+      stem: "What did the Masoretes' word-and-letter counts do, and what is this module's equivalent?",
+      options: [
+        "Decorated the page; the app's themes feature",
+        "Checksummed the text so copyist drift was caught against the count; the quote witness + reconciliation catching edition drift against the stored quote",
+        "Numbered the verses; the Canonical Verse hub",
+        "Translated difficult words; the lexicon tiers",
+      ],
+      answer: 1,
+      explain: "The Masorah was an integrity check on a hand-copied text; the quote witness is an integrity check on a machine-anchored one. Same instinct, a thousand years apart: never let drift propagate silently.",
+    },
+  ]}
+/>
+
+<Recall
+  client:idle
+  prompt="From memory: the two ways the text under an anchor can move, and the guard for each."
+  answer="One — the translation itself is revised (the BSB publishes corrections): guarded by stamping each corpus with translation.edition at ingest, storing a quote witness (the anchored words' surface text) beside every Markup coordinate, and running a consent-gated reconciliation on the first run against a new edition — matching quotes pass, an exact unique match within the same verse auto-repairs, everything else is flagged displaced for review. Two — our own tokenization rules change (what counts as one word: LORD's, father-in-law): guarded by making the policy registered, versioned corpus policy inside the locked anchor seam, treating any rule change as an anchor migration, and pinning behavior with adversarial golden fixtures so drift fails tests loudly. One reconciliation mechanism backstops both."
+/>
+
+<PrimarySource>
+  <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0013-corpus-text-is-versioned-and-markup-carries-a-quote-witness.md">ADR-0013</a> and <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0014-tokenization-policy-is-part-of-the-locked-anchor-seam.md">ADR-0014</a> are this lesson; the sibling batch is <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0012-reading-position-is-one-canonical-bookmark-per-book.md">ADR-0012</a> (reading position) and <a href="https://github.com/riolly/bible-codex/blob/main/docs/adr/0015-accessibility-and-os-text-integration-are-consciously-deferred.md">ADR-0015</a> (the recorded a11y deferral). The witness follows the <a href="https://www.w3.org/TR/annotation-model/#text-quote-selector">W3C Web Annotation TextQuoteSelector</a>; the Masoretic counting tradition is in <a href="https://uasvbible.org/2025/06/17/medieval-biblical-manuscripts-foundations-of-the-masoretic-tradition/">UASV — Foundations of the Masoretic Tradition</a>.
+</PrimarySource>
+
+<div class="callout key">
+  <span class="tag">That's Module 5 — the blueprint, current again</span>
+  <p>You can now explain the <strong>Codex/Scroll purpose split</strong> (the Masoretes' two
+  margins, one level up), the <strong>fixed chapter-Page</strong> with its
+  <strong>Margin rail</strong> and verse-slotted <strong>Rail ink</strong>, and the two
+  guards on the anchor seam — the <strong>quote witness</strong> against edition drift and
+  the <strong>tokenization policy</strong> locked into the seam itself. Finishing the quiz
+  above completes Module 5 — and brings the course back in step with the blueprint as of
+  2026-07-02.</p>
+</div>
+
+<div class="lesson-footer">
+  <div class="ask-teacher">
+    <strong>Module 5 down.</strong> Ask me anything to consolidate — "walk me through
+    reconciliation edge cases," "why is auto-repair same-verse only?", or "what exactly did
+    the Masoretes count?".
+  </div>
+  <div class="next-links">
+    <a href="/lessons/0016-a-page-is-a-column">
+      <span class="label">Back</span>
+      <span class="title">← Lesson 16 — A page is a column</span>
+    </a>
+    <a href="/">
+      <span class="label">Course current again</span>
+      <span class="title">Back to the hub →</span>
+    </a>
+  </div>
+</div>

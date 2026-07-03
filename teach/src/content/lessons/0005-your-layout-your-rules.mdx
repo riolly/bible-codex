@@ -33,7 +33,8 @@ text.
 
 bible-codex stores presentation as a small **rules** layer (ADR-0004), in two parts:
 
-- **Global `reading_settings`** — scroll mode (horizontal / vertical) and theme.
+- **Global `reading_settings`** — theme and other app-wide settings. (The reading *mode* —
+  Codex or Scroll — is **derived from device orientation**, never stored: ADR-0016, Module 5.)
 - **A typography cascade** — `layout_preset` plus `layout_override` rows for spacing, indent,
   font, margins.
 
@@ -44,8 +45,8 @@ resolve in a cascade, **most specific wins**:
 > base preset  <  genre  <  role  <  book
 
 So "indent poetry a little more" attaches to *genre = poetry*, and "give the Psalms extra line
-spacing" attaches to *book = Psalms* — and the book rule wins where they overlap. (`scroll_mode`
-and `theme` are global, outside the cascade.)
+spacing" attaches to *book = Psalms* — and the book rule wins where they overlap. (`theme` is
+global, outside the cascade.)
 
 What about the actual **line breaks and per-token rectangles** the engine paints? Those are the
 **computed layout** — a *derived, ephemeral, local cache*. The engine re-typesets a whole chapter
@@ -64,7 +65,7 @@ Anchor was invented to avoid.
   <p>This <em>is</em> the <span class="term">Anchor</span> idea again. A mark addresses words by
   canonical <em>coordinate</em>, never pixels; a layout rule addresses typography by semantic
   <em>key</em>, never pixels. Both refuse to store screen positions — so both survive corpus
-  re-ingest, font changes, scroll-mode switches, and translation swaps with <strong>no
+  re-ingest, font changes, rotations, and translation swaps with <strong>no
   migration</strong>.</p>
 </div>
 
@@ -109,7 +110,7 @@ Anchor was invented to avoid.
         "Whichever override was created last",
       ],
       answer: 1,
-      explain: "The cascade resolves base < genre < role < book; the most specific scope wins. (scroll_mode and theme are global, outside the cascade.)",
+      explain: "The cascade resolves base < genre < role < book; the most specific scope wins. (theme is global, outside the cascade; the reading mode is derived from orientation, not stored — ADR-0016.)",
     },
     {
       stem: "The computed layout — actual line breaks and per-token rectangles — is…?",
@@ -128,7 +129,7 @@ Anchor was invented to avoid.
 <Recall
   client:idle
   prompt="From memory: how is 'presentation is a rules layer' the same idea as the Anchor?"
-  answer="Both refuse to store pixels. The Anchor addresses a mark by canonical coordinate; presentation addresses a layout rule by semantic key (genre, role, book, coordinate). Neither references token.id or screen position — so both survive re-ingest, font changes, scroll-mode switches, and translation changes with no migration. The computed layout, like a rendered mark, is ephemeral and recomputed."
+  answer="Both refuse to store pixels. The Anchor addresses a mark by canonical coordinate; presentation addresses a layout rule by semantic key (genre, role, book, coordinate). Neither references token.id or screen position — so both survive re-ingest, font changes, rotations, and translation changes with no migration. The computed layout, like a rendered mark, is ephemeral and recomputed."
 />
 
 <PrimarySource>
