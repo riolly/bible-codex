@@ -1,0 +1,64 @@
+{
+  "name": "BibleCodex",
+  "main": "expo-router/entry",
+  "version": "0.1.1",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm run test:engine && pnpm run test:components",
+    "test:engine": "vitest run",
+    "test:engine:watch": "vitest",
+    "test:components": "jest",
+    "test:components:watch": "jest --watch",
+    "db:generate": "drizzle-kit generate",
+    "build:remote": "pnpm dlx eas-cli build --profile development --platform android",
+    "build:local": "pnpm dlx eas-cli build --local --profile development --platform android"
+  },
+  "dependencies": {
+    "@shopify/react-native-skia": "2.6.2",
+    "drizzle-orm": "1.0.0-rc.4-5d5b77c",
+    "expo": "^57",
+    "expo-constants": "~57.0.2",
+    "expo-dev-client": "~57.0.4",
+    "expo-file-system": "~57.0.0",
+    "expo-font": "~57.0.0",
+    "expo-linking": "~57.0.1",
+    "expo-router": "~57.0.2",
+    "expo-splash-screen": "~57.0.1",
+    "expo-sqlite": "~57.0.0",
+    "expo-status-bar": "~57.0.0",
+    "expo-system-ui": "~57.0.0",
+    "expo-updates": "~57.0.5",
+    "react": "19.2.3",
+    "react-native": "0.86.0",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-reanimated": "4.5.0",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-worklets": "0.10.0",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@react-native/jest-preset": "0.86.0",
+    "@testing-library/react-native": "^14.0.1",
+    "@types/jest": "29.5.14",
+    "@types/react": "~19.2.2",
+    "drizzle-kit": "1.0.0-rc.4-ca0f029",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.0",
+    "jest": "^29.7.0",
+    "jest-expo": "~57.0.0",
+    "react-test-renderer": "19.2.3",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@shopify/react-native-skia"
+    ]
+  }
+}

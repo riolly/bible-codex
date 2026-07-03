@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "BibleCodex",
+    "slug": "biblecodex",
+    "version": "0.1.1",
+    "orientation": "default",
+    "icon": "./assets/images/icon.png",
+    "scheme": "biblecodex",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "icon": "./assets/expo.icon",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.riolly.biblecodex"
+    },
+    "android": {
+      "package": "com.riolly.biblecodex",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#208AEF",
+          "android": {
+            "image": "./assets/images/splash-icon.png",
+            "imageWidth": 76
+          }
+        }
+      ],
+      "expo-font",
+      "expo-sqlite",
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0b11b2ef-07cf-40f7-b13f-f1ce6b4c4a52"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0b11b2ef-07cf-40f7-b13f-f1ce6b4c4a52"
+    }
+  }
+}
