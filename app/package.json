@@ -50,6 +50,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
+    "babel-plugin-inline-import": "^3.0.0",
     "better-sqlite3": "12.11.1",
     "drizzle-kit": "1.0.0-rc.4-ca0f029",
     "eslint": "^9.0.0",
@@ -58,8 +59,8 @@
     "jest-expo": "~57.0.0",
     "react-test-renderer": "19.2.3",
     "tsx": "^4.23.0",
-    "usfm-grammar": "3.2.0",
     "typescript": "~6.0.3",
+    "usfm-grammar": "3.2.0",
     "vitest": "^4.1.9"
   },
   "pnpm": {
