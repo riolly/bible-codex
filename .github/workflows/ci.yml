@@ -1,9 +1,17 @@
 name: CI
 
+# Scoped to app/ — teach/ deploys via Netlify (teach/netlify.toml), docs and
+# prototypes trigger nothing.
 on:
   push:
     branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/ci.yml'
   pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/ci.yml'
 
 # Cancel superseded runs on the same ref.
 concurrency:

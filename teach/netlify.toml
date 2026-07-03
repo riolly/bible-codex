@@ -1,0 +1,11 @@
+# Requires "Base directory" = teach in the Netlify UI (Site configuration →
+# Build & deploy → Build settings); Netlify only reads this file from the base.
+[build]
+  command = "pnpm build"
+  publish = "dist"
+  # Skip the deploy when the commit range touches nothing under teach/.
+  # $CACHED_COMMIT_REF is the last successfully deployed commit; exit 0 = skip.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ."
+
+[build.environment]
+  NODE_VERSION = "22"
