@@ -12,8 +12,8 @@ function AdjustLabel() {
 }
 
 describe('AdjustLabel', () => {
-  it('renders the initial store state', () => {
-    render(<AdjustLabel />);
+  it('renders the initial store state', async () => {
+    await render(<AdjustLabel />);
     expect(screen.getByText('closed')).toBeTruthy();
   });
 });
