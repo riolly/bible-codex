@@ -11,8 +11,12 @@
     "typecheck": "tsc --noEmit",
     "test": "pnpm run test:engine && pnpm run test:components",
     "test:engine": "vitest run",
+    "test:engine:watch": "vitest",
     "test:components": "jest",
-    "db:generate": "drizzle-kit generate"
+    "test:components:watch": "jest --watch",
+    "db:generate": "drizzle-kit generate",
+    "build:remote": "eas-cli build --profile development --platform android",
+    "build:local": "eas-cli build --local --profile development --platform android"
   },
   "dependencies": {
     "@shopify/react-native-skia": "2.6.2",
@@ -28,6 +32,7 @@
     "expo-sqlite": "~57.0.0",
     "expo-status-bar": "~57.0.0",
     "expo-system-ui": "~57.0.0",
+    "expo-updates": "~57.0.5",
     "react": "19.2.3",
     "react-native": "0.86.0",
     "react-native-gesture-handler": "~2.32.0",
@@ -38,10 +43,12 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@react-native/jest-preset": "0.86.0",
     "@testing-library/react-native": "^13.0.0",
     "@types/jest": "29.5.14",
     "@types/react": "~19.2.2",
     "drizzle-kit": "^0.31.6",
+    "eas-cli": "^20.0.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.0",
     "jest": "^29.7.0",
