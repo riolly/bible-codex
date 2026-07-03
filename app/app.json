@@ -2,7 +2,7 @@
   "expo": {
     "name": "BibleCodex",
     "slug": "biblecodex",
-    "version": "1.0.0",
+    "version": "0.1.1",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "biblecodex",
@@ -10,10 +10,10 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "supportsTablet": true,
-      "bundleIdentifier": "com.riolly.reader"
+      "bundleIdentifier": "com.riolly.biblecodex"
     },
     "android": {
-      "package": "com.riolly.reader",
+      "package": "com.riolly.biblecodex",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

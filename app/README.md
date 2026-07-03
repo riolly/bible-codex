@@ -1,4 +1,4 @@
-# reader — bible-codex app
+# BibleCodex app
 
 Expo (React Native + `@shopify/react-native-skia`) reading app. The beautiful
 typesetting is painted on a single Skia canvas; the typesetting/layout engine,
@@ -59,7 +59,7 @@ pnpm android                # open on the connected Android tablet
 
 One-time setup: the tablet needs the **dev client** installed once (see
 [Building the dev client](#building-the-dev-client)). After that, `pnpm start`
-is all you need until a *native* dependency changes.
+is all you need until a _native_ dependency changes.
 
 > Tip: set up **wireless adb** (`adb pair` / `adb tcpip 5555`) so the tablet
 > isn't tethered — you can hold it like a reader while iterating, which matters
@@ -87,18 +87,18 @@ pnpm ios                    # open on the iOS Simulator (iPad)
 
 Two runners, split along the ADR-0008 seam. Match the lane to the layer.
 
-| Lane | Command | Runner | Scope |
-|------|---------|--------|-------|
-| Engine / model | `pnpm test:engine` | Vitest (Node) | Pure TS: layout, corpus, cascade |
-| Components | `pnpm test:components` | jest-expo | RN render + Zustand store wiring |
-| Both (CI) | `pnpm test` | — | Runs engine then components, once |
+| Lane           | Command                | Runner        | Scope                             |
+| -------------- | ---------------------- | ------------- | --------------------------------- |
+| Engine / model | `pnpm test:engine`     | Vitest (Node) | Pure TS: layout, corpus, cascade  |
+| Components     | `pnpm test:components` | jest-expo     | RN render + Zustand store wiring  |
+| Both (CI)      | `pnpm test`            | —             | Runs engine then components, once |
 
 Watch variants for the loops: `pnpm test:engine:watch`, `pnpm test:components:watch`.
 
 **Rule of thumb:** if a test can't reach it in Node or jest-expo, it belongs in
-the engine, not the canvas. Push everything testable *out* of the draw layer so
+the engine, not the canvas. Push everything testable _out_ of the draw layer so
 the Skia component stays a thin renderer of already-tested layout data. Don't try
-to unit-test how the typography *looks* — that's judged by eye in Loop B.
+to unit-test how the typography _looks_ — that's judged by eye in Loop B.
 
 Pre-flight before every PR:
 
@@ -129,11 +129,11 @@ Both use the `development` profile in [`eas.json`](eas.json): a dev-client build
 
 EAS profiles in [`eas.json`](eas.json), each bound to an update channel:
 
-| Profile | Distribution | Channel | Use |
-|---------|-------------|---------|-----|
-| `development` | internal | `development` | Dev-client builds for the dev loop |
-| `preview` | internal | `preview` | Shareable internal test builds (real, no Metro) |
-| `production` | store | `production` | Release builds (auto-incremented) |
+| Profile       | Distribution | Channel       | Use                                             |
+| ------------- | ------------ | ------------- | ----------------------------------------------- |
+| `development` | internal     | `development` | Dev-client builds for the dev loop              |
+| `preview`     | internal     | `preview`     | Shareable internal test builds (real, no Metro) |
+| `production`  | store        | `production`  | Release builds (auto-incremented)               |
 
 `expo-updates` is wired, so once a build exists on a channel you can push
 **JS-only changes over the air** (no rebuild) to that channel with EAS Update —
@@ -175,4 +175,7 @@ __tests__/    jest-expo component tests
 ```
 
 See `CONTEXT.md` and `docs/adr/` at the repo root for the decisions behind this.
+
+```
+
 ```
