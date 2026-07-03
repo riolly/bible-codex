@@ -4,26 +4,22 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { readChapter } from '../../src/db/corpus-read';
+import { nativeModuleLoads } from './native-probe';
 import { normalizeUsj, type UsjDoc } from './normalize';
 
 /**
  * DB round-trip across the ADR-0009 seam: normalized rows written through
  * drizzle(better-sqlite3) and read back with the SAME readChapter query the
  * app runs through drizzle(expo-sqlite). Skipped where the better-sqlite3
- * native module is unbuilt (CI installs with ignore-scripts).
+ * native module is unbuilt (CI installs with ignore-scripts) or built for a
+ * different Node ABI — probed in a subprocess so a hard crash cannot take
+ * down the vitest worker (see native-probe). The import alone succeeds even
+ * when the binding is unbuilt; only construction touches the .node file.
  */
 
-const native = await (async () => {
-  try {
-    // the import succeeds even when the native binding is unbuilt — only
-    // construction touches the .node file, so probe that
-    const { default: Database } = await import('better-sqlite3');
-    new Database(':memory:').close();
-    return true;
-  } catch {
-    return false;
-  }
-})();
+const native = nativeModuleLoads(
+  "import('better-sqlite3').then(({ default: Database }) => { new Database(':memory:').close(); process.exit(0); }, () => process.exit(1));",
+);
 
 describe.skipIf(!native)('corpus DB round-trip (write seam ↔ read seam)', () => {
   it('a chapter read returns the exact Token+Block rows the normalizer produced', async () => {

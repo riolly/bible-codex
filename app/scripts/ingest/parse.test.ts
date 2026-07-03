@@ -3,6 +3,8 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { nativeModuleLoads } from './native-probe';
+
 /**
  * USFM → USJ drift guard. usfm-grammar loads a NATIVE tree-sitter binding, so
  * this suite runs only where build scripts ran (local dev); CI installs with
@@ -10,16 +12,14 @@ import { describe, expect, it } from 'vitest';
  * what the pure-TS golden tests (normalize.test.ts) run against — this test
  * proves that committed USJ is still exactly what the parser produces from
  * the committed USFM, so the two can never drift apart silently.
+ *
+ * Probed in a subprocess: an ABI-mismatched tree-sitter binding segfaults on
+ * import, which an in-process try/catch cannot contain (see native-probe).
  */
 
-const native = await (async () => {
-  try {
-    await import('usfm-grammar');
-    return true;
-  } catch {
-    return false;
-  }
-})();
+const native = nativeModuleLoads(
+  "import('usfm-grammar').then(() => process.exit(0), () => process.exit(1));",
+);
 
 describe.skipIf(!native)('usfm-grammar → committed USJ fixture', () => {
   it('fixtures/adversarial.usj.json matches a fresh parse of fixtures/adversarial.usfm', async () => {
