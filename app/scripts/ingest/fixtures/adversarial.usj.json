@@ -1,0 +1,281 @@
+{
+  "type": "USJ",
+  "version": "3.1",
+  "content": [
+    {
+      "type": "book",
+      "marker": "id",
+      "code": "JHN",
+      "content": [
+        "Adversarial golden fixture — NOT scripture; exercises the registered tokenization policy (ADR-0014) and the corpus invariants (CONTEXT.md)"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "h",
+      "content": [
+        "Adversarial\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "toc1",
+      "content": [
+        "Adversarial\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "mt1",
+      "content": [
+        "The Adversarial Fixture\n"
+      ]
+    },
+    {
+      "type": "chapter",
+      "marker": "c",
+      "number": "1",
+      "sid": "JHN 1"
+    },
+    {
+      "type": "para",
+      "marker": "s1",
+      "content": [
+        "The Word’s Beginning\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "r",
+      "content": [
+        "(Genesis 1:1–5)\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "p",
+      "content": [
+        {
+          "type": "verse",
+          "marker": "v",
+          "number": "1",
+          "sid": "JHN 1:1"
+        },
+        "In the beginning was the LORD’s Word, and Jesus’ father-in-law said, “Behold!”\n",
+        {
+          "type": "verse",
+          "marker": "v",
+          "number": "2",
+          "sid": "JHN 1:2"
+        },
+        "’Twas the 40th year, and 144,000 stood by the riverside—watching.\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "p",
+      "content": [
+        {
+          "type": "verse",
+          "marker": "v",
+          "number": "3",
+          "sid": "JHN 1:3"
+        },
+        "A verse that spans a paragraph break,\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "p",
+      "content": [
+        "continuing in the next paragraph.\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "s1",
+      "content": [
+        "A Mid-Chapter Heading\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "p",
+      "content": [
+        {
+          "type": "verse",
+          "marker": "v",
+          "number": "4",
+          "sid": "JHN 1:4"
+        },
+        "“Quoted start” with punctuation.\n"
+      ]
+    },
+    {
+      "type": "chapter",
+      "marker": "c",
+      "number": "2",
+      "sid": "JHN 2"
+    },
+    {
+      "type": "para",
+      "marker": "d",
+      "content": [
+        "A Psalm of the fixture.\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "q1",
+      "content": [
+        {
+          "type": "verse",
+          "marker": "v",
+          "number": "1",
+          "sid": "JHN 2:1"
+        },
+        "The first poetry line goes here,\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "q2",
+      "content": [
+        "the second sits deeper still;\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "b"
+    },
+    {
+      "type": "para",
+      "marker": "q1",
+      "content": [
+        {
+          "type": "verse",
+          "marker": "v",
+          "number": "2",
+          "sid": "JHN 2:2"
+        },
+        {
+          "type": "char",
+          "marker": "w",
+          "content": [
+            "LORD"
+          ]
+        },
+        "’s wrapped word awaits ",
+        {
+          "type": "note",
+          "marker": "f",
+          "content": [
+            " ",
+            {
+              "type": "char",
+              "marker": "ft",
+              "content": [
+                "a dropped footnote"
+              ]
+            }
+          ],
+          "caller": "+"
+        },
+        " the end ",
+        {
+          "type": "note",
+          "marker": "x",
+          "content": [
+            {
+              "type": "char",
+              "marker": "xt",
+              "content": [
+                "Gen 1:1"
+              ]
+            }
+          ],
+          "caller": "-"
+        },
+        " now ",
+        {
+          "type": "char",
+          "marker": "qs",
+          "content": [
+            "Selah"
+          ]
+        },
+        "\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "qr",
+      "content": [
+        "And all the people say, “Amen!”\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "qa",
+      "content": [
+        "ALEPH\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "pc",
+      "content": [
+        "HOLY TO THE LORD.\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "pmo",
+      "content": [
+        "And there was evening—day one.\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "li1",
+      "content": [
+        "the first list item\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "m",
+      "content": [
+        "A margin paragraph.\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "pi",
+      "content": [
+        "An indented paragraph.\n"
+      ]
+    },
+    {
+      "type": "para",
+      "marker": "nb",
+      "content": [
+        "A no-break paragraph.\n",
+        {
+          "type": "verse",
+          "marker": "v",
+          "number": "3",
+          "sid": "JHN 2:3"
+        },
+        {
+          "type": "char",
+          "marker": "wj",
+          "content": [
+            "Words of Jesus here"
+          ]
+        },
+        " remain.\n"
+      ]
+    }
+  ]
+}

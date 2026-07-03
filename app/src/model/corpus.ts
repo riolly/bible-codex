@@ -23,18 +23,21 @@ export type TokenKind = 'word' | 'punct';
 /**
  * REGISTERED role vocabulary (schema.dbml `block.role`) — the contract between
  * the ingester and the presentation cascade. `null` = plain prose paragraph
- * (\p) or any poetry line (poetry depth lives in `indent`).
- * Reserved, not yet emitted: "acrostic".
+ * (\p) or a plain poetry line (poetry depth lives in `indent`).
  */
 export type BlockRole =
   | 'book_title' // \mt
   | 'major_section' // \ms
   | 'section' // \s
   | 'psalm_title' // \d
+  | 'acrostic' // \qa (heading; e.g. Psalm 119 stanza letters)
   | 'margin' // \m
   | 'no_break' // \nb
   | 'indented' // \pi
   | 'list_item' // \li
+  | 'embedded_opening' // \pmo (BSB narrative-frame lines)
+  | 'centered' // \pc (inscriptions)
+  | 'refrain' // \qr (poetry; right-aligned refrain)
   | 'implicit'; // guard: text seen with no block marker
 
 /** One literary unit — a prose paragraph, a poetry line, or a heading. */

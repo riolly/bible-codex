@@ -1,0 +1,33 @@
+\id JHN Adversarial golden fixture — NOT scripture; exercises the registered tokenization policy (ADR-0014) and the corpus invariants (CONTEXT.md)
+\h Adversarial
+\toc1 Adversarial
+\mt1 The Adversarial Fixture
+\c 1
+\s1 The Word’s Beginning
+\r (Genesis 1:1–5)
+\p
+\v 1 In the beginning was the LORD’s Word, and Jesus’ father-in-law said, “Behold!”
+\v 2 ’Twas the 40th year, and 144,000 stood by the riverside—watching.
+\p
+\v 3 A verse that spans a paragraph break,
+\p continuing in the next paragraph.
+\s1 A Mid-Chapter Heading
+\p
+\v 4 “Quoted start” with punctuation.
+\c 2
+\d A Psalm of the fixture.
+\q1
+\v 1 The first poetry line goes here,
+\q2 the second sits deeper still;
+\b
+\q1
+\v 2 \w LORD\w*’s wrapped word awaits \f + \ft a dropped footnote\f* the end \x - \xt Gen 1:1\x* now \qs Selah\qs*
+\qr And all the people say, “Amen!”
+\qa ALEPH
+\pc HOLY TO THE LORD.
+\pmo And there was evening—day one.
+\li1 the first list item
+\m A margin paragraph.
+\pi An indented paragraph.
+\nb A no-break paragraph.
+\v 3 \wj Words of Jesus here\wj* remain.
