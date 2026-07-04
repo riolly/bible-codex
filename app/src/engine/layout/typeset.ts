@@ -31,8 +31,10 @@ export interface TypesetResult {
   readonly height: number;
 }
 
-/** Superscript verse numbers render smaller than body text … */
-const VERSE_NUM_SCALE = 0.65;
+/** Superscript verse numbers render smaller than body text — the engine
+ * reserves the slot at this scale and the draw layer (#8) must paint at the
+ * same one, so it is exported as the single source of truth. */
+export const VERSE_NUM_SCALE = 0.65;
 /** … and carry a hair of padding before the word they introduce. */
 const VERSE_NUM_PAD = 0.15;
 
