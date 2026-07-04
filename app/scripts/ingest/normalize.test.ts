@@ -115,6 +115,14 @@ describe('adversarial tokenization inside the pipeline (ADR-0014)', () => {
     expect(v4.find((t) => t.text === 'Quoted')!.verseStart).toBe(true);
   });
 
+  it('a verse BRIDGE (\\v 5-6) collapses to its first number — the bridge end mints no coordinate (ADR-0014)', () => {
+    expect(verseTokens(1, 5).map(brief)).toEqual([
+      '0:A', '1:bridged', '2:verse', '3:collapses', '4:to', '5:its', '6:first', '7:number', 'p:.',
+    ]);
+    expect(verseTokens(1, 5)[0].verseStart).toBe(true);
+    expect(verseTokens(1, 6)).toEqual([]); // verse 6 is unanchorable by design
+  });
+
   it('a word split across a \\w char boundary is joined before tokenizing', () => {
     // \w LORD\w*’s → LORD’s, one word, verse-start of 2:2
     const v = verseTokens(2, 2);
@@ -151,6 +159,7 @@ describe('block overlays: genre, registered role vocabulary, indent', () => {
       [1, 'prose', null, 0], // \p (v3 continuation)
       [1, 'heading', 'section', 0], // mid-chapter \s1
       [1, 'prose', null, 0], // \p (v4)
+      [1, 'prose', null, 0], // \p (v5-6 bridge)
       [2, 'heading', 'psalm_title', 0], // \d
       [2, 'poetry', null, 1], // \q1
       [2, 'poetry', null, 2], // \q2
@@ -201,7 +210,7 @@ describe('stats bag — what Phase 1 deliberately does NOT model fails loudly, n
       sectionRefs: 1, // \r
       figures: 0,
       altVerseNumbers: 0,
-      verseBridges: 0,
+      verseBridges: 1, // \v 5-6
       droppedParas: { h: 1, toc1: 1 },
       droppedInline: {},
     });

@@ -10,12 +10,15 @@
  * eyes on anything the grammar disliked while the normalize/validate
  * invariants still guard the output.
  *
- * KNOWN GRAMMAR GAP, preprocessed away: USFM allows a \d descriptive title to
- * CONTAIN verse text (BSB Zech 12: `\d` then `\v 1 …`), but tree-sitter-usfm3
- * rejects \v inside \d — even ignoreErrors crashes its USJ generator. The
+ * KNOWN GRAMMAR GAP, preprocessed away PER SOURCE: USFM allows a \d
+ * descriptive title to CONTAIN verse text (BSB Zech 12: `\d` then `\v 1 …`),
+ * but tree-sitter-usfm3 rejects \v inside \d — even ignoreErrors crashes its
+ * USJ generator. Where a source OPTS IN (sources.ts rewriteVersifiedD), the
  * construct is rewritten to `\qd \v …` (a para marker the grammar accepts),
  * and the normalizer maps \qd → heading/psalm_title, so the domain output is
- * exactly what \d meant. The rewrite count is reported to the caller.
+ * exactly what \d meant. The rewrite count is reported to the caller. A
+ * source that has NOT opted in fails loudly when the construct appears, so a
+ * new translation never gets its markers silently rewritten (issue #20).
  */
 
 import { USFMParser } from 'usfm-grammar';
@@ -32,8 +35,20 @@ export interface ParseOutcome {
 
 const VERSIFIED_D = /\\d[ \t]*\r?\n(\\v )/g;
 
-export function usfmToUsj(rawUsfm: string): ParseOutcome {
+export interface ParseOptions {
+  /** Rewrite versified \d titles to \qd (grammar gap) — opt-in per source. */
+  rewriteVersifiedD?: boolean;
+}
+
+export function usfmToUsj(rawUsfm: string, opts: ParseOptions = {}): ParseOutcome {
   const versifiedTitleRewrites = [...rawUsfm.matchAll(VERSIFIED_D)].length;
+  if (versifiedTitleRewrites > 0 && !opts.rewriteVersifiedD) {
+    throw new Error(
+      `found ${versifiedTitleRewrites} versified \\d title(s) but the \\qd rewrite is not ` +
+        `enabled for this source — if the construct is expected, opt in via ` +
+        `rewriteVersifiedD in sources.ts (see the grammar-gap note in parse.ts)`,
+    );
+  }
   const usfm = rawUsfm.replace(VERSIFIED_D, '\\qd $1');
   const parser = new USFMParser(usfm);
   let usj: UsjDoc;
