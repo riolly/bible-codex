@@ -26,4 +26,4 @@ export type {
 export { DEFAULT_PRESET, resolveRules } from './rules';
 export type { Align, LayoutPresetInput, ResolvedRules } from './rules';
 export { layoutScrollColumns, type ScrollInput } from './scroll';
-export type { MeasureToken } from './typeset';
+export { VERSE_NUM_SCALE, type MeasureToken } from './typeset';

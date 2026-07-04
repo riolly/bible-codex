@@ -4,7 +4,7 @@
     {
       "name": "prototype",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["-C", "prototype", "dev"],
+      "runtimeArgs": ["-C", "prototypes/canvaskit-reading", "dev"],
       "port": 5173
     },
     {
