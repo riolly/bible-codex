@@ -112,6 +112,19 @@
       ]
     },
     {
+      "type": "para",
+      "marker": "p",
+      "content": [
+        {
+          "type": "verse",
+          "marker": "v",
+          "number": "5-6",
+          "sid": "JHN 1:5-6"
+        },
+        "A bridged verse collapses to its first number.\n"
+      ]
+    },
+    {
       "type": "chapter",
       "marker": "c",
       "number": "2",

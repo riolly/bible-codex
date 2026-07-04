@@ -77,3 +77,84 @@ describe.skipIf(!native)('corpus DB round-trip (write seam ↔ read seam)', () =
     sqlite.close();
   });
 });
+
+/**
+ * The write-db.ts DDL string hand-mirrors src/db/corpus-schema.ts (no
+ * generator connects them — drizzle-kit only owns the user DB). This guard
+ * makes one-sided edits fail here instead of shipping a corpus the app reads
+ * with silent NULLs (issue #20). Tables are discovered from the schema module,
+ * so a table added there without DDL also fails.
+ */
+describe.skipIf(!native)('DDL ↔ drizzle schema parity (write-db.ts hand-mirrors corpus-schema.ts)', () => {
+  it('the DDL creates exactly the tables, columns, defaults and indexes the schema declares', async () => {
+    const { createCorpusDb } = await import('./write-db');
+    const { getTableConfig, SQLiteTable } = await import('drizzle-orm/sqlite-core');
+    const { is } = await import('drizzle-orm');
+    const schema = await import('../../src/db/corpus-schema');
+
+    const { sqlite } = createCorpusDb(':memory:');
+    const configs = Object.values(schema)
+      .filter((v) => is(v, SQLiteTable))
+      .map((t) => getTableConfig(t as InstanceType<typeof SQLiteTable>));
+
+    // same set of tables
+    const ddlTables = sqlite
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
+      .all()
+      .map((r) => (r as { name: string }).name);
+    expect(ddlTables.sort()).toEqual(configs.map((c) => c.name).sort());
+
+    for (const table of configs) {
+      // same columns: name, NOT NULL, primary key, presence of a default
+      const info = sqlite.prepare(`PRAGMA table_info(${table.name})`).all() as {
+        name: string; notnull: number; pk: number; dflt_value: string | null;
+      }[];
+      const ddlCols = info
+        .map((c) => ({
+          name: c.name,
+          // sqlite reports INTEGER PRIMARY KEY with notnull=0 though it is implicitly NOT NULL
+          notNull: c.pk > 0 || c.notnull === 1,
+          primary: c.pk > 0,
+          hasDefault: c.dflt_value != null,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      const schemaCols = table.columns
+        .map((c) => ({
+          name: c.name,
+          notNull: c.primary || c.notNull,
+          primary: c.primary,
+          hasDefault: c.default !== undefined,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      expect(ddlCols, `columns of ${table.name}`).toEqual(schemaCols);
+
+      // same named indexes over the same column lists (UNIQUE autoindexes excluded)
+      const ddlIndexes = new Map<string, string[]>();
+      const list = sqlite.prepare(`PRAGMA index_list(${table.name})`).all() as {
+        name: string; origin: string;
+      }[];
+      for (const idx of list) {
+        if (idx.origin !== 'c') continue; // 'u'/'pk' autoindexes are column-level, checked below
+        const cols = sqlite.prepare(`PRAGMA index_info(${idx.name})`).all() as { name: string }[];
+        ddlIndexes.set(idx.name, cols.map((c) => c.name));
+      }
+      const schemaIndexes = new Map<string, string[]>(
+        table.indexes.map((idx) => [
+          idx.config.name,
+          idx.config.columns.map((c) => (c as { name: string }).name),
+        ]),
+      );
+      expect(ddlIndexes, `indexes of ${table.name}`).toEqual(schemaIndexes);
+
+      // same UNIQUE columns (origin 'u' autoindexes ↔ column-level .unique())
+      const ddlUnique = list
+        .filter((i) => i.origin === 'u')
+        .flatMap((i) => (sqlite.prepare(`PRAGMA index_info(${i.name})`).all() as { name: string }[]).map((c) => c.name))
+        .sort();
+      const schemaUnique = table.columns.filter((c) => c.isUnique).map((c) => c.name).sort();
+      expect(ddlUnique, `UNIQUE columns of ${table.name}`).toEqual(schemaUnique);
+    }
+
+    sqlite.close();
+  });
+});

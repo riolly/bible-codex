@@ -69,7 +69,9 @@ function main() {
       )) {
         const bookDef = CANON_BY_CODE.get(file.code)!;
         const bookId = insertBook(db, bookDef);
-        const { usj, parseErrors, versifiedTitleRewrites } = usfmToUsj(file.usfm);
+        const { usj, parseErrors, versifiedTitleRewrites } = usfmToUsj(file.usfm, {
+          rewriteVersifiedD: src.rewriteVersifiedD,
+        });
         if (versifiedTitleRewrites > 0) {
           console.warn(
             `  ⚠ ${file.code}: ${versifiedTitleRewrites} versified \\d title(s) rewritten to \\qd (grammar gap, see parse.ts)`,

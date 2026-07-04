@@ -48,6 +48,12 @@ update.**
 4. Everything else non-space is **punct**; a maximal run of punct characters (`,”`, `—`)
    collapses into a **single punct token**, addressed by the word it follows.
 5. **Whitespace is never a token** (CONTEXT.md).
+6. A **verse bridge** (`\v 17-18`) collapses to its FIRST number: every token in the bridged
+   passage carries `verse = 17`, word indexes count from the bridge start, and the bridge end
+   survives only as an ingest stat (`verseBridges`). The later number(s) never mint a
+   coordinate, so no anchor can reference them — surfacing verse *ranges* later therefore
+   requires re-ingest and is an **anchor migration** like any other rule change. Guarded by
+   the golden fixture (`\v 5-6` in `adversarial.usfm`).
 
 One clarification the real sources forced (BSB Zech 12): a heading never **inherits** the
 preceding verse, but an **explicit `\v` inside a heading para** (a *versified* `\d` descriptive
