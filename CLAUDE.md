@@ -16,6 +16,11 @@ And these skill when needed:
 
 /code-review
 
+### Code navigation
+
+Prefer `ast-grep` for structural search/codemods, and use the `ts-app` / `ts-teach` Use LSP-MCP on big/unknown files where whole-file reads are costly; plain `Read` for small or
+already-known files (LSP startup + round-trips aren't worth it).
+
 ### Issue tracker
 
 Issues and PRDs are tracked as GitHub issues via the `gh` CLI. See `docs/agents/issue-tracker.md`.
