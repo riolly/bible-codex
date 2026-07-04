@@ -39,7 +39,19 @@ export interface DrawFonts {
   readonly metricsEm: FontMetricsEm;
 }
 
-export function useCardoFonts(): DrawFonts | null {
+/**
+ * Font load state. `fonts === null && error === null` is *loading*; a non-null
+ * `error` is a terminal failure the caller must surface — never a blank screen
+ * (matchFamilyStyle can return null on a corrupt/missing face).
+ */
+export interface CardoFontsResult {
+  readonly fonts: DrawFonts | null;
+  readonly error: string | null;
+}
+
+const LOADING: CardoFontsResult = { fonts: null, error: null };
+
+export function useCardoFonts(): CardoFontsResult {
   const fontMgr = useFonts({
     [CARDO]: [
       require('../../assets/fonts/Cardo-Regular.ttf'),
@@ -49,9 +61,9 @@ export function useCardoFonts(): DrawFonts | null {
   });
 
   return useMemo(() => {
-    if (!fontMgr) return null;
+    if (!fontMgr) return LOADING;
     const typeface = fontMgr.matchFamilyStyle(CARDO, { weight: FontWeight.Normal });
-    if (!typeface) return null;
+    if (!typeface) return { fonts: null, error: `font "${CARDO}" failed to load` };
     const font = Skia.Font(typeface, MEASURE_SIZE);
 
     const cache = new Map<string, number>();
@@ -66,9 +78,12 @@ export function useCardoFonts(): DrawFonts | null {
 
     const m = font.getMetrics();
     return {
-      fontMgr,
-      metrics,
-      metricsEm: { ascent: m.ascent / MEASURE_SIZE, descent: m.descent / MEASURE_SIZE },
+      fonts: {
+        fontMgr,
+        metrics,
+        metricsEm: { ascent: m.ascent / MEASURE_SIZE, descent: m.descent / MEASURE_SIZE },
+      },
+      error: null,
     };
   }, [fontMgr]);
 }

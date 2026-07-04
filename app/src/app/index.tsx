@@ -16,15 +16,17 @@ const BOOK_SLUG = 'Psalms';
 const CHAPTER = 119;
 
 export default function Index() {
-  const fonts = useCardoFonts();
+  const { fonts, error: fontError } = useCardoFonts();
   const [db, setDb] = useState<CorpusDb | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [dbError, setDbError] = useState<string | null>(null);
 
   useEffect(() => {
     openCorpus()
       .then(setDb)
-      .catch((e: Error) => setError(e.message));
+      .catch((e: Error) => setDbError(e.message));
   }, []);
+
+  const error = dbError ?? fontError;
 
   const rules = useMemo(() => resolveRules({ fontFamily: CARDO }), []);
   const page = useMemo(() => {
@@ -36,7 +38,7 @@ export default function Index() {
   if (error) {
     return (
       <View style={styles.center}>
-        <Text style={styles.error}>corpus error: {error}</Text>
+        <Text style={styles.error}>load error: {error}</Text>
       </View>
     );
   }
