@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ts-app": {
+      "command": "mcp-language-server",
+      "args": ["-workspace", ".", "-lsp", "typescript-language-server", "--", "--stdio"]
+    },
+    "ts-teach": {
+      "command": "mcp-language-server",
+      "args": ["-workspace", "../teach", "-lsp", "typescript-language-server", "--", "--stdio"]
+    }
+  }
+}
