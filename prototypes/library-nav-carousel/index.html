@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Library nav carousel — prototype</title>
+<style>
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --border: rgba(43,33,24,0.18);
+  }
+  html, body { margin: 0; background: #e7ddc7; }
+  body { display: flex; justify-content: center; padding: 24px 12px; font-family: Georgia, "Times New Roman", serif; }
+  #app { width: 100%; max-width: 1040px; }
+  .ti { font-style: normal; }
+  /* Minimal Tabler-ish chevrons via unicode fallback (no webfont in standalone) */
+  .ti-chevron-left::before { content: "‹"; }
+  .ti-chevron-right::before { content: "›"; }
+  .ti-arrow-left::before { content: "←"; }
+  .ti-arrow-right::before { content: "→"; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="c4-root" style="font-family:Georgia,'Times New Roman',serif;">
+    <div style="background:#efe6d2; border:1px solid var(--border); border-radius:14px; overflow:hidden; min-height:560px; position:relative;">
+      <div id="c4screen"></div>
+    </div>
+  </div>
+</div>
+<script>
+/*
+  Bible Codex — library navigation carousel (inside-the-circle).
+  THROWAWAY PROTOTYPE. See README.md for the design question, decisions, and handoff.
+  This is the "final" tuned result from the design exploration session:
+    - inside-the-ring carousel, continuous loop (Torah -> Revelation -> Torah)
+    - center = hero (largest, upright, front-most), sharp focus trio (center + 1 each side)
+    - outer pair loom softly (mild blur, kept opaque), only partially visible
+    - book covers: spine + tint per BibleProject group + partial-art slot (placeholder SVG)
+    - original-language title (Hebrew OT / Greek NT) under the English name
+    - tap center book -> chapter grid -> "render" stub (would hand to #8 Skia page)
+*/
+(function(){
+  var ORDER=[['Genesis','Torah'],['Exodus','Torah'],['Leviticus','Torah'],['Numbers','Torah'],['Deuteronomy','Torah'],['Joshua','Prophets'],['Judges','Prophets'],['1 Samuel','Prophets'],['2 Samuel','Prophets'],['1 Kings','Prophets'],['2 Kings','Prophets'],['Isaiah','Prophets'],['Jeremiah','Prophets'],['Ezekiel','Prophets'],['Hosea','Prophets'],['Joel','Prophets'],['Amos','Prophets'],['Obadiah','Prophets'],['Jonah','Prophets'],['Micah','Prophets'],['Nahum','Prophets'],['Habakkuk','Prophets'],['Zephaniah','Prophets'],['Haggai','Prophets'],['Zechariah','Prophets'],['Malachi','Prophets'],['Psalms','Writings'],['Proverbs','Writings'],['Job','Writings'],['Song of Songs','Writings'],['Ruth','Writings'],['Lamentations','Writings'],['Ecclesiastes','Writings'],['Esther','Writings'],['Daniel','Writings'],['Ezra','Writings'],['Nehemiah','Writings'],['1 Chronicles','Writings'],['2 Chronicles','Writings'],['Matthew','Gospels'],['Mark','Gospels'],['Luke','Gospels'],['John','Gospels'],['Acts','Acts'],['Romans','Letters'],['1 Corinthians','Letters'],['2 Corinthians','Letters'],['Galatians','Letters'],['Ephesians','Letters'],['Philippians','Letters'],['Colossians','Letters'],['1 Thessalonians','Letters'],['2 Thessalonians','Letters'],['1 Timothy','Letters'],['2 Timothy','Letters'],['Titus','Letters'],['Philemon','Letters'],['Hebrews','Letters'],['James','Letters'],['1 Peter','Letters'],['2 Peter','Letters'],['1 John','Letters'],['2 John','Letters'],['3 John','Letters'],['Jude','Letters'],['Revelation','Revelation']];
+  var CH={Genesis:50,Exodus:40,Leviticus:27,Numbers:36,Deuteronomy:34,Joshua:24,Judges:21,'1 Samuel':31,'2 Samuel':24,'1 Kings':22,'2 Kings':25,Isaiah:66,Jeremiah:52,Ezekiel:48,Hosea:14,Joel:3,Amos:9,Obadiah:1,Jonah:4,Micah:7,Nahum:3,Habakkuk:3,Zephaniah:3,Haggai:2,Zechariah:14,Malachi:4,Psalms:150,Proverbs:31,Job:42,'Song of Songs':8,Ruth:4,Lamentations:5,Ecclesiastes:12,Esther:10,Daniel:12,Ezra:10,Nehemiah:13,'1 Chronicles':29,'2 Chronicles':36,Matthew:28,Mark:16,Luke:24,John:21,Acts:28,Romans:16,'1 Corinthians':16,'2 Corinthians':13,Galatians:6,Ephesians:6,Philippians:4,Colossians:4,'1 Thessalonians':5,'2 Thessalonians':3,'1 Timothy':6,'2 Timothy':4,Titus:3,Philemon:1,Hebrews:13,James:5,'1 Peter':5,'2 Peter':3,'1 John':5,'2 John':1,'3 John':1,Jude:1,Revelation:22};
+  var ORIG={Genesis:'בְּרֵאשִׁית',Exodus:'שְׁמוֹת',Leviticus:'וַיִּקְרָא',Numbers:'בְּמִדְבַּר',Deuteronomy:'דְּבָרִים',Joshua:'יְהוֹשֻׁעַ',Judges:'שֹׁפְטִים','1 Samuel':'שְׁמוּאֵל א','2 Samuel':'שְׁמוּאֵל ב','1 Kings':'מְלָכִים א','2 Kings':'מְלָכִים ב',Isaiah:'יְשַׁעְיָהוּ',Jeremiah:'יִרְמְיָהוּ',Ezekiel:'יְחֶזְקֵאל',Hosea:'הוֹשֵׁעַ',Joel:'יוֹאֵל',Amos:'עָמוֹס',Obadiah:'עֹבַדְיָה',Jonah:'יוֹנָה',Micah:'מִיכָה',Nahum:'נַחוּם',Habakkuk:'חֲבַקּוּק',Zephaniah:'צְפַנְיָה',Haggai:'חַגַּי',Zechariah:'זְכַרְיָה',Malachi:'מַלְאָכִי',Psalms:'תְּהִלִּים',Proverbs:'מִשְׁלֵי',Job:'אִיּוֹב','Song of Songs':'שִׁיר הַשִּׁירִים',Ruth:'רוּת',Lamentations:'אֵיכָה',Ecclesiastes:'קֹהֶלֶת',Esther:'אֶסְתֵּר',Daniel:'דָּנִיֵּאל',Ezra:'עֶזְרָא',Nehemiah:'נְחֶמְיָה','1 Chronicles':'דִּבְרֵי הַיָּמִים א','2 Chronicles':'דִּבְרֵי הַיָּמִים ב',Matthew:'Κατὰ Ματθαῖον',Mark:'Κατὰ Μᾶρκον',Luke:'Κατὰ Λουκᾶν',John:'Κατὰ Ἰωάννην',Acts:'Πράξεις',Romans:'Πρὸς Ῥωμαίους','1 Corinthians':'Κορινθίους Αʹ','2 Corinthians':'Κορινθίους Βʹ',Galatians:'Πρὸς Γαλάτας',Ephesians:'Πρὸς Ἐφεσίους',Philippians:'Φιλιππησίους',Colossians:'Κολοσσαεῖς','1 Thessalonians':'Θεσσαλονικεῖς Αʹ','2 Thessalonians':'Θεσσαλονικεῖς Βʹ','1 Timothy':'Τιμόθεον Αʹ','2 Timothy':'Τιμόθεον Βʹ',Titus:'Πρὸς Τίτον',Philemon:'Φιλήμονα',Hebrews:'Πρὸς Ἑβραίους',James:'Ἰακώβου','1 Peter':'Πέτρου Αʹ','2 Peter':'Πέτρου Βʹ','1 John':'Ἰωάννου Αʹ','2 John':'Ἰωάννου Βʹ','3 John':'Ἰωάννου Γʹ',Jude:'Ἰούδα',Revelation:'Ἀποκάλυψις'};
+  var TINTS={Torah:'#c8b28a',Prophets:'#a7b0a1',Writings:'#c7a98f',Gospels:'#9fb0b8',Acts:'#c9b57f',Letters:'#b9a3ad',Revelation:'#c69b86'};
+  var HEB={Torah:1,Prophets:1,Writings:1};
+  var GNAMES=['Torah','Prophets','Writings','Gospels','Acts','Letters','Revelation'];
+  var INK='#2b2118', INK2='#6b5c48', PAPER='#efe6d2', CARD='#f7f0df', RULE='#d9cbad';
+  var N=ORDER.length;
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function hc(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
+  function tshift(hex,d){var n=parseInt(hex.slice(1),16);var r=Math.max(0,Math.min(255,(n>>16)+d)),g=Math.max(0,Math.min(255,((n>>8)&255)+d)),b=Math.max(0,Math.min(255,(n&255)+d));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+  function artSVG(seed,accent,size){var kind=hc(seed)%3;var s=size;var shapes;
+    if(kind===0) shapes='<path d="M6 46 L20 22 L30 38 L42 16 L54 46 Z" fill="'+accent+'"/><circle cx="44" cy="12" r="5" fill="'+tshift(accent,40)+'"/>';
+    else if(kind===1) shapes='<path d="M30 10 C20 10 16 26 22 34 L20 50 L40 50 L38 34 C44 26 40 10 30 10 Z" fill="'+accent+'"/>';
+    else shapes='<rect x="16" y="26" width="28" height="24" rx="1" fill="'+accent+'"/><path d="M14 26 L30 10 L46 26 Z" fill="'+tshift(accent,30)+'"/>';
+    return '<svg viewBox="0 0 60 56" width="'+s+'" height="'+Math.round(s*0.93)+'" aria-hidden="true"><ellipse cx="30" cy="40" rx="28" ry="18" fill="rgba(255,255,255,.4)"/>'+shapes+'</svg>';}
+
+  var screen=document.getElementById('c4screen');
+  var BW=128, BH=172;
+  var state={center:0, overlay:null};
+
+  function shellHTML(){
+    return '<div style="min-height:560px; display:flex; flex-direction:column;">'+
+      '<div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px 0; position:relative; z-index:5;"><div style="font-size:22px; color:'+INK+';">The Codex</div>'+
+        '<div id="grpticker" style="display:flex; gap:5px; font-family:var(--font-sans); font-size:10px; letter-spacing:.08em;"></div></div>'+
+      '<div id="stage" style="position:relative; flex:1; min-height:340px; margin-top:6px; overflow:hidden; cursor:grab; perspective:1000px; perspective-origin:50% 50%; touch-action:pan-y;">'+
+        '<div id="platform" style="position:absolute; left:50%; bottom:26px; width:128%; height:150px; transform:translateX(-50%); border-top:1.5px solid rgba(43,33,24,.13); border-radius:50%; box-shadow:0 -1px 0 rgba(255,255,255,.4) inset; pointer-events:none;"></div>'+
+        '<div id="caro" style="position:absolute; inset:0; transform-style:preserve-3d;"></div>'+
+      '</div>'+
+      '<div id="focusinfo" style="text-align:center; padding:2px 20px 8px; min-height:66px; position:relative; z-index:5;"></div>'+
+      '<div style="display:flex; align-items:center; justify-content:center; gap:20px; padding:0 0 20px; position:relative; z-index:5;">'+
+        '<button id="c4prev" aria-label="Previous" style="font-family:var(--font-sans); width:38px; height:38px; border-radius:999px; border:1px solid '+INK2+'; background:'+CARD+'; color:'+INK+'; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>'+
+        '<div style="font-family:var(--font-sans); font-size:11px; color:'+INK2+'; letter-spacing:.05em;">drag · &larr; &rarr; · tap center to open</div>'+
+        '<button id="c4next" aria-label="Next" style="font-family:var(--font-sans); width:38px; height:38px; border-radius:999px; border:1px solid '+INK2+'; background:'+CARD+'; color:'+INK+'; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>'+
+      '</div></div>';
+  }
+  function coverInner(name,big){
+    var g=null;for(var k=0;k<N;k++)if(ORDER[k][0]===name){g=ORDER[k][1];break;}
+    var t=TINTS[g];var acc=tshift(t,-70);var isH=HEB[g];
+    var orig= big? '<div '+(isH?'dir="rtl"':'')+' style="font-size:'+(isH?13:11)+'px; line-height:1.1; color:'+tshift(t,-58)+'; margin-top:3px;">'+ORIG[name]+'</div>':'';
+    var rw=big?11:8, rh=big?44:33, rleft=big?15:11;
+    var ribbon='<div style="position:absolute; left:'+rleft+'px; bottom:0; width:'+rw+'px; height:'+rh+'px; background:linear-gradient(90deg,#7f2c1f,#b0472f 45%,#8f3323); clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%); box-shadow:0 1px 2px rgba(0,0,0,.25); z-index:4;"></div>';
+    return '<div style="width:100%; height:100%; display:flex; border-radius:2px 4px 4px 2px; overflow:hidden;">'+
+      '<div style="width:8px; background:'+tshift(t,-46)+';"></div>'+
+      '<div style="flex:1; position:relative; background:'+t+'; border-right:2px solid '+tshift(t,-20)+';">'+
+        '<div style="padding:10px 9px 0;"><div style="font-size:16px; line-height:1.06; color:'+INK+';">'+esc(name)+'</div>'+orig+'</div>'+
+        '<div style="position:absolute; right:2px; bottom:3px;">'+artSVG(name,acc,big?56:46)+'</div>'+
+        ribbon+
+      '</div></div>';
+  }
+
+  function drawStage(){
+    var stage=document.getElementById('stage');if(!stage)return;
+    var caro=document.getElementById('caro');
+    var cx=stage.clientWidth/2, cy=stage.clientHeight*0.47;
+    var frag='';
+    for(var i=0;i<N;i++){
+      var o=i-state.center; while(o>N/2)o-=N; while(o<-N/2)o+=N;
+      var ao=Math.abs(o);
+      if(ao>4.5) continue;
+      var txmag=170*Math.min(ao,1)+116*Math.max(0,ao-1);
+      var tx=(o===0?0:(o<0?-1:1))*txmag;
+      var arc=Math.pow(ao,1.5)*7;
+      var ry=Math.max(-46,Math.min(46,-o*15));
+      var sk=Math.max(-10,Math.min(10,o*3.2));
+      var scale=ao<=1 ? (1.14-0.22*ao) : (0.92+0.20*(ao-1));
+      var blur=ao<1.7?0:Math.min((ao-1.7)*1.5,2.6);
+      var op=ao<=4 ? Math.max(0.80,1-Math.max(0,ao-2)*0.08) : Math.max(0,(4.5-ao)/0.5);
+      var z=200-Math.round(ao*12);
+      var focused=ao<0.4, sharp=ao<1.6;
+      var left=cx+tx-BW/2, top=cy-BH/2+arc;
+      var shadow=focused?'0 16px 34px rgba(0,0,0,.4)':(sharp?'4px 10px 20px rgba(0,0,0,.26)':'3px 8px 16px rgba(0,0,0,.2)');
+      frag+='<div data-idx="'+i+'" style="position:absolute; left:'+left+'px; top:'+top+'px; width:'+BW+'px; height:'+BH+'px; transform:rotateY('+ry.toFixed(1)+'deg) skewY('+sk.toFixed(1)+'deg) scale('+scale.toFixed(3)+'); transform-origin:center; z-index:'+z+'; opacity:'+op.toFixed(3)+'; filter:blur('+blur.toFixed(1)+'px); cursor:pointer; border-radius:3px; box-shadow:'+shadow+';">'+coverInner(ORDER[i][0],sharp)+'</div>';
+    }
+    caro.innerHTML=frag;
+    caro.querySelectorAll('[data-idx]').forEach(function(el){
+      el.addEventListener('click',function(){
+        if(dragMoved)return;
+        var i=+el.getAttribute('data-idx');
+        var o=i-state.center; while(o>N/2)o-=N; while(o<-N/2)o+=N;
+        if(Math.abs(o)<0.4){ state.overlay=ORDER[i][0]; renderOverlay(); }
+        else animateTo(state.center+o);
+      });
+    });
+    updateFocus();
+  }
+  function updateFocus(){
+    var fi=((Math.round(state.center)%N)+N)%N;
+    var name=ORDER[fi][0], g=ORDER[fi][1], isH=HEB[g];
+    var fe=document.getElementById('focusinfo');
+    if(fe) fe.innerHTML='<div style="font-family:var(--font-sans); font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#9a7d3b;">'+g+'</div>'+
+      '<div style="font-size:26px; color:'+INK+'; margin-top:2px;">'+esc(name)+' <span style="font-size:17px; color:'+INK2+';" '+(isH?'dir="rtl"':'')+'>'+ORIG[name]+'</span></div>'+
+      '<div style="font-family:var(--font-sans); font-size:11px; color:'+INK2+'; margin-top:1px;">'+CH[name]+' chapters</div>';
+    var gt=document.getElementById('grpticker');
+    if(gt) gt.innerHTML=GNAMES.map(function(x){var on=x===g;return '<span style="padding:3px 8px; border-radius:999px; '+(on?'background:'+INK+'; color:'+PAPER+';':'color:'+INK2+';')+'">'+x+'</span>';}).join('');
+  }
+  var raf=null;
+  function animateTo(target){
+    if(raf)cancelAnimationFrame(raf);
+    function step(){var d=target-state.center;
+      if(Math.abs(d)<0.001){state.center=((target%N)+N)%N; drawStage(); raf=null; return;}
+      state.center+=d*0.18; drawStage(); raf=requestAnimationFrame(step);}
+    step();
+  }
+  var dragging=false,dragMoved=false,startX=0,startCenter=0;
+  function bindStage(){
+    var stage=document.getElementById('stage');
+    stage.addEventListener('pointerdown',function(e){dragging=true;dragMoved=false;startX=e.clientX;startCenter=state.center;stage.setPointerCapture(e.pointerId);stage.style.cursor='grabbing';if(raf){cancelAnimationFrame(raf);raf=null;}});
+    stage.addEventListener('pointermove',function(e){if(!dragging)return;var dx=e.clientX-startX;if(Math.abs(dx)>4)dragMoved=true;state.center=startCenter-dx/86;drawStage();});
+    function up(){if(!dragging)return;dragging=false;stage.style.cursor='grab';animateTo(Math.round(state.center));}
+    stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+    stage.addEventListener('wheel',function(e){e.preventDefault();state.center+=(Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY)/120;if(raf){cancelAnimationFrame(raf);raf=null;}clearTimeout(stage._wt);stage._wt=setTimeout(function(){animateTo(Math.round(state.center));},110);drawStage();},{passive:false});
+    document.getElementById('c4prev').onclick=function(){animateTo(Math.round(state.center)-1);};
+    document.getElementById('c4next').onclick=function(){animateTo(Math.round(state.center)+1);};
+  }
+  function renderMain(){screen.innerHTML=shellHTML();bindStage();requestAnimationFrame(drawStage);}
+  function renderOverlay(){
+    var name=state.overlay;var n=CH[name];var g;for(var k=0;k<N;k++)if(ORDER[k][0]===name)g=ORDER[k][1];var isH=HEB[g];
+    var cells='';for(var i=1;i<=n;i++)cells+='<div data-ch="'+i+'" style="cursor:pointer; aspect-ratio:1; display:flex; align-items:center; justify-content:center; border:1px solid '+RULE+'; border-radius:7px; background:'+CARD+'; color:'+INK+'; font-size:15px;">'+i+'</div>';
+    screen.innerHTML='<div style="background:'+PAPER+'; min-height:560px; padding:22px 24px;">'+
+      '<div id="c4back" style="cursor:pointer; font-family:var(--font-sans); font-size:12px; color:'+INK2+'; display:inline-flex; align-items:center; gap:6px; margin-bottom:16px;"><i class="ti ti-arrow-left" aria-hidden="true"></i> Ring</div>'+
+      '<div style="font-size:34px; color:'+INK+'; margin-bottom:2px;">'+esc(name)+' <span style="font-size:20px; color:'+INK2+';" '+(isH?'dir="rtl"':'')+'>'+ORIG[name]+'</span></div>'+
+      '<div style="font-family:var(--font-sans); font-size:12px; color:'+INK2+'; margin-bottom:20px;">Choose a chapter · '+n+' total</div>'+
+      '<div style="display:grid; grid-template-columns:repeat(8,1fr); gap:8px;">'+cells+'</div><div id="chbanner"></div></div>';
+    document.getElementById('c4back').onclick=function(){state.overlay=null;renderMain();};
+    screen.querySelectorAll('[data-ch]').forEach(function(el){el.onclick=function(){document.getElementById('chbanner').innerHTML='<div style="margin-top:14px; padding:12px 14px; border:1px dashed '+INK2+'; border-radius:8px; background:'+CARD+'; color:'+INK2+'; font-family:var(--font-sans); font-size:12px; display:flex; align-items:center; gap:8px;"><i class="ti ti-arrow-right" aria-hidden="true"></i> render &rarr; <b style="color:'+INK+'; font-family:Georgia,serif; font-size:14px;">'+esc(name)+' '+el.getAttribute('data-ch')+'</b> <span style="margin-left:auto; opacity:.7;">(#8 Skia page)</span></div>';};});
+  }
+  document.addEventListener('keydown',function(e){if(state.overlay)return;if(e.key==='ArrowLeft')animateTo(Math.round(state.center)-1);if(e.key==='ArrowRight')animateTo(Math.round(state.center)+1);});
+  renderMain();
+})();
+</script>
+</body>
+</html>
