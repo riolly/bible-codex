@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   error: { color: PALETTE.ink, padding: 24 },
   pane: { flex: 1, flexDirection: "row" },
 
-  list: { width: 40, borderRightWidth: 1, borderRightColor: RULE },
+  list: { width: "40%", borderRightWidth: 1, borderRightColor: RULE },
   listContent: { padding: 16, paddingBottom: 48 },
   brand: {
     fontSize: 20,
