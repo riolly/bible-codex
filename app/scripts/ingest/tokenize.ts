@@ -19,15 +19,18 @@
  *     leading elision apostrophe ("’Twas") are PUNCT, not part of the word —
  *     so a quote-style revision (' → ’) at a word edge never touches word
  *     text, only punct (ADR-0013 immunity).
- *  4. Everything else non-space (and non-combining-mark) is PUNCT; a maximal
- *     run of punct characters (",”" / "—") collapses into a SINGLE punct token.
+ *  4. Everything else non-space is PUNCT; a maximal run of punct characters
+ *     (",”" / "—") collapses into a SINGLE punct token. A combining mark binds
+ *     to a preceding base (rule 1); an ORPHAN mark — one with no base before it
+ *     (run edge, after space, after punct) — falls here as punct rather than
+ *     vanishing, so tokens still cover every non-space character.
  *  5. Whitespace is NEVER a token — spacing belongs to the presentation layer.
  */
 
 import type { TokenKind } from '../../src/model/corpus';
 
 const TOKEN_PATTERN =
-  /(\p{N}+(?:[,.]\p{N}+)+|[\p{L}\p{N}][\p{L}\p{N}\p{M}]*(?:['’-][\p{L}\p{N}][\p{L}\p{N}\p{M}]*)*)|([^\s\p{L}\p{N}\p{M}]+)/gu;
+  /(\p{N}+(?:[,.]\p{N}+)+|[\p{L}\p{N}][\p{L}\p{N}\p{M}]*(?:['’-][\p{L}\p{N}][\p{L}\p{N}\p{M}]*)*)|([^\s\p{L}\p{N}]+)/gu;
 
 export interface RawToken {
   readonly kind: TokenKind;

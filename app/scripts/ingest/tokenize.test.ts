@@ -72,4 +72,26 @@ describe('registered tokenization policy (ADR-0014)', () => {
     expect(tokenize(heb)).toEqual([{ kind: 'word', text: heb }]);
     expect(texts(`${heb} בָּרָא`.normalize('NFC'))).toEqual([`w:${heb}`, 'w:בָּרָא'.normalize('NFC')]);
   });
+
+  it('an ORPHAN combining mark (no base before it) falls to punct, never vanishes', () => {
+    // A mark with no preceding base matches neither the word branch (needs an
+    // alphanumeric start) nor a space — it must land as punct so the token
+    // stream still COVERS every non-space character (no silent, uncounted drop).
+    expect(tokenize('́abc')).toEqual([
+      { kind: 'punct', text: '́' }, // leading mark
+      { kind: 'word', text: 'abc' },
+    ]);
+    expect(tokenize('.́x')).toEqual([
+      { kind: 'punct', text: '.́' }, // mark after punct joins the punct run
+      { kind: 'word', text: 'x' },
+    ]);
+    expect(tokenize('ְְ')).toEqual([{ kind: 'punct', text: 'ְְ' }]); // lone marks
+    // coverage: concatenated token text == input minus whitespace
+    for (const s of ['́abc', '.́x', 'word ְhere', 'àb']) {
+      const covered = tokenize(s)
+        .map((t) => t.text)
+        .join('');
+      expect(covered).toBe(s.replace(/\s+/g, ''));
+    }
+  });
 });
