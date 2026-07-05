@@ -217,6 +217,41 @@ describe('stats bag — what Phase 1 deliberately does NOT model fails loudly, n
   });
 });
 
+describe('Unicode NFC normalization at ingest (#25)', () => {
+  const doc = (content: UsjDoc['content']): UsjDoc => ({ type: 'USJ', version: '3.1', content });
+  const verse = (text: string): UsjDoc =>
+    doc([
+      { type: 'chapter', marker: 'c', number: '1' },
+      { type: 'para', marker: 'p', content: [{ type: 'verse', marker: 'v', number: '1' }, text] },
+    ]);
+
+  it('stores decomposed Greek as one NFC word token (a combining mark never leaks as punct)', () => {
+    // NFD input: base ο + combining acute U+0301, base ι + combining varia U+0300
+    const nfd = 'λόγος'.normalize('NFD');
+    expect(nfd).not.toBe('λόγος'); // guard: the fixture really is decomposed
+    const { tokens } = normalizeUsj(verse(nfd));
+    // one WORD token, NFC-composed — no combining mark split into a punct token
+    expect(tokens.map((t) => [t.kind, t.text])).toEqual([['word', 'λόγος'.normalize('NFC')]]);
+    expect(tokens[0].text).toBe('λόγος'.normalize('NFC'));
+  });
+
+  it('keeps a pointed Hebrew word as ONE word token (combining points never split it)', () => {
+    // Hebrew vowel points are category M with NO canonical precomposed form, so
+    // NFC is a no-op here — the word survives only if the tokenizer treats a
+    // combining mark as part of its base word (not as a punct run).
+    const word = 'בְּרֵאשִׁית'; // "in the beginning" — consonants + points
+    const { tokens } = normalizeUsj(verse(word));
+    expect(tokens.map((t) => t.kind)).toEqual(['word']);
+    expect(tokens[0].text).toBe(word.normalize('NFC'));
+  });
+
+  it('is idempotent — already-NFC text is stored verbatim', () => {
+    const nfc = 'λόγος'.normalize('NFC');
+    const { tokens } = normalizeUsj(verse(nfc));
+    expect(tokens[0].text).toBe(nfc);
+  });
+});
+
 describe('normalize guards', () => {
   const doc = (content: UsjDoc['content']): UsjDoc => ({ type: 'USJ', version: '3.1', content });
 

@@ -165,7 +165,13 @@ export function normalizeUsj(usj: UsjDoc): NormalizeResult {
 
   const flushText = () => {
     if (!buf) return;
-    const raw = tokenize(buf);
+    // Unicode NFC before tokenizing (#25): sources arrive decomposed (esp.
+    // Greek polytonic & Hebrew); canonical composition makes stored token
+    // text — and the draw layer's cmap-advance measure — match the shaped
+    // glyph run. Also keeps decomposed base+mark from splitting a word apart
+    // (a combining mark is category M, which the tokenizer's punct branch
+    // would otherwise capture). Idempotent on already-NFC (ASCII) text.
+    const raw = tokenize(buf.normalize('NFC'));
     buf = '';
     if (raw.length === 0) return;
     const blk = ensureBlock();

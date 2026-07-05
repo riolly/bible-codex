@@ -57,4 +57,19 @@ describe('registered tokenization policy (ADR-0014)', () => {
     }
     expect(texts('Beth-el’s altar')).toEqual(['w:Beth-el’s', 'w:altar']);
   });
+
+  it('combining marks bind to their base word, never split off as punct (ADR-0014 v1.1)', () => {
+    // Greek polytonic (NFC-composed by ingest before this runs) — precomposed,
+    // one word regardless.
+    expect(texts('ἐν ἀρχῇ ἦν'.normalize('NFC'))).toEqual(['w:ἐν', 'w:ἀρχῇ', 'w:ἦν']);
+    // A raw base + combining mark (tokenize itself does NOT normalize) stays
+    // ONE word — proves the mark binds rather than splitting into punct.
+    const raw = 'a\u0300b'; // a + combining grave + b
+    expect(tokenize(raw)).toEqual([{ kind: 'word', text: raw }]);
+    // Hebrew vowel points (category M, no canonical composition) — the whole
+    // pointed word is ONE token, points intact.
+    const heb = 'בְּרֵאשִׁית'.normalize('NFC');
+    expect(tokenize(heb)).toEqual([{ kind: 'word', text: heb }]);
+    expect(texts(`${heb} בָּרָא`.normalize('NFC'))).toEqual([`w:${heb}`, 'w:בָּרָא'.normalize('NFC')]);
+  });
 });
