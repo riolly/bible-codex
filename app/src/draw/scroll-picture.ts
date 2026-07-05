@@ -14,14 +14,15 @@ import { Skia, type SkPicture } from '@shopify/react-native-skia';
 import type { ResolvedRules, ScrollLayout } from '../engine/layout';
 import { createFlowPainter } from './flow-paint';
 import type { DrawFonts } from './fonts';
-import { PALETTE, styleForBlock, type BlockStyle } from './style';
+import { PALETTE, styleForBlock, type BlockStyle, type Palette } from './style';
 
 export function buildScrollPicture(
   layout: ScrollLayout,
   rules: ResolvedRules,
   fonts: DrawFonts,
+  palette: Palette = PALETTE,
 ): SkPicture {
-  const painter = createFlowPainter(rules, fonts);
+  const painter = createFlowPainter(rules, fonts, palette);
   const S = painter.S; // design px per em
 
   // Canvas: full scroll width × the viewport-derived column height framed by
@@ -34,14 +35,14 @@ export function buildScrollPicture(
 
   // Parchment ground.
   const bg = Skia.Paint();
-  bg.setColor(Skia.Color(PALETTE.parchment));
+  bg.setColor(Skia.Color(palette.parchment));
   canvas.drawRect(Skia.XYWHRect(0, 0, canvasWidthPx, canvasHeightPx), bg);
 
   const originYPx = rules.margin * S; // columns begin below the top margin
   for (const column of layout.columns) {
     const originXPx = column.x * S; // column.x already includes the left margin
     for (const line of column.lines) {
-      const style: BlockStyle = styleForBlock(line.genre, line.role);
+      const style: BlockStyle = styleForBlock(line.genre, line.role, palette);
       painter.paintLine(canvas, line, style, originXPx, originYPx);
     }
   }

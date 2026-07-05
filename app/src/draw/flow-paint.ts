@@ -20,7 +20,7 @@ import {
 
 import type { Line, ResolvedRules } from '../engine/layout';
 import { CARDO, type DrawFonts } from './fonts';
-import { verseNumStyle, type BlockStyle } from './style';
+import { PALETTE, verseNumStyle, type BlockStyle, type Palette } from './style';
 
 export interface ParaSpec {
   readonly text: string;
@@ -45,7 +45,11 @@ export interface FlowPainter {
   paintLine(canvas: SkCanvas, line: Line, style: BlockStyle, originXPx: number, originYPx: number): void;
 }
 
-export function createFlowPainter(rules: ResolvedRules, fonts: DrawFonts): FlowPainter {
+export function createFlowPainter(
+  rules: ResolvedRules,
+  fonts: DrawFonts,
+  palette: Palette = PALETTE,
+): FlowPainter {
   const S = rules.fontSize;
   const paraCache = new Map<string, SkParagraph>();
   const baselineCache = new Map<string, number>();
@@ -89,7 +93,7 @@ export function createFlowPainter(rules: ResolvedRules, fonts: DrawFonts): FlowP
   // Baseline inside a line box: center the font's natural extent in lineHeight.
   const { ascent, descent } = fonts.metricsEm; // ascent < 0
   const leadingGapEm = (rules.lineHeight - (descent - ascent)) / 2;
-  const vn = verseNumStyle();
+  const vn = verseNumStyle(palette);
 
   const paintLine = (
     canvas: SkCanvas,

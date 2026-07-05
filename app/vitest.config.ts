@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vitest/config';
 
 // Vitest runs the framework-agnostic engine/model layer — plus the draw
@@ -7,9 +9,14 @@ import { defineConfig } from 'vitest/config';
 // suites always run; the parse/roundtrip suites self-skip where the native
 // tree-sitter / better-sqlite3 modules are unbuilt (CI ignore-scripts).
 export default defineConfig({
+  // Mirror the tsconfig `@/*` path alias (metro/babel resolve it in the app).
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
   test: {
     environment: 'node',
     include: [
+      'src/db/**/*.test.ts',
       'src/draw/**/*.test.ts',
       'src/engine/**/*.test.ts',
       'src/model/**/*.test.ts',

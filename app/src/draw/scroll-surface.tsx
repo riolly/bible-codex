@@ -23,7 +23,7 @@ import {
 } from '../engine/layout';
 import type { DrawFonts } from './fonts';
 import { buildScrollPicture } from './scroll-picture';
-import { PALETTE } from './style';
+import { PALETTE, type Palette } from './style';
 import { maxScroll } from './transform';
 import { useVerseAnchor } from './use-verse-anchor';
 
@@ -31,6 +31,8 @@ export interface ScrollSurfaceProps {
   readonly layout: ScrollLayout;
   readonly rules: ResolvedRules;
   readonly fonts: DrawFonts;
+  /** Theme palette (ADR-0004 global setting); defaults to the light manuscript. */
+  readonly palette?: Palette;
   /** Lazily yields the canonical verse to seek on mount (carried across a
    * rotation) — resolved once here, never read reactively. */
   readonly getInitialAnchor?: () => number | null;
@@ -42,6 +44,7 @@ export function ScrollSurface({
   layout,
   rules,
   fonts,
+  palette = PALETTE,
   getInitialAnchor,
   onAnchorChange,
 }: ScrollSurfaceProps) {
@@ -55,7 +58,10 @@ export function ScrollSurface({
   const contentWidthDp = layout.totalWidth * scale;
   const overflow = maxScroll(contentWidthDp, viewport.width);
 
-  const picture = useMemo(() => buildScrollPicture(layout, rules, fonts), [layout, rules, fonts]);
+  const picture = useMemo(
+    () => buildScrollPicture(layout, rules, fonts, palette),
+    [layout, rules, fonts, palette],
+  );
 
   // The reading position enters as a canonical verse; the shared hook seeds the
   // scroll, seeks the native ScrollView on mount, and reports as the reader
@@ -82,9 +88,9 @@ export function ScrollSurface({
   ]);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: palette.letterbox }]}>
       <Canvas style={StyleSheet.absoluteFill}>
-        <Fill color={PALETTE.letterbox} />
+        <Fill color={palette.letterbox} />
         <Group transform={transform}>
           <Picture picture={picture} />
         </Group>

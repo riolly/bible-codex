@@ -4,24 +4,24 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getBooks, getChapter, getChapterCount, openCorpus, type CorpusDb } from '@/db/corpus';
+import { useReadingSettings } from '@/db/use-settings';
 import { CodexPage, type FlipDirection } from '@/draw/codex-page';
-import { CARDO, useCardoFonts } from '@/draw/fonts';
+import { useCardoFonts } from '@/draw/fonts';
 import { ScrollSurface } from '@/draw/scroll-surface';
 import { PALETTE } from '@/draw/style';
-import {
-  layoutCodexPage,
-  layoutScrollColumns,
-  readingModeForViewport,
-  resolveRules,
-} from '@/engine/layout';
+import { layoutCodexPage, layoutScrollColumns, readingModeForViewport } from '@/engine/layout';
 import { useReadingPosition } from '@/store/reading-position';
+import { useUiStore } from '@/store/ui-store';
+import { AdjustPanelContainer } from '@/ui/adjust-panel-container';
 
 // The reader — the app's home surface (#10). It renders whatever the SINGLE
 // current-position source holds (store/reading-position), so both navigation
 // affordances land here in agreement: the picker's random-access jump and the
 // Codex flip gesture (#9) drive the same `position`, and this screen re-renders
 // in place. The reading MODE is derived from orientation (ADR-0016 / #9) —
-// portrait = Codex, landscape = Scroll; there is no toggle.
+// portrait = Codex, landscape = Scroll; there is no toggle. The typography +
+// theme come from the layout-adjust settings (#11): a preset/knob/theme change
+// re-typesets immediately.
 export default function Reader() {
   const position = useReadingPosition((s) => s.position);
   const goTo = useReadingPosition((s) => s.goTo);
@@ -33,6 +33,7 @@ export default function Reader() {
   const { fonts, error: fontError } = useCardoFonts();
   const [db, setDb] = useState<CorpusDb | null>(null);
   const [dbError, setDbError] = useState<string | null>(null);
+  const setAdjustOpen = useUiStore((s) => s.setAdjustPanelOpen);
 
   useEffect(() => {
     openCorpus()
@@ -85,7 +86,16 @@ export default function Reader() {
     [translation, book, chapter, chapterCount, goTo],
   );
 
-  const rules = useMemo(() => resolveRules({ fontFamily: CARDO }), []);
+  // Rules come from the layout-adjust cascade (#11): base preset + any per-book
+  // override, resolved at book grain. Depend on the stable `rulesFor` (memoized
+  // in the hook), NOT the settings object — that literal is rebuilt every render
+  // and would defeat this memo, re-shaping the Skia picture each frame.
+  const settings = useReadingSettings();
+  const { rulesFor, palette } = settings;
+  const rules = useMemo(
+    () => rulesFor({ genre: 'prose', role: null, bookSlug: book }),
+    [rulesFor, book],
+  );
 
   const source = useMemo(() => {
     if (!db || !fonts) return null;
@@ -105,10 +115,10 @@ export default function Reader() {
   const surfaceReady = mode === 'codex' ? !!page : !!scroll;
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: palette.letterbox }]}>
       {error ? (
-        <View style={styles.center}>
-          <Text style={styles.error}>load error: {error}</Text>
+        <View style={[styles.center, { backgroundColor: palette.letterbox }]}>
+          <Text style={[styles.error, { color: palette.parchment }]}>load error: {error}</Text>
         </View>
       ) : fonts && surfaceReady ? (
         // Key by passage so a flip (new chapter) remounts the surface at the
@@ -120,6 +130,7 @@ export default function Reader() {
             page={page!}
             rules={rules}
             fonts={fonts}
+            palette={palette}
             onFlip={onFlip}
             getInitialAnchor={getInitialAnchor}
             onAnchorChange={onAnchorChange}
@@ -130,12 +141,13 @@ export default function Reader() {
             layout={scroll!}
             rules={rules}
             fonts={fonts}
+            palette={palette}
             getInitialAnchor={getInitialAnchor}
             onAnchorChange={onAnchorChange}
           />
         )
       ) : (
-        <View style={styles.center} />
+        <View style={[styles.center, { backgroundColor: palette.letterbox }]} />
       )}
 
       {/* Position affordance: reflects where the reader is, and opens the
@@ -149,6 +161,17 @@ export default function Reader() {
           <Text style={styles.headerTranslation}>{translation}</Text>
         </Pressable>
       </SafeAreaView>
+
+      {/* Layout-adjust affordance (#11): opens the preset/knob/theme panel. */}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Open adjust"
+        style={[styles.adjustBtn, { backgroundColor: palette.gilt }]}
+        onPress={() => setAdjustOpen(true)}
+      >
+        <Text style={[styles.adjustText, { color: palette.letterbox }]}>Aa</Text>
+      </Pressable>
+      <AdjustPanelContainer />
     </View>
   );
 }
@@ -177,4 +200,17 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 15, color: PALETTE.parchment, letterSpacing: 0.3 },
   headerTranslation: { fontSize: 11, letterSpacing: 1, color: PALETTE.gilt },
+
+  adjustBtn: {
+    position: 'absolute',
+    right: 20,
+    bottom: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+  },
+  adjustText: { fontSize: 20, fontWeight: '600' },
 });

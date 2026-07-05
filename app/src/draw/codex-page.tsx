@@ -25,7 +25,7 @@ import {
 } from '../engine/layout';
 import type { DrawFonts } from './fonts';
 import { buildPagePicture } from './page-picture';
-import { PALETTE } from './style';
+import { PALETTE, type Palette } from './style';
 import { maxScroll } from './transform';
 import { useVerseAnchor } from './use-verse-anchor';
 
@@ -35,6 +35,8 @@ export interface CodexPageProps {
   readonly page: PageLayout;
   readonly rules: ResolvedRules;
   readonly fonts: DrawFonts;
+  /** Theme palette (ADR-0004 global setting); defaults to the light manuscript. */
+  readonly palette?: Palette;
   /** Flip = chapter navigation (previous/next Page). */
   readonly onFlip?: (direction: FlipDirection) => void;
   /** Lazily yields the canonical verse to seek on mount (carried across a
@@ -48,6 +50,7 @@ export function CodexPage({
   page,
   rules,
   fonts,
+  palette = PALETTE,
   onFlip,
   getInitialAnchor,
   onAnchorChange,
@@ -59,7 +62,10 @@ export function CodexPage({
   const pageHeightDp = page.canvas.height * fit.scale;
   const overflow = maxScroll(pageHeightDp, viewport.height);
 
-  const picture = useMemo(() => buildPagePicture(page, rules, fonts), [page, rules, fonts]);
+  const picture = useMemo(
+    () => buildPagePicture(page, rules, fonts, palette),
+    [page, rules, fonts, palette],
+  );
 
   // The reading position enters as a canonical verse; the shared hook seeds the
   // scroll, seeks the native ScrollView on mount, and reports as the reader
@@ -98,9 +104,9 @@ export function CodexPage({
 
   return (
     <GestureDetector gesture={flip}>
-      <View style={styles.root}>
+      <View style={[styles.root, { backgroundColor: palette.letterbox }]}>
         <Canvas style={StyleSheet.absoluteFill}>
-          <Fill color={PALETTE.letterbox} />
+          <Fill color={palette.letterbox} />
           <Group transform={transform}>
             <Picture picture={picture} />
           </Group>
