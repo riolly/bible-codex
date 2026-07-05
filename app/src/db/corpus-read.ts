@@ -47,6 +47,27 @@ export function listBooks(db: SyncSqliteDb, translationAbbrev: string): MenuBook
 }
 
 /**
+ * A book's highest chapter number (the Codex flip bound, #9). Scoped to one
+ * book, so it reads a single MAX aggregate instead of aggregating every book
+ * in the translation the way `listBooks` does. Chapter 0 front matter never
+ * wins the MAX, so this matches `listBooks`' `chapters`.
+ */
+export function chapterCount(
+  db: SyncSqliteDb,
+  translationAbbrev: string,
+  bookSlug: string,
+): number {
+  const rows = db
+    .select({ max: max(schema.block.chapter) })
+    .from(schema.block)
+    .innerJoin(schema.translation, eq(schema.block.translationId, schema.translation.id))
+    .innerJoin(schema.book, eq(schema.block.bookId, schema.book.id))
+    .where(and(eq(schema.translation.abbrev, translationAbbrev), eq(schema.book.slug, bookSlug)))
+    .all();
+  return rows[0]?.max ?? 1;
+}
+
+/**
  * Read one chapter's Block + Token rows, in render order. Chapter 1 also
  * includes chapter 0 — the book's front matter (\mt book title), which the
  * ingest stores before \c 1 and the first Page renders above chapter 1.

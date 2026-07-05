@@ -7,6 +7,17 @@
 
 export { layoutCodexPage, type CodexPageInput } from './codex';
 export { fitPageToViewport, type PageFit } from './fit';
+export { readingModeForViewport, type ReadingMode } from './mode';
+export {
+  codexOffsetForVerse,
+  codexVerseAnchors,
+  codexVerseAtOffset,
+  scrollOffsetForVerse,
+  scrollVerseAnchors,
+  scrollVerseAtOffset,
+  verseAtAnchorOffset,
+  type VerseAnchor,
+} from './position';
 export type {
   Direction,
   DropCap,
