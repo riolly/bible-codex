@@ -24,13 +24,22 @@ export function fitPageToViewport(page: PageLayout, viewport: Viewport): PageFit
     throw new Error(`viewport must be positive, got ${viewport.width}×${viewport.height}`);
   }
 
-  // Fill the viewport width; a chapter taller than the screen scrolls WITHIN
-  // the page (pillar 3), so height never constrains the scale.
-  const scale = viewport.width / page.canvas.width;
+  // Fill the viewport width with the TEXT FRAME (left margin + measure + right
+  // margin), not the full canvas — the Margin rail is parked outside the frame
+  // and letterboxes off the right edge. This keeps the reading size and the
+  // symmetric margins constant across orientations: in portrait the rail would
+  // otherwise steal a slab of width, shrinking the text and shoving the column
+  // left. `page.rail.x` is exactly where the frame ends and the rail begins.
+  // A chapter taller than the screen scrolls WITHIN the page (pillar 3), so
+  // height never constrains the scale.
+  const frameWidth = page.rail.x;
+  const scale = viewport.width / frameWidth;
   const pageHeightDp = page.canvas.height * scale;
 
   return {
     scale,
+    // The frame fills the width at x=0; its two margins are symmetric by
+    // construction and the rail spills past the right edge (clipped).
     offsetX: 0,
     // Shorter-than-viewport pages sit centered between letterbox bands;
     // taller ones start at the top and scroll internally.

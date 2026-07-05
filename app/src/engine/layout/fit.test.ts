@@ -14,9 +14,13 @@ const IPAD_PORTRAIT = { width: 834, height: 1194 };
 const SMALL_TABLET_PORTRAIT = { width: 600, height: 960 };
 
 describe('fitPageToViewport', () => {
-  it('derives scale from the viewport: the page canvas fills the viewport width', () => {
+  it('fills the viewport width with the text frame, parking the rail off-screen', () => {
     const fit = fitPageToViewport(page, IPAD_PORTRAIT);
-    expect(fit.scale * page.canvas.width).toBeCloseTo(IPAD_PORTRAIT.width);
+    // The text frame (margin + measure + margin, = rail.x) fills the width…
+    expect(fit.scale * page.rail.x).toBeCloseTo(IPAD_PORTRAIT.width);
+    // …so the full canvas (frame + rail) overflows it: the rail is clipped.
+    expect(fit.scale * page.canvas.width).toBeGreaterThan(IPAD_PORTRAIT.width);
+    expect(fit.offsetX).toBe(0);
   });
 
   it('is a viewing operation only — the same Page object fits every viewport', () => {

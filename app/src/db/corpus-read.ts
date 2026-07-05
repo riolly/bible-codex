@@ -1,6 +1,7 @@
-import { and, asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, max } from 'drizzle-orm';
 import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
 
+import type { MenuBook } from '../model/book-groups';
 import type { Block, Token } from '../model/corpus';
 import * as schema from './corpus-schema';
 
@@ -19,6 +20,30 @@ type SyncSqliteDb = BaseSQLiteDatabase<'sync', any, any, any, any>;
 export interface Chapter {
   blocks: Block[];
   tokens: Token[];
+}
+
+/**
+ * The books the corpus can render, in canonical order, each with its chapter
+ * count (= the book's highest chapter number; chapter 0 front matter excluded).
+ * The book/chapter menu (#23) groups these by reading order (model/book-groups)
+ * and reads a translation only to bound the numbering — chapter counts are
+ * av11n-canonical, identical across the bundled translations.
+ */
+export function listBooks(db: SyncSqliteDb, translationAbbrev: string): MenuBook[] {
+  return db
+    .select({
+      slug: schema.book.slug,
+      name: schema.book.name,
+      chapters: max(schema.block.chapter),
+    })
+    .from(schema.book)
+    .innerJoin(schema.block, eq(schema.block.bookId, schema.book.id))
+    .innerJoin(schema.translation, eq(schema.block.translationId, schema.translation.id))
+    .where(eq(schema.translation.abbrev, translationAbbrev))
+    .groupBy(schema.book.id)
+    .orderBy(asc(schema.book.position))
+    .all()
+    .map((r) => ({ slug: r.slug, name: r.name, chapters: r.chapters ?? 0 }));
 }
 
 /**
