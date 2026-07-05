@@ -44,6 +44,11 @@ export function getBooks(db: CorpusDb, translationAbbrev: string): MenuBook[] {
   return listBooks(db, translationAbbrev);
 }
 
+/** A book's highest chapter number — the flip bound for Codex navigation (#9). */
+export function getChapterCount(db: CorpusDb, translationAbbrev: string, bookSlug: string): number {
+  return listBooks(db, translationAbbrev).find((b) => b.slug === bookSlug)?.chapters ?? 1;
+}
+
 /** Chapter read in render order (see corpus-read.ts for the seam contract). */
 export function getChapter(
   db: CorpusDb,

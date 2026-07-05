@@ -1,0 +1,64 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "72aefa21-6eed-48b2-a123-5f57f7da2bf7",
+  "prevIds": [
+    "96970caa-6689-4530-a605-3164777f048e"
+  ],
+  "ddl": [
+    {
+      "name": "reading_settings",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "reading_settings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'light'",
+      "generated": null,
+      "name": "theme",
+      "entityType": "columns",
+      "table": "reading_settings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "reading_settings"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "deleted_at",
+      "entityType": "columns",
+      "table": "reading_settings"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "reading_settings_pk",
+      "table": "reading_settings",
+      "entityType": "pks"
+    }
+  ],
+  "renames": []
+}

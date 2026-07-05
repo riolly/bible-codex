@@ -1,0 +1,1 @@
+ALTER TABLE `reading_settings` DROP COLUMN `scroll_mode`;

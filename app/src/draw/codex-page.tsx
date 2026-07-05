@@ -1,35 +1,61 @@
 /**
- * Codex-mode Page surface (#8, ADR-0016): paints the fixed page picture under
- * the letterbox transform; a transparent native ScrollView drives internal
- * overflow scroll (pillar 3) so the physics feel native while the canvas only
- * replays one recorded picture.
+ * Codex-mode Page surface (#8/#9, ADR-0016): paints the fixed page picture
+ * under the letterbox transform; a transparent native ScrollView drives
+ * internal overflow scroll (pillar 3) so the physics feel native while the
+ * canvas only replays one recorded picture.
  *
  * Rotation/device change = viewing operation: the same PageLayout re-fits via
- * fitPageToViewport — never a re-typeset (pillar 2).
+ * fitPageToViewport — never a re-typeset (pillar 2). A horizontal FLING is
+ * chapter navigation (flip = the codex gesture). Reading position is held as a
+ * canonical VERSE, not a pixel offset — seeked on mount, reported on scroll.
  */
 
 import { Canvas, Fill, Group, Picture } from '@shopify/react-native-skia';
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Directions, Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  runOnJS,
   useAnimatedScrollHandler,
   useDerivedValue,
   useSharedValue,
 } from 'react-native-reanimated';
 
-import { fitPageToViewport, type PageLayout, type ResolvedRules } from '../engine/layout';
+import {
+  codexOffsetForVerse,
+  codexVerseAtOffset,
+  fitPageToViewport,
+  type PageLayout,
+  type ResolvedRules,
+} from '../engine/layout';
 import type { DrawFonts } from './fonts';
 import { buildPagePicture } from './page-picture';
 import { PALETTE } from './style';
 import { maxScroll } from './transform';
 
+export type FlipDirection = 'prev' | 'next';
+
 export interface CodexPageProps {
   readonly page: PageLayout;
   readonly rules: ResolvedRules;
   readonly fonts: DrawFonts;
+  /** Flip = chapter navigation (previous/next Page). */
+  readonly onFlip?: (direction: FlipDirection) => void;
+  /** Lazily yields the canonical verse to seek on mount (carried across a
+   * rotation) — resolved once here, never read reactively. */
+  readonly getInitialAnchor?: () => number | null;
+  /** Reports the leading-edge verse as the reader scrolls. */
+  readonly onAnchorChange?: (verse: number) => void;
 }
 
-export function CodexPage({ page, rules, fonts }: CodexPageProps) {
+export function CodexPage({
+  page,
+  rules,
+  fonts,
+  onFlip,
+  getInitialAnchor,
+  onAnchorChange,
+}: CodexPageProps) {
   const viewport = useWindowDimensions();
   const fit = fitPageToViewport(page, viewport);
   // Picture is recorded in design px (em × fontSize); scale design px → dp.
@@ -39,9 +65,27 @@ export function CodexPage({ page, rules, fonts }: CodexPageProps) {
 
   const picture = useMemo(() => buildPagePicture(page, rules, fonts), [page, rules, fonts]);
 
-  const scrollY = useSharedValue(0);
+  // Resolved once at mount — the reading position enters as a verse, seeked here.
+  const [initialAnchorVerse] = useState(() => getInitialAnchor?.() ?? null);
+  const initialY = Math.min(
+    Math.max(0, codexOffsetForVerse(page, initialAnchorVerse ?? 0) * fit.scale),
+    overflow,
+  );
+
+  const lastVerse = useRef<number | null>(initialAnchorVerse);
+  const report = (y: number) => {
+    if (!onAnchorChange) return;
+    const verse = codexVerseAtOffset(page, y / fit.scale);
+    if (verse !== null && verse !== lastVerse.current) {
+      lastVerse.current = verse;
+      onAnchorChange(verse);
+    }
+  };
+
+  const scrollY = useSharedValue(initialY);
   const onScroll = useAnimatedScrollHandler((e) => {
     scrollY.value = e.contentOffset.y;
+    runOnJS(report)(e.contentOffset.y);
   });
   const transform = useDerivedValue(() => [
     { translateX: fit.offsetX },
@@ -49,23 +93,36 @@ export function CodexPage({ page, rules, fonts }: CodexPageProps) {
     { scale: pxScale },
   ]);
 
+  // Flip = chapter navigation: fling left → next Page, right → previous. A
+  // horizontal fling never fights the vertical overflow scroll.
+  const flingNext = Gesture.Fling()
+    .direction(Directions.LEFT)
+    .onEnd(() => onFlip && runOnJS(onFlip)('next'));
+  const flingPrev = Gesture.Fling()
+    .direction(Directions.RIGHT)
+    .onEnd(() => onFlip && runOnJS(onFlip)('prev'));
+  const flip = Gesture.Race(flingNext, flingPrev);
+
   return (
-    <View style={styles.root}>
-      <Canvas style={StyleSheet.absoluteFill}>
-        <Fill color={PALETTE.letterbox} />
-        <Group transform={transform}>
-          <Picture picture={picture} />
-        </Group>
-      </Canvas>
-      <Animated.ScrollView
-        style={StyleSheet.absoluteFill}
-        contentContainerStyle={{ height: viewport.height + overflow }}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        scrollEnabled={overflow > 0}
-        showsVerticalScrollIndicator={false}
-      />
-    </View>
+    <GestureDetector gesture={flip}>
+      <View style={styles.root}>
+        <Canvas style={StyleSheet.absoluteFill}>
+          <Fill color={PALETTE.letterbox} />
+          <Group transform={transform}>
+            <Picture picture={picture} />
+          </Group>
+        </Canvas>
+        <Animated.ScrollView
+          style={StyleSheet.absoluteFill}
+          contentContainerStyle={{ height: viewport.height + overflow }}
+          contentOffset={{ x: 0, y: initialY }}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          scrollEnabled={overflow > 0}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </GestureDetector>
   );
 }
 

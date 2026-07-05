@@ -17,10 +17,9 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 export const readingSettings = sqliteTable('reading_settings', {
   /** Client-generated UUID. */
   id: text('id').primaryKey(),
-  /** Global presentation, not part of the typography cascade (ADR-0004). */
-  scrollMode: text('scroll_mode', { enum: ['vertical', 'horizontal'] })
-    .notNull()
-    .default('vertical'),
+  // NB: no `scroll_mode` — reading mode is DERIVED from device orientation
+  // (ADR-0016), never a stored setting. The column was dropped in migration
+  // 20260705112511_drop_scroll_mode; do not reintroduce it.
   theme: text('theme').notNull().default('light'),
   updatedAt: integer('updated_at')
     .notNull()
