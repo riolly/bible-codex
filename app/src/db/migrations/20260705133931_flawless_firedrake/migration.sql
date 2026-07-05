@@ -34,7 +34,7 @@ CREATE TABLE `layout_preset` (
 	`rail_width` real
 );
 --> statement-breakpoint
-CREATE TABLE `reading_settings` (
+CREATE TABLE `__new_reading_settings` (
 	`id` text PRIMARY KEY,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`updated_at` integer DEFAULT (unixepoch()) NOT NULL,
@@ -43,4 +43,7 @@ CREATE TABLE `reading_settings` (
 	`active_preset_id` text
 );
 --> statement-breakpoint
+INSERT INTO `__new_reading_settings`("id", "created_at", "updated_at", "deleted_at", "theme", "active_preset_id") SELECT "id", (unixepoch()), "updated_at", "deleted_at", "theme", NULL FROM `reading_settings`;--> statement-breakpoint
+DROP TABLE `reading_settings`;--> statement-breakpoint
+ALTER TABLE `__new_reading_settings` RENAME TO `reading_settings`;--> statement-breakpoint
 CREATE UNIQUE INDEX `layout_override_scope_unique` ON `layout_override` (`preset_id`,`scope_kind`,`scope_value`) WHERE "layout_override"."deleted_at" is null;
