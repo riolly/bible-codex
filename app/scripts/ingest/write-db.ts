@@ -168,6 +168,32 @@ export function insertBookRows(
   }
 }
 
+/** One `versification_map` row, resolved to storage ids (native → canonical). */
+export interface VersificationInsert {
+  bookId: number;
+  srcChapter: number;
+  srcVerse: number;
+  canonChapter: number;
+  canonVerse: number;
+}
+
+/**
+ * Insert one translation's sparse native↔canonical divergence rows (#12). An
+ * av11n translation diverges nowhere, so `rows` is empty and this is a no-op —
+ * exactly the sparse-table contract (a row exists ONLY where native != canon).
+ */
+export function insertVersification(
+  db: CorpusDb,
+  translationId: number,
+  rows: readonly VersificationInsert[],
+): void {
+  for (const chunk of chunks([...rows], 2000)) {
+    db.insert(schema.versificationMap)
+      .values(chunk.map((r) => ({ translationId, ...r })))
+      .run();
+  }
+}
+
 function* chunks<T>(arr: T[], size: number): Generator<T[]> {
   for (let i = 0; i < arr.length; i += size) yield arr.slice(i, i + size);
 }

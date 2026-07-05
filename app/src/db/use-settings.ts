@@ -23,6 +23,8 @@ export interface ReadingSettings {
   readonly ready: boolean;
   readonly theme: Theme;
   readonly palette: Palette;
+  /** Durable translation choice (abbrev) that seeds the reader on cold open (#12). */
+  readonly activeTranslation: string;
   /** All named presets, for the adjust panel's preset picker. */
   readonly presets: readonly LayoutPreset[];
   readonly activePreset: LayoutPreset | null;
@@ -63,6 +65,7 @@ export function useReadingSettings(): ReadingSettings {
     ready: settingsRow !== null,
     theme,
     palette: THEMES[theme],
+    activeTranslation: settingsRow?.activeTranslation ?? 'KJV',
     presets: presetRows,
     activePreset,
     rulesFor,

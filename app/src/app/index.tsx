@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getBooks, getChapter, getChapterCount, openCorpus, type CorpusDb } from '@/db/corpus';
+import { setActiveTranslation } from '@/db/settings-write';
 import { useReadingSettings } from '@/db/use-settings';
 import { CodexPage, type FlipDirection } from '@/draw/codex-page';
 import { useCardoFonts } from '@/draw/fonts';
@@ -13,6 +14,7 @@ import { layoutCodexPage, layoutScrollColumns, readingModeForViewport } from '@/
 import { useReadingPosition } from '@/store/reading-position';
 import { useUiStore } from '@/store/ui-store';
 import { AdjustPanelContainer } from '@/ui/adjust-panel-container';
+import { TranslationToggle, type Translation } from '@/ui/translation-toggle';
 
 // The reader — the app's home surface (#10). It renders whatever the SINGLE
 // current-position source holds (store/reading-position), so both navigation
@@ -52,23 +54,28 @@ export default function Reader() {
     [books, book],
   );
 
-  // The reading position also carries a canonical VERSE anchor (ADR-0016 / #14)
-  // — the pixel offset is never persisted. It is stamped with the passage it
-  // belongs to, so it survives a rotation (Codex⇄Scroll, same passage) yet
-  // yields the chapter head on a flip or a jump to a new passage.
+  // The Skia surface is KEYED by passage+translation, so any change (flip,
+  // rotation, translation switch) remounts it with fresh text.
   const passageId = `${translation}:${book}:${chapter}`;
+  // The reading position also carries a canonical VERSE anchor (ADR-0016 / #14)
+  // — the pixel offset is never persisted. Its identity is CANONICAL
+  // (book:chapter, translation-free): token.verse is stored canonical (av11n),
+  // so the same verse ports directly across the bundled translations. That lets
+  // the anchor survive a rotation AND a KJV⇄BSB switch (same canonical passage,
+  // ADR-0012), while a flip or a jump to a new chapter resets it to the head.
+  const anchorId = `${book}:${chapter}`;
   const anchor = useRef<{ id: string; verse: number } | null>(null);
   const onAnchorChange = useCallback(
     (verse: number) => {
-      anchor.current = { id: passageId, verse };
+      anchor.current = { id: anchorId, verse };
     },
-    [passageId],
+    [anchorId],
   );
   // A lazy getter, not a live read: the surface resolves it once at mount, so
   // the parent never touches ref.current during render.
   const getInitialAnchor = useCallback(
-    () => (anchor.current?.id === passageId ? anchor.current.verse : null),
-    [passageId],
+    () => (anchor.current?.id === anchorId ? anchor.current.verse : null),
+    [anchorId],
   );
 
   const chapterCount = useMemo(
@@ -91,7 +98,31 @@ export default function Reader() {
   // in the hook), NOT the settings object — that literal is rebuilt every render
   // and would defeat this memo, re-shaping the Skia picture each frame.
   const settings = useReadingSettings();
-  const { rulesFor, palette } = settings;
+  const { rulesFor, palette, activeTranslation, ready: settingsReady } = settings;
+
+  // Cold-open seed (#12): reopen in the last-chosen translation. One-shot — once
+  // the durable settings row resolves, adopt its translation and then step back;
+  // later toggles drive the store directly and must not be overwritten here.
+  const translationSeeded = useRef(false);
+  useEffect(() => {
+    if (!settingsReady || translationSeeded.current) return;
+    translationSeeded.current = true;
+    const p = useReadingPosition.getState().position;
+    if (activeTranslation !== p.translation) goTo({ ...p, translation: activeTranslation });
+  }, [settingsReady, activeTranslation, goTo]);
+
+  // Switch translation in place (#12): re-typeset the SAME passage under the new
+  // translation (book+chapter kept; the canonical verse anchor ports across),
+  // and persist the choice so a cold open reopens here. Layout-adjust settings
+  // are canonical-keyed, so they survive the switch untouched.
+  const onChangeTranslation = useCallback(
+    (next: Translation) => {
+      if (next === translation) return;
+      goTo({ translation: next, book, chapter });
+      void setActiveTranslation(next);
+    },
+    [translation, book, chapter, goTo],
+  );
   const rules = useMemo(
     () => rulesFor({ genre: 'prose', role: null, bookSlug: book }),
     [rulesFor, book],
@@ -150,16 +181,19 @@ export default function Reader() {
         <View style={[styles.center, { backgroundColor: palette.letterbox }]} />
       )}
 
-      {/* Position affordance: reflects where the reader is, and opens the
-          picker for random access. Kept mounted even on load error so
-          navigation stays reachable. */}
+      {/* Position affordance: the book/chapter opens the picker (random access);
+          the translation toggle switches in place (#12). Two separate touch
+          targets in one pill. Kept mounted even on load error so navigation
+          stays reachable. */}
       <SafeAreaView edges={['top']} style={styles.headerSafe} pointerEvents="box-none">
-        <Pressable style={styles.header} onPress={() => router.push('/picker')}>
-          <Text style={styles.headerTitle}>
-            {bookName} {chapter}
-          </Text>
-          <Text style={styles.headerTranslation}>{translation}</Text>
-        </Pressable>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.push('/picker')} hitSlop={8}>
+            <Text style={styles.headerTitle}>
+              {bookName} {chapter}
+            </Text>
+          </Pressable>
+          <TranslationToggle value={translation} onChange={onChangeTranslation} variant="dark" />
+        </View>
       </SafeAreaView>
 
       {/* Layout-adjust affordance (#11): opens the preset/knob/theme panel. */}
@@ -199,7 +233,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(34,30,25,0.55)',
   },
   headerTitle: { fontSize: 15, color: PALETTE.parchment, letterSpacing: 0.3 },
-  headerTranslation: { fontSize: 11, letterSpacing: 1, color: PALETTE.gilt },
 
   adjustBtn: {
     position: 'absolute',

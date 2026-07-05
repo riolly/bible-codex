@@ -1,0 +1,1 @@
+ALTER TABLE `reading_settings` ADD `active_translation` text DEFAULT 'KJV' NOT NULL;
