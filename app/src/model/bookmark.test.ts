@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { DEFAULT_POSITION, type ReadingPosition } from './reading-position';
-import {
-  bookmarkFromPosition,
-  planBookmarkWrite,
-  positionForBookmark,
-  type Bookmark,
-} from './bookmark';
+import { bookmarkFromPosition, positionForBookmark, type Bookmark } from './bookmark';
 
 const johnPos: ReadingPosition = { translation: 'BSB', book: 'John', chapter: 3 };
 const johnMark: Bookmark = { bookSlug: 'John', chapter: 3, verse: 16 };
@@ -45,16 +40,5 @@ describe('positionForBookmark', () => {
     expect(back.chapter).toBe(johnPos.chapter);
     // verse survives the round trip on the bookmark, not on the position
     expect(bookmarkFromPosition(back, mark.verse).verse).toBe(16);
-  });
-});
-
-describe('planBookmarkWrite', () => {
-  it('updates the existing live row — never inserts a second bookmark per book', () => {
-    // AC: re-reading a book updates the existing row (one live bookmark per book).
-    expect(planBookmarkWrite('row-abc')).toEqual({ op: 'update', id: 'row-abc' });
-  });
-
-  it('inserts when the book has no live bookmark yet', () => {
-    expect(planBookmarkWrite(null)).toEqual({ op: 'insert' });
   });
 });

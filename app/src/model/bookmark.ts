@@ -42,16 +42,3 @@ export function bookmarkFromPosition(position: ReadingPosition, verse: number): 
 export function positionForBookmark(bookmark: Bookmark, translation: string): ReadingPosition {
   return { translation, book: bookmark.bookSlug, chapter: bookmark.chapter };
 }
-
-/**
- * The write a save resolves to. An existing live row for the book is UPDATED;
- * only a book with no live bookmark INSERTS — never a second live row per book
- * (ADR-0012 one-per-book, enforced too by the partial unique index).
- */
-export type BookmarkWrite =
-  | { readonly op: 'update'; readonly id: string }
-  | { readonly op: 'insert' };
-
-export function planBookmarkWrite(existingLiveId: string | null): BookmarkWrite {
-  return existingLiveId ? { op: 'update', id: existingLiveId } : { op: 'insert' };
-}
