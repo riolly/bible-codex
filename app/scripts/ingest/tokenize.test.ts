@@ -57,4 +57,41 @@ describe('registered tokenization policy (ADR-0014)', () => {
     }
     expect(texts('Beth-el’s altar')).toEqual(['w:Beth-el’s', 'w:altar']);
   });
+
+  it('combining marks bind to their base word, never split off as punct (ADR-0014 v1.1)', () => {
+    // Greek polytonic (NFC-composed by ingest before this runs) — precomposed,
+    // one word regardless.
+    expect(texts('ἐν ἀρχῇ ἦν'.normalize('NFC'))).toEqual(['w:ἐν', 'w:ἀρχῇ', 'w:ἦν']);
+    // A raw base + combining mark (tokenize itself does NOT normalize) stays
+    // ONE word — proves the mark binds rather than splitting into punct.
+    const raw = 'a\u0300b'; // a + combining grave + b
+    expect(tokenize(raw)).toEqual([{ kind: 'word', text: raw }]);
+    // Hebrew vowel points (category M, no canonical composition) — the whole
+    // pointed word is ONE token, points intact.
+    const heb = 'בְּרֵאשִׁית'.normalize('NFC');
+    expect(tokenize(heb)).toEqual([{ kind: 'word', text: heb }]);
+    expect(texts(`${heb} בָּרָא`.normalize('NFC'))).toEqual([`w:${heb}`, 'w:בָּרָא'.normalize('NFC')]);
+  });
+
+  it('an ORPHAN combining mark (no base before it) falls to punct, never vanishes', () => {
+    // A mark with no preceding base matches neither the word branch (needs an
+    // alphanumeric start) nor a space — it must land as punct so the token
+    // stream still COVERS every non-space character (no silent, uncounted drop).
+    expect(tokenize('́abc')).toEqual([
+      { kind: 'punct', text: '́' }, // leading mark
+      { kind: 'word', text: 'abc' },
+    ]);
+    expect(tokenize('.́x')).toEqual([
+      { kind: 'punct', text: '.́' }, // mark after punct joins the punct run
+      { kind: 'word', text: 'x' },
+    ]);
+    expect(tokenize('ְְ')).toEqual([{ kind: 'punct', text: 'ְְ' }]); // lone marks
+    // coverage: concatenated token text == input minus whitespace
+    for (const s of ['́abc', '.́x', 'word ְhere', 'àb']) {
+      const covered = tokenize(s)
+        .map((t) => t.text)
+        .join('');
+      expect(covered).toBe(s.replace(/\s+/g, ''));
+    }
+  });
 });

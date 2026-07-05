@@ -61,6 +61,33 @@ title) keeps its verse and word indexes — otherwise that verse would vanish fr
 translation and be unanchorable. Unversed headings (Psalm titles, `\s`, `\mt`, `\qa`) still
 carry `verse = NULL`.
 
+## Amendment v1.1 — Unicode combining marks bind to their base word (2026-07-05, issue #25)
+
+Reviewing the Codex-mode draw layer (#24) surfaced two Unicode gaps that block the
+Greek/Hebrew translation-corpus milestone. Both are fixed at ingest, **before** any non-Latin
+anchor is minted, so — like the v1 departures above — no migration is incurred. The English
+(KJV/BSB) corpus carries no combining marks, so every existing anchor is byte-for-byte
+unchanged (the golden and adversarial fixtures pass untouched).
+
+1. **NFC at ingest** (`app/scripts/ingest/normalize.ts`, applied to each text run before
+   `tokenize`). Sources arrive canonically decomposed (Greek polytonic, and Hebrew is
+   *frequently* decomposed). NFC makes stored token text canonical, and makes the draw layer's
+   cmap-advance measure (`app/src/draw/fonts.ts`) agree with the shaped glyph run: e.g. `ὶ`
+   (U+1F76) sums to 651 font units precomposed but 656 decomposed (base + zero-advance mark),
+   a per-vowel drift that accumulates *within* a word and shifts line breaks on the fixed page.
+
+2. **Combining marks are part of a word** (rule 1, above). A combining mark is Unicode category
+   `M`, which the old punct branch (`[^\s\p{L}\p{N}]+`) captured — splitting a decomposed
+   accent or a Hebrew vowel point off its base into a spurious punct token. Since Hebrew points
+   have **no** canonical precomposed form, NFC alone cannot rescue them; the tokenizer must bind
+   `\p{M}` to the preceding base. A word therefore now *begins* alphanumeric but may *end* on a
+   combining mark. Guarded by the adversarial `tokenize.test.ts` and `normalize.test.ts` cases.
+
+Still out of scope (unchanged): Phase-3 original-language segmentation, outsourced to external
+per-occurrence ids ([ADR-0007](0007-original-word-hub-is-a-morpheme-grained-externally-keyed-bridge.md)).
+The measure-vs-shape parity assertion belongs to the Skia runtime (jest/device) suite, not the
+Skia-free ingest tests.
+
 ## Consequences
 
 - Scope: **translation corpora only.** Phase-3 original-language segmentation is outsourced to
