@@ -16,6 +16,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: [
+      'src/backup/**/*.test.ts',
       'src/db/**/*.test.ts',
       'src/draw/**/*.test.ts',
       'src/engine/**/*.test.ts',

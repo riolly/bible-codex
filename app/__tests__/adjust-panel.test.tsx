@@ -26,6 +26,8 @@ function props(over: Partial<AdjustPanelProps> = {}): AdjustPanelProps {
     onLineHeight: jest.fn(),
     onMeasure: jest.fn(),
     onMargin: jest.fn(),
+    onExport: jest.fn(),
+    onImport: jest.fn(),
     ...over,
   };
 }
@@ -69,5 +71,15 @@ describe('AdjustPanel', () => {
     await render(<AdjustPanel {...props({ onSelectPreset })} />);
     fireEvent.press(screen.getByText('Large Print'));
     expect(onSelectPreset).toHaveBeenCalledWith('b');
+  });
+
+  it('the Data buttons fire export and import (#13)', async () => {
+    const onExport = jest.fn();
+    const onImport = jest.fn();
+    await render(<AdjustPanel {...props({ onExport, onImport })} />);
+    fireEvent.press(screen.getByLabelText('Export'));
+    fireEvent.press(screen.getByLabelText('Import'));
+    expect(onExport).toHaveBeenCalledTimes(1);
+    expect(onImport).toHaveBeenCalledTimes(1);
   });
 });
