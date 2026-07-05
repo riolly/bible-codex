@@ -1,8 +1,9 @@
 import { drizzle, type ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { importDatabaseFromAssetAsync, openDatabaseSync } from 'expo-sqlite';
 
+import type { MenuBook } from '../model/book-groups';
 import * as schema from './corpus-schema';
-import { readChapter, type Chapter } from './corpus-read';
+import { listBooks, readChapter, type Chapter } from './corpus-read';
 import { CORPUS_DIR } from './paths';
 
 /**
@@ -36,6 +37,11 @@ export async function openCorpus(): Promise<CorpusDb> {
   db.execSync('PRAGMA query_only = 1'); // corpus is read-only by contract
   corpus = drizzle(db, { schema });
   return corpus;
+}
+
+/** The renderable books with chapter counts, for the #23 book/chapter menu. */
+export function getBooks(db: CorpusDb, translationAbbrev: string): MenuBook[] {
+  return listBooks(db, translationAbbrev);
 }
 
 /** Chapter read in render order (see corpus-read.ts for the seam contract). */
