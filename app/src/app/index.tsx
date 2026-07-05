@@ -31,11 +31,14 @@ export default function Reader() {
 
   const error = dbError ?? fontError;
 
+  // Book list for the current translation — queried once per (db, translation),
+  // not on every chapter/book move within a translation.
+  const books = useMemo(() => (db ? getBooks(db, translation) : []), [db, translation]);
   // Display name for the current book (the store carries the canonical slug).
-  const bookName = useMemo(() => {
-    if (!db) return book;
-    return getBooks(db, translation).find((b) => b.slug === book)?.name ?? book;
-  }, [db, translation, book]);
+  const bookName = useMemo(
+    () => books.find((b) => b.slug === book)?.name ?? book,
+    [books, book],
+  );
 
   const rules = useMemo(() => resolveRules({ fontFamily: CARDO }), []);
   const page = useMemo(() => {
@@ -44,24 +47,21 @@ export default function Reader() {
     return layoutCodexPage({ chapter, blocks, tokens, rules, metrics: fonts.metrics });
   }, [db, fonts, rules, translation, book, chapter]);
 
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error}>load error: {error}</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.root}>
-      {page && fonts ? (
+      {error ? (
+        <View style={styles.center}>
+          <Text style={styles.error}>load error: {error}</Text>
+        </View>
+      ) : page && fonts ? (
         <CodexPage page={page} rules={rules} fonts={fonts} />
       ) : (
         <View style={styles.center} />
       )}
 
       {/* Position affordance: reflects where the reader is, and opens the
-          picker for random access. #9 will add the sequential flip gesture. */}
+          picker for random access. Kept mounted even on load error so
+          navigation stays reachable. #9 will add the sequential flip gesture. */}
       <SafeAreaView edges={['top']} style={styles.headerSafe} pointerEvents="box-none">
         <Pressable style={styles.header} onPress={() => router.push('/picker')}>
           <Text style={styles.headerTitle}>
