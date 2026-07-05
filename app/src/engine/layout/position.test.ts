@@ -4,9 +4,12 @@ import { layoutCodexPage } from './codex';
 import { fakeMetrics, miniChapter } from './fixtures';
 import {
   codexOffsetForVerse,
+  codexVerseAnchors,
   codexVerseAtOffset,
   scrollOffsetForVerse,
+  scrollVerseAnchors,
   scrollVerseAtOffset,
+  verseAtAnchorOffset,
 } from './position';
 import { resolveRules } from './rules';
 import { layoutScrollColumns } from './scroll';
@@ -68,5 +71,36 @@ describe('scroll position (horizontal)', () => {
 
   it('anchors the scroll origin to the first verse', () => {
     expect(scrollVerseAtOffset(scroll, 0, margin)).toBe(1);
+  });
+});
+
+// The draw layer builds the anchor table once per layout and reads it on every
+// scroll frame; these lock the shared hot-path primitive the surfaces depend on.
+describe('verse anchor table', () => {
+  it('codex anchors ascend by offset and hold one entry per verse', () => {
+    const anchors = codexVerseAnchors(page);
+    expect(anchors.length).toBeGreaterThan(0);
+    for (let i = 1; i < anchors.length; i++) {
+      expect(anchors[i].offset).toBeGreaterThanOrEqual(anchors[i - 1].offset);
+    }
+    expect(new Set(anchors.map((a) => a.verse)).size).toBe(anchors.length);
+  });
+
+  it('scroll anchors ascend by offset', () => {
+    const anchors = scrollVerseAnchors(scroll, rules.margin);
+    for (let i = 1; i < anchors.length; i++) {
+      expect(anchors[i].offset).toBeGreaterThanOrEqual(anchors[i - 1].offset);
+    }
+  });
+
+  it('reads back the same verse the table-free codex path yields', () => {
+    const anchors = codexVerseAnchors(page);
+    for (const offset of [0, codexOffsetForVerse(page, 2), codexOffsetForVerse(page, 3), 1e9]) {
+      expect(verseAtAnchorOffset(anchors, offset)).toBe(codexVerseAtOffset(page, offset));
+    }
+  });
+
+  it('returns null for an empty table', () => {
+    expect(verseAtAnchorOffset([], 0)).toBeNull();
   });
 });

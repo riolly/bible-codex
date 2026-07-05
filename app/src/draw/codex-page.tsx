@@ -11,19 +11,14 @@
  */
 
 import { Canvas, Fill, Group, Picture } from '@shopify/react-native-skia';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Directions, Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  runOnJS,
-  useAnimatedScrollHandler,
-  useDerivedValue,
-  useSharedValue,
-} from 'react-native-reanimated';
+import Animated, { runOnJS, useDerivedValue } from 'react-native-reanimated';
 
 import {
   codexOffsetForVerse,
-  codexVerseAtOffset,
+  codexVerseAnchors,
   fitPageToViewport,
   type PageLayout,
   type ResolvedRules,
@@ -32,6 +27,7 @@ import type { DrawFonts } from './fonts';
 import { buildPagePicture } from './page-picture';
 import { PALETTE } from './style';
 import { maxScroll } from './transform';
+import { useVerseAnchor } from './use-verse-anchor';
 
 export type FlipDirection = 'prev' | 'next';
 
@@ -65,28 +61,25 @@ export function CodexPage({
 
   const picture = useMemo(() => buildPagePicture(page, rules, fonts), [page, rules, fonts]);
 
-  // Resolved once at mount — the reading position enters as a verse, seeked here.
-  const [initialAnchorVerse] = useState(() => getInitialAnchor?.() ?? null);
-  const initialY = Math.min(
-    Math.max(0, codexOffsetForVerse(page, initialAnchorVerse ?? 0) * fit.scale),
+  // The reading position enters as a canonical verse; the shared hook seeds the
+  // scroll, seeks the native ScrollView on mount, and reports as the reader
+  // scrolls (see use-verse-anchor.ts).
+  const anchors = useMemo(() => codexVerseAnchors(page), [page]);
+  const {
+    initialOffset: initialY,
+    scrollPos: scrollY,
+    scrollRef,
+    onScroll,
+  } = useVerseAnchor({
+    anchors,
+    scale: fit.scale,
     overflow,
-  );
-
-  const lastVerse = useRef<number | null>(initialAnchorVerse);
-  const report = (y: number) => {
-    if (!onAnchorChange) return;
-    const verse = codexVerseAtOffset(page, y / fit.scale);
-    if (verse !== null && verse !== lastVerse.current) {
-      lastVerse.current = verse;
-      onAnchorChange(verse);
-    }
-  };
-
-  const scrollY = useSharedValue(initialY);
-  const onScroll = useAnimatedScrollHandler((e) => {
-    scrollY.value = e.contentOffset.y;
-    runOnJS(report)(e.contentOffset.y);
+    axis: 'y',
+    getInitialAnchor,
+    offsetForVerse: (verse) => codexOffsetForVerse(page, verse),
+    onAnchorChange,
   });
+
   const transform = useDerivedValue(() => [
     { translateX: fit.offsetX },
     { translateY: fit.offsetY - scrollY.value },
@@ -113,6 +106,7 @@ export function CodexPage({
           </Group>
         </Canvas>
         <Animated.ScrollView
+          ref={scrollRef}
           style={StyleSheet.absoluteFill}
           contentContainerStyle={{ height: viewport.height + overflow }}
           contentOffset={{ x: 0, y: initialY }}

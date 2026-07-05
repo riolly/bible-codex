@@ -11,6 +11,35 @@
 
 import type { Line, PageLayout, ScrollColumn, ScrollLayout } from './model';
 
+/**
+ * A monotonic offset→verse mark: the canvas-em `offset` (along the surface's
+ * scroll axis) at which `verse` becomes the leading verse. A layout's anchors
+ * are ascending by `offset`, so a seek/read is a scan over verses (tens), not
+ * over every token (hundreds) — the draw layer builds the table once per
+ * layout and reads it on every scroll frame.
+ */
+export interface VerseAnchor {
+  readonly offset: number;
+  readonly verse: number;
+}
+
+/**
+ * The verse anchored at canvas-em `offset`: the last anchor at/before it, with
+ * the first anchor as the at-origin fallback. Shared by both surfaces.
+ */
+export function verseAtAnchorOffset(
+  anchors: readonly VerseAnchor[],
+  offset: number,
+): number | null {
+  if (anchors.length === 0) return null;
+  let current = anchors[0].verse;
+  for (const anchor of anchors) {
+    if (anchor.offset > offset + 1e-6) break;
+    current = anchor.verse;
+  }
+  return current;
+}
+
 /** The first canonical verse a line introduces (null on heading-only lines). */
 function lineVerse(line: Line): number | null {
   for (const run of line.runs) {
@@ -49,20 +78,28 @@ export function codexOffsetForVerse(page: PageLayout, verse: number): number {
   return 0;
 }
 
-/** The verse anchored at canvas-em Y `offset`: the last verse-line at/above it. */
-export function codexVerseAtOffset(page: PageLayout, offset: number): number | null {
-  let current: number | null = null;
-  let first: number | null = null;
+/**
+ * Ascending verse anchors down a Codex page: the first line that introduces
+ * each verse, at its canvas-em Y. Within a verse the leading verse is constant,
+ * so one anchor per verse (its first line) suffices.
+ */
+export function codexVerseAnchors(page: PageLayout): VerseAnchor[] {
+  const anchors: VerseAnchor[] = [];
+  const seen = new Set<number>();
   for (const block of page.blocks) {
     for (const line of block.lines) {
       const verse = lineVerse(line);
-      if (verse === null) continue;
-      if (first === null) first = verse;
-      if (page.text.y + line.y <= offset + 1e-6) current = verse;
-      else return current ?? first;
+      if (verse === null || seen.has(verse)) continue;
+      seen.add(verse);
+      anchors.push({ offset: page.text.y + line.y, verse });
     }
   }
-  return current ?? first;
+  return anchors;
+}
+
+/** The verse anchored at canvas-em Y `offset`: the last verse-line at/above it. */
+export function codexVerseAtOffset(page: PageLayout, offset: number): number | null {
+  return verseAtAnchorOffset(codexVerseAnchors(page), offset);
 }
 
 // ── Scroll (horizontal) ──────────────────────────────────────────────────────
@@ -78,6 +115,20 @@ export function scrollOffsetForVerse(layout: ScrollLayout, verse: number, margin
   return 0;
 }
 
+/**
+ * Ascending verse anchors along the Scroll: each column's frame origin (its
+ * leading margin) paired with its leading (lowest) verse.
+ */
+export function scrollVerseAnchors(layout: ScrollLayout, marginEm: number): VerseAnchor[] {
+  const anchors: VerseAnchor[] = [];
+  for (const column of layout.columns) {
+    const verses = columnVerses(column);
+    if (verses.size === 0) continue;
+    anchors.push({ offset: column.x - marginEm, verse: Math.min(...verses) });
+  }
+  return anchors;
+}
+
 /** The verse anchored at canvas-em X `offset`: the first verse of the last
  * column at/left of it. */
 export function scrollVerseAtOffset(
@@ -85,15 +136,5 @@ export function scrollVerseAtOffset(
   offset: number,
   marginEm: number,
 ): number | null {
-  let current: number | null = null;
-  let first: number | null = null;
-  for (const column of layout.columns) {
-    const verses = columnVerses(column);
-    if (verses.size === 0) continue;
-    const verse = Math.min(...verses);
-    if (first === null) first = verse;
-    if (column.x - marginEm <= offset + 1e-6) current = verse;
-    else return current ?? first;
-  }
-  return current ?? first;
+  return verseAtAnchorOffset(scrollVerseAnchors(layout, marginEm), offset);
 }

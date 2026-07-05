@@ -3,7 +3,7 @@ import { importDatabaseFromAssetAsync, openDatabaseSync } from 'expo-sqlite';
 
 import type { MenuBook } from '../model/book-groups';
 import * as schema from './corpus-schema';
-import { listBooks, readChapter, type Chapter } from './corpus-read';
+import { chapterCount, listBooks, readChapter, type Chapter } from './corpus-read';
 import { CORPUS_DIR } from './paths';
 
 /**
@@ -46,7 +46,7 @@ export function getBooks(db: CorpusDb, translationAbbrev: string): MenuBook[] {
 
 /** A book's highest chapter number — the flip bound for Codex navigation (#9). */
 export function getChapterCount(db: CorpusDb, translationAbbrev: string, bookSlug: string): number {
-  return listBooks(db, translationAbbrev).find((b) => b.slug === bookSlug)?.chapters ?? 1;
+  return chapterCount(db, translationAbbrev, bookSlug);
 }
 
 /** Chapter read in render order (see corpus-read.ts for the seam contract). */

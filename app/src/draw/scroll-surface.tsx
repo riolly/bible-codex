@@ -11,18 +11,13 @@
  */
 
 import { Canvas, Fill, Group, Picture } from '@shopify/react-native-skia';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
-import Animated, {
-  runOnJS,
-  useAnimatedScrollHandler,
-  useDerivedValue,
-  useSharedValue,
-} from 'react-native-reanimated';
+import Animated, { useDerivedValue } from 'react-native-reanimated';
 
 import {
   scrollOffsetForVerse,
-  scrollVerseAtOffset,
+  scrollVerseAnchors,
   type ResolvedRules,
   type ScrollLayout,
 } from '../engine/layout';
@@ -30,6 +25,7 @@ import type { DrawFonts } from './fonts';
 import { buildScrollPicture } from './scroll-picture';
 import { PALETTE } from './style';
 import { maxScroll } from './transform';
+import { useVerseAnchor } from './use-verse-anchor';
 
 export interface ScrollSurfaceProps {
   readonly layout: ScrollLayout;
@@ -61,28 +57,25 @@ export function ScrollSurface({
 
   const picture = useMemo(() => buildScrollPicture(layout, rules, fonts), [layout, rules, fonts]);
 
-  // Resolved once at mount — the reading position enters as a verse, seeked here.
-  const [initialAnchorVerse] = useState(() => getInitialAnchor?.() ?? null);
-  const initialX = Math.min(
-    Math.max(0, scrollOffsetForVerse(layout, initialAnchorVerse ?? 0, rules.margin) * scale),
+  // The reading position enters as a canonical verse; the shared hook seeds the
+  // scroll, seeks the native ScrollView on mount, and reports as the reader
+  // scrolls (see use-verse-anchor.ts).
+  const anchors = useMemo(() => scrollVerseAnchors(layout, rules.margin), [layout, rules.margin]);
+  const {
+    initialOffset: initialX,
+    scrollPos: scrollX,
+    scrollRef,
+    onScroll,
+  } = useVerseAnchor({
+    anchors,
+    scale,
     overflow,
-  );
-
-  const lastVerse = useRef<number | null>(initialAnchorVerse);
-  const report = (x: number) => {
-    if (!onAnchorChange) return;
-    const verse = scrollVerseAtOffset(layout, x / scale, rules.margin);
-    if (verse !== null && verse !== lastVerse.current) {
-      lastVerse.current = verse;
-      onAnchorChange(verse);
-    }
-  };
-
-  const scrollX = useSharedValue(initialX);
-  const onScroll = useAnimatedScrollHandler((e) => {
-    scrollX.value = e.contentOffset.x;
-    runOnJS(report)(e.contentOffset.x);
+    axis: 'x',
+    getInitialAnchor,
+    offsetForVerse: (verse) => scrollOffsetForVerse(layout, verse, rules.margin),
+    onAnchorChange,
   });
+
   const transform = useDerivedValue(() => [
     { translateX: -scrollX.value },
     { scale: pxScale },
@@ -97,6 +90,7 @@ export function ScrollSurface({
         </Group>
       </Canvas>
       <Animated.ScrollView
+        ref={scrollRef}
         horizontal
         style={StyleSheet.absoluteFill}
         contentContainerStyle={{ width: viewport.width + overflow }}
