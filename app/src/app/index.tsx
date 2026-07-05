@@ -4,12 +4,15 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getBooks, getChapter, getChapterCount, openCorpus, type CorpusDb } from '@/db/corpus';
+import { useReadingBookmark, type PassageAnchor } from '@/db/use-bookmark';
 import { useReadingSettings } from '@/db/use-settings';
 import { CodexPage, type FlipDirection } from '@/draw/codex-page';
 import { useCardoFonts } from '@/draw/fonts';
 import { ScrollSurface } from '@/draw/scroll-surface';
 import { PALETTE } from '@/draw/style';
 import { layoutCodexPage, layoutScrollColumns, readingModeForViewport } from '@/engine/layout';
+import { bookmarkFromPosition } from '@/model/bookmark';
+import { positionKey } from '@/model/reading-position';
 import { useReadingPosition } from '@/store/reading-position';
 import { useUiStore } from '@/store/ui-store';
 import { AdjustPanelContainer } from '@/ui/adjust-panel-container';
@@ -56,13 +59,19 @@ export default function Reader() {
   // — the pixel offset is never persisted. It is stamped with the passage it
   // belongs to, so it survives a rotation (Codex⇄Scroll, same passage) yet
   // yields the chapter head on a flip or a jump to a new passage.
-  const passageId = `${translation}:${book}:${chapter}`;
-  const anchor = useRef<{ id: string; verse: number } | null>(null);
+  const passageId = positionKey(position);
+  const anchor = useRef<PassageAnchor | null>(null);
+  // The durable bookmark (#14): restores this same anchor + position on cold
+  // open and persists every settled verse. `persist` is a no-op until restore
+  // has run, so the cold-open default never clobbers the real last bookmark.
+  const persist = useReadingBookmark(anchor);
   const onAnchorChange = useCallback(
     (verse: number) => {
       anchor.current = { id: passageId, verse };
+      // Save the book's bookmark at verse grain — canonical-only, no pixels.
+      persist(bookmarkFromPosition(position, verse));
     },
-    [passageId],
+    [passageId, position, persist],
   );
   // A lazy getter, not a live read: the surface resolves it once at mount, so
   // the parent never touches ref.current during render.
