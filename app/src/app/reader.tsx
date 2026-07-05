@@ -42,9 +42,13 @@ export default function Reader() {
   const settings = useReadingSettings();
   // A Codex Page is fixed geometry (ADR-0016): resolve ONE rule set for the
   // whole chapter at book grain (base preset + any per-book override).
+  // Depend on the stable `rulesFor` (memoized in the hook), NOT the settings
+  // object — that literal is rebuilt every render and would defeat this memo,
+  // handing CodexPage a fresh rules ref and re-shaping the Skia picture each render.
+  const { rulesFor } = settings;
   const rules = useMemo(
-    () => settings.rulesFor({ genre: 'prose', role: null, bookSlug: book }),
-    [settings, book],
+    () => rulesFor({ genre: 'prose', role: null, bookSlug: book }),
+    [rulesFor, book],
   );
 
   const page = useMemo(() => {

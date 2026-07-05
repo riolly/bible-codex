@@ -102,11 +102,11 @@ export const layoutOverride = sqliteTable(
     ...knobs,
   },
   (table) => [
-    uniqueIndex('layout_override_scope_unique').on(
-      table.presetId,
-      table.scopeKind,
-      table.scopeValue,
-    ),
+    // Partial: only LIVE rows are unique per scope, so a soft-deleted override
+    // (tombstone kept for sync) does not block re-creating the same scope.
+    uniqueIndex('layout_override_scope_unique')
+      .on(table.presetId, table.scopeKind, table.scopeValue)
+      .where(sql`${table.deletedAt} is null`),
   ],
 );
 

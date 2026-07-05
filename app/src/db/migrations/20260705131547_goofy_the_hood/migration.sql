@@ -43,4 +43,4 @@ CREATE TABLE `reading_settings` (
 	`active_preset_id` text
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `layout_override_scope_unique` ON `layout_override` (`preset_id`,`scope_kind`,`scope_value`);
+CREATE UNIQUE INDEX `layout_override_scope_unique` ON `layout_override` (`preset_id`,`scope_kind`,`scope_value`) WHERE "layout_override"."deleted_at" is null;

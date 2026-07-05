@@ -38,8 +38,25 @@ export async function loadSettingsRow() {
 /**
  * Idempotently seed the named presets + the global settings row on first
  * launch. Safe to call every boot: it no-ops once a live settings row exists.
+ *
+ * Single-flight: `useReadingSettings` mounts in more than one place at once (the
+ * reader + the adjust-panel container), and React double-invokes effects in
+ * dev. Without a shared in-flight guard the concurrent callers each read "no
+ * row yet" before any insert commits and seed a duplicate set (6 presets, 2
+ * settings rows). We memoize the first call's promise; a failure clears it so a
+ * later boot can retry.
  */
-export async function ensureSeed(): Promise<void> {
+let seedInFlight: Promise<void> | null = null;
+
+export function ensureSeed(): Promise<void> {
+  seedInFlight ??= seedOnce().catch((err) => {
+    seedInFlight = null;
+    throw err;
+  });
+  return seedInFlight;
+}
+
+async function seedOnce(): Promise<void> {
   if (await loadSettingsRow()) return;
   const t = now();
   const ids = SEED_PRESETS.map(() => uuidv7());

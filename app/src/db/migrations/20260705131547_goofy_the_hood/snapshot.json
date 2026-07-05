@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "c7efe1ec-5a99-450d-8a54-c491c98a702c",
+  "id": "3395cf51-23a6-4840-95fb-3da365fc17fa",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -421,7 +421,7 @@
         }
       ],
       "isUnique": true,
-      "where": null,
+      "where": "\"layout_override\".\"deleted_at\" is null",
       "origin": "manual",
       "name": "layout_override_scope_unique",
       "entityType": "indexes",
