@@ -14,19 +14,45 @@
 import { VERSE_NUM_SCALE } from '../engine/layout';
 import type { BlockRole, Genre } from '../model/corpus';
 
-/** The manuscript palette: warm ink on parchment, gilt ornaments. */
-export const PALETTE = {
-  /** Body ink — warm near-black. */
-  ink: '#2A2520',
+/** The manuscript palette — resolved per theme (light/dark). Same warm-ink /
+ * gilt-ornament language in both; only the values invert. */
+export interface Palette {
+  /** Body ink. */
+  readonly ink: string;
   /** Gilt — verse-number ornaments, acrostic letters, the versal. */
-  gilt: '#A8842C',
+  readonly gilt: string;
   /** Muted ink — superscriptions and secondary headings. */
-  muted: '#6D6156',
+  readonly muted: string;
   /** Page parchment. */
-  parchment: '#F6F0E4',
+  readonly parchment: string;
   /** Letterbox bands around the fixed page canvas. */
-  letterbox: '#221E19',
+  readonly letterbox: string;
+}
+
+/** The reading theme — a GLOBAL setting (ADR-0004), not a cascade knob. */
+export type Theme = 'light' | 'dark';
+
+export const THEMES: Record<Theme, Palette> = {
+  /** Warm ink on parchment, gilt ornaments. */
+  light: {
+    ink: '#2A2520',
+    gilt: '#A8842C',
+    muted: '#6D6156',
+    parchment: '#F6F0E4',
+    letterbox: '#221E19',
+  },
+  /** The night codex: warm-light ink on a dark parchment, brighter gilt. */
+  dark: {
+    ink: '#E7DDCB',
+    gilt: '#C9A24B',
+    muted: '#9A8E7C',
+    parchment: '#211D18',
+    letterbox: '#0E0C0A',
+  },
 } as const;
+
+/** The default (light) palette — the historical `PALETTE` export. */
+export const PALETTE: Palette = THEMES.light;
 
 /** Geometry-preserving ink treatment of one block's tokens. */
 export interface BlockStyle {
@@ -35,25 +61,38 @@ export interface BlockStyle {
   readonly italic: boolean;
 }
 
-const BODY: BlockStyle = { color: PALETTE.ink, bold: false, italic: false };
+/** Role treatments that differ from the plain-body text, built for a palette. */
+function roleStyle(p: Palette, role: BlockRole): BlockStyle | undefined {
+  switch (role) {
+    case 'book_title':
+    case 'major_section':
+    case 'section':
+      return { color: p.ink, bold: true, italic: false };
+    case 'psalm_title':
+      return { color: p.muted, bold: false, italic: true };
+    case 'acrostic':
+      return { color: p.gilt, bold: true, italic: false };
+    case 'refrain':
+      return { color: p.ink, bold: false, italic: true };
+    default:
+      return undefined;
+  }
+}
 
-/** Role treatments that differ from the body text. */
-const ROLE_STYLE: Partial<Record<BlockRole, BlockStyle>> = {
-  book_title: { color: PALETTE.ink, bold: true, italic: false },
-  major_section: { color: PALETTE.ink, bold: true, italic: false },
-  section: { color: PALETTE.ink, bold: true, italic: false },
-  psalm_title: { color: PALETTE.muted, bold: false, italic: true },
-  acrostic: { color: PALETTE.gilt, bold: true, italic: false },
-  refrain: { color: PALETTE.ink, bold: false, italic: true },
-};
-
-/** Every heading must read as one — an unregistered role falls back here,
- * never silently to prose. */
-const HEADING_FALLBACK: BlockStyle = { color: PALETTE.muted, bold: true, italic: false };
-
-export function styleForBlock(genre: Genre, role: BlockRole | null): BlockStyle {
-  if (role && ROLE_STYLE[role]) return ROLE_STYLE[role];
-  return genre === 'heading' ? HEADING_FALLBACK : BODY;
+export function styleForBlock(
+  genre: Genre,
+  role: BlockRole | null,
+  palette: Palette = PALETTE,
+): BlockStyle {
+  if (role) {
+    const style = roleStyle(palette, role);
+    if (style) return style;
+  }
+  // Every heading must read as one — an unregistered role falls back to a
+  // heading treatment, never silently to prose.
+  return genre === 'heading'
+    ? { color: palette.muted, bold: true, italic: false }
+    : { color: palette.ink, bold: false, italic: false };
 }
 
 /** The gilt superscript verse-number ornament (ADR-0016 look). */
@@ -65,6 +104,6 @@ export interface VerseNumStyle {
   readonly raiseEm: number;
 }
 
-export function verseNumStyle(): VerseNumStyle {
-  return { color: PALETTE.gilt, scale: VERSE_NUM_SCALE, raiseEm: 0.33 };
+export function verseNumStyle(palette: Palette = PALETTE): VerseNumStyle {
+  return { color: palette.gilt, scale: VERSE_NUM_SCALE, raiseEm: 0.33 };
 }

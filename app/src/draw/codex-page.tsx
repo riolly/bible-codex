@@ -20,16 +20,18 @@ import Animated, {
 import { fitPageToViewport, type PageLayout, type ResolvedRules } from '../engine/layout';
 import type { DrawFonts } from './fonts';
 import { buildPagePicture } from './page-picture';
-import { PALETTE } from './style';
+import { PALETTE, type Palette } from './style';
 import { maxScroll } from './transform';
 
 export interface CodexPageProps {
   readonly page: PageLayout;
   readonly rules: ResolvedRules;
   readonly fonts: DrawFonts;
+  /** Theme palette (ADR-0004 global setting); defaults to the light manuscript. */
+  readonly palette?: Palette;
 }
 
-export function CodexPage({ page, rules, fonts }: CodexPageProps) {
+export function CodexPage({ page, rules, fonts, palette = PALETTE }: CodexPageProps) {
   const viewport = useWindowDimensions();
   const fit = fitPageToViewport(page, viewport);
   // Picture is recorded in design px (em × fontSize); scale design px → dp.
@@ -37,7 +39,10 @@ export function CodexPage({ page, rules, fonts }: CodexPageProps) {
   const pageHeightDp = page.canvas.height * fit.scale;
   const overflow = maxScroll(pageHeightDp, viewport.height);
 
-  const picture = useMemo(() => buildPagePicture(page, rules, fonts), [page, rules, fonts]);
+  const picture = useMemo(
+    () => buildPagePicture(page, rules, fonts, palette),
+    [page, rules, fonts, palette],
+  );
 
   const scrollY = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((e) => {
@@ -50,9 +55,9 @@ export function CodexPage({ page, rules, fonts }: CodexPageProps) {
   ]);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: palette.letterbox }]}>
       <Canvas style={StyleSheet.absoluteFill}>
-        <Fill color={PALETTE.letterbox} />
+        <Fill color={palette.letterbox} />
         <Group transform={transform}>
           <Picture picture={picture} />
         </Group>

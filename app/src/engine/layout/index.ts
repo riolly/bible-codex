@@ -5,6 +5,12 @@
  * output is ephemeral and rebuildable, never persisted (ADR-0004).
  */
 
+export {
+  resolveCascade,
+  type CascadeContext,
+  type LayoutOverride,
+  type ScopeKind,
+} from './cascade';
 export { layoutCodexPage, type CodexPageInput } from './codex';
 export { fitPageToViewport, type PageFit } from './fit';
 export type {

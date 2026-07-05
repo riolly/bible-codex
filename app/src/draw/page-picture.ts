@@ -24,7 +24,7 @@ import {
 import type { PageLayout, ResolvedRules } from '../engine/layout';
 import { versalSpec } from './drop-cap';
 import { CARDO, type DrawFonts } from './fonts';
-import { PALETTE, styleForBlock, verseNumStyle, type BlockStyle } from './style';
+import { PALETTE, styleForBlock, verseNumStyle, type BlockStyle, type Palette } from './style';
 
 /** Cardo cap-height ≈ 0.61em — sizes the versal glyph to fill its box. */
 const CAP_RATIO = 0.61;
@@ -41,6 +41,7 @@ export function buildPagePicture(
   page: PageLayout,
   rules: ResolvedRules,
   fonts: DrawFonts,
+  palette: Palette = PALETTE,
 ): SkPicture {
   const S = rules.fontSize; // design px per em
   const recorder = Skia.PictureRecorder();
@@ -50,7 +51,7 @@ export function buildPagePicture(
 
   // Parchment ground.
   const bg = Skia.Paint();
-  bg.setColor(Skia.Color(PALETTE.parchment));
+  bg.setColor(Skia.Color(palette.parchment));
   canvas.drawRect(Skia.XYWHRect(0, 0, page.canvas.width * S, page.canvas.height * S), bg);
 
   const paraCache = new Map<string, SkParagraph>();
@@ -95,10 +96,10 @@ export function buildPagePicture(
   // Baseline inside a line box: center the font's natural extent in lineHeight.
   const { ascent, descent } = fonts.metricsEm; // ascent < 0
   const leadingGapEm = (rules.lineHeight - (descent - ascent)) / 2;
-  const vn = verseNumStyle();
+  const vn = verseNumStyle(palette);
 
   for (const block of page.blocks) {
-    const style: BlockStyle = styleForBlock(block.genre, block.role);
+    const style: BlockStyle = styleForBlock(block.genre, block.role, palette);
     for (const line of block.lines) {
       // Line.y is text-region-absolute (the engine's running cursor) — block.y
       // is already inside it.
@@ -136,7 +137,7 @@ export function buildPagePicture(
     let fontPx = (versal.heightEm * S) / CAP_RATIO;
     let spec: ParaSpec = {
       text: versal.letter,
-      color: PALETTE.gilt,
+      color: palette.gilt,
       bold: false,
       italic: false,
       sizePx: fontPx,
