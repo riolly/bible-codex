@@ -33,7 +33,8 @@ describe('viewport variance — Codex (portrait)', () => {
     const scales = PORTRAIT.map((vp) => {
       const fit = fitPageToViewport(page, vp);
       expect(fit.scale).toBeGreaterThan(0);
-      expect(fit.scale * page.canvas.width).toBeCloseTo(vp.width);
+      // The text frame (not the full canvas) fills the width; the rail parks.
+      expect(fit.scale * page.rail.x).toBeCloseTo(vp.width);
       expect(fit.offsetY).toBeGreaterThanOrEqual(0);
       return fit.scale;
     });
