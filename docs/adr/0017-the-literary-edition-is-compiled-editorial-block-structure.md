@@ -20,9 +20,14 @@ The shape:
    **discreet margin chapter marker** shows at swallowed chapter starts. Books without curated
    data fall back to chapter-pages inside the literary edition.
 3. **Block-grain vocabulary only (v1):** re-genre (prose ↔ poetry), indent level, split/merge
-   blocks, insert heading, assign role, group pages. Span-grain emphasis (bold/italic/color on
-   word ranges) is **deferred** — recorded in `WISHLIST.md` — because word-grain coordinates are
-   translation-bound (double curation) and it duplicates Mark-rendering machinery.
+   blocks, insert heading, assign role, group pages, plus two **ornament ops** (added by
+   [ADR-0018](0018-typography-is-shipped-preset-personalities.md)): **versal placement** (a
+   significant narrative turn — Noah, Abraham; the default versal is book-start only) and
+   **section break** (a divider before a block). Ornament *placement* is editorial (this
+   edition); ornament *style* is typographic (the preset). Span-grain emphasis
+   (bold/italic/color on word ranges) is **deferred** — recorded in `WISHLIST.md` — because
+   word-grain coordinates are translation-bound (double curation) and it duplicates
+   Mark-rendering machinery.
 4. **Sub-verse split points are translation-bound, and the data says so.** Verse-grain ops are
    canonical (one sidecar serves KJV and BSB); a mid-verse split carries a **per-translation
    word-index map** (`{verse, at: {KJV: n, BSB: m}}`). A translation with no authored split
@@ -76,9 +81,10 @@ The shape:
   the literary page containing it) — a lookup, since pages carry verse ranges.
 - The **dev editor** is the single biggest work item in the track (accepted): `__DEV__`-only,
   WYSIWYG on the real Codex render — tap block → genre/indent/role panel, tap between words →
-  split (records the per-translation word-index), merge, inline heading text; **page grouping
-  edited as a book-level list**, not on canvas; exports JSON via share sheet; seeds from the
-  compiled corpus state for round-tripping.
+  split (records the per-translation word-index), merge, inline heading text, place
+  versal / section break (ADR-0018 ornament ops); **page grouping edited as a book-level
+  list**, not on canvas; exports JSON via share sheet; seeds from the compiled corpus state
+  for round-tripping.
 - Curation: **Genesis 1–2 is the first milestone** (exercises every op: re-genre, mid-verse
   splits, inserted heading, the flagship page grouping); **Genesis 1–11 is the acceptance
   target**. Coverage does not widen until one book reads beautifully on device. Psalms wait for

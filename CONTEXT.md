@@ -69,6 +69,10 @@ _Avoid_: whitespace, leftover margin
 **Rail ink**:
 v1's only Ink: freehand strokes living in the Margin rail, **verse-slotted** — the stroke blob never distorts; its slot follows the verse, so it survives re-pagination at verse grain. In-text ink (freehand over the words) is a later phase; in-text decoration is Markup's job.
 
+**Preset**:
+A shipped, built-in **typographic personality** (ADR-0018) — font, leading, measure, alignment, verse-number style, versal style, paper tint per theme. Two ship (Classic, Modern; Manuscript reserved); values are engine constants, not user data. The user's only typographic knobs are the preset choice and a `fontScale` stepper. Ornament *style* belongs to the preset; ornament *placement* belongs to the literary edition.
+_Avoid_: theme (light/dark is a separate global choice), setting (a preset is a curated bundle, not a knob surface)
+
 ### User marks
 
 **Markup**:
@@ -127,6 +131,7 @@ _Avoid_: translation (a Gloss is an editorial under-the-original cue, not a read
 
 ## Rules
 
+- **The axis rule (ADR-0017/0018).** Four orthogonal reader choices, none duplicating another: the *translation* picks the words, the *edition* picks the structure, the *preset* picks the typography, the *mode* (orientation) picks the purpose. Verse-number visibility is mode-bound apparatus (Codex shows quietly, Scroll clean), never a setting.
 - **Translations are spokes, never linked directly.** Cross-translation relations are transitive through two shared hubs only: the Canonical Verse (coarse, passage grain) and the Original Word (fine, word grain). There is no Token-to-Token edge between translations.
 - **Markup is portable; Ink is scoped.** Markup re-renders from its Anchor, so it reflows across fonts and travels across translations (verse grain always; word grain via the Original Word hub). Ink is bound to one translation's layout and is never transplanted.
 - **Annotations are a scene graph anchored to scripture, never to canvas coordinates.** Every element's position resolves from a scripture Anchor (plus an offset for free-placed Notes), computed at render; Connectors bind to elements/Anchors, never to pixels. This is what keeps marks alive through reflow, scroll-mode switches, and translation changes.
