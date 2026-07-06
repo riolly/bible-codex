@@ -42,6 +42,10 @@ function handleImport(): void {
             try {
               const result = await importUserData();
               if (result.status === 'rejected') Alert.alert('Import failed', result.reason);
+              // Swap succeeded but the app could not reload itself — ask the user
+              // to relaunch. This is NOT a failure: their data is already imported.
+              else if (result.status === 'needs-restart')
+                Alert.alert('Import complete', 'Please restart the app to finish.');
             } catch (err) {
               Alert.alert('Import failed', err instanceof Error ? err.message : 'Could not import that file.');
             }

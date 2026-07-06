@@ -28,11 +28,7 @@ import { userSqlite } from '@/db/client';
 import { getEditions, openCorpus } from '@/db/corpus';
 import migrations from '@/db/migrations/migrations';
 import { buildEnvelope } from './envelope';
-
-/** SQLite runs raw SQL, not `file://` URIs — VACUUM INTO needs a plain fs path. */
-function uriToPath(uri: string): string {
-  return decodeURIComponent(uri.replace(/^file:\/\//, '')).replace(/\/+$/, '');
-}
+import { uriToPath } from './fs-path';
 
 /** Single-quote a path for safe interpolation into a SQL string literal. */
 function sqlQuote(path: string): string {
@@ -45,8 +41,10 @@ const BUNDLED_TAGS = Object.keys(migrations.migrations);
 /**
  * Export the user DB to a portable file and hand it to the OS share sheet.
  * Resolves once the share sheet is dismissed; throws if sharing is unavailable
- * or the VACUUM fails. The temp file lives in the NON-backed-up cache dir and
- * is removed after sharing.
+ * or the VACUUM fails. The temp file is NOT deleted after sharing: on Android the
+ * share receiver may still be reading it when `shareAsync` resolves, so an
+ * eager delete corrupts the backup. It lives in the NON-backed-up cache dir
+ * (OS-evicted) and is cleared before the next export by the pre-VACUUM delete.
  */
 export async function exportUserData(): Promise<void> {
   const corpus = await openCorpus();
@@ -84,15 +82,13 @@ export async function exportUserData(): Promise<void> {
     deleteQuietly(fileName, cacheDir);
     throw new Error('Sharing is not available on this device.');
   }
-  try {
-    await Sharing.shareAsync(`file://${filePath}`, {
-      mimeType: 'application/octet-stream',
-      dialogTitle: 'Export reading data',
-      UTI: 'public.database',
-    });
-  } finally {
-    deleteQuietly(fileName, cacheDir);
-  }
+  // No post-share delete: the receiver may still be reading the file on Android.
+  // The pre-VACUUM deleteQuietly above clears it before the next export instead.
+  await Sharing.shareAsync(`file://${filePath}`, {
+    mimeType: 'application/octet-stream',
+    dialogTitle: 'Export reading data',
+    UTI: 'public.database',
+  });
 }
 
 /**
