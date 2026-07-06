@@ -75,7 +75,8 @@ pnpm test:components:watch  # jest --watch — RN render + store tests
 ### Loop C — cross-platform check (iPad, occasional)
 
 Spot-check the iPad before closing an issue. No Apple hardware needed — the
-simulator runs the dev build.
+simulator runs the dev build. (The structured version of this check is the
+[verification workflow](#verification-workflow-per-pr-vs-phase-end) below.)
 
 ```bash
 pnpm ios                    # open on the iOS Simulator (iPad)
@@ -87,24 +88,48 @@ pnpm ios                    # open on the iOS Simulator (iPad)
 
 Two runners, split along the ADR-0008 seam. Match the lane to the layer.
 
-| Lane           | Command                | Runner        | Scope                             |
-| -------------- | ---------------------- | ------------- | --------------------------------- |
-| Engine / model | `pnpm test:engine`     | Vitest (Node) | Pure TS: layout, corpus, cascade  |
-| Components     | `pnpm test:components` | jest-expo     | RN render + Zustand store wiring  |
-| Both (CI)      | `pnpm test`            | —             | Runs engine then components, once |
+| Lane           | Command                | Runner           | Scope                                  |
+| -------------- | ---------------------- | ---------------- | -------------------------------------- |
+| Engine / model | `pnpm test:engine`     | Vitest (Node)    | Pure TS: layout, corpus, cascade       |
+| Components     | `pnpm test:components` | jest-expo        | RN render + Zustand store wiring       |
+| Visual goldens | `pnpm test:visual`     | Vitest + headless Skia | Golden-image diff of the draw layer |
+| All (CI)       | `pnpm test`            | —                | Engine, then components, then goldens  |
 
 Watch variants for the loops: `pnpm test:engine:watch`, `pnpm test:components:watch`.
+Golden maintenance: `pnpm test:visual:update` re-baselines after an _intended_
+rendering change; `pnpm gallery` renders the scene gallery for eyeballing.
 
 **Rule of thumb:** if a test can't reach it in Node or jest-expo, it belongs in
 the engine, not the canvas. Push everything testable _out_ of the draw layer so
 the Skia component stays a thin renderer of already-tested layout data. Don't try
-to unit-test how the typography _looks_ — that's judged by eye in Loop B.
+to unit-test how the typography _looks_ — the goldens catch _regressions_ in it,
+but whether it's _beautiful_ is judged by eye (Loop B and the verification pass
+below).
 
 Pre-flight before every PR:
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test
 ```
+
+---
+
+## Verification workflow (per PR vs. phase end)
+
+Automated tests prove the seams; a beautiful reader is judged on a screen. Three
+tiers, cheapest first — the expensive ones run only when they can catch something
+the cheaper ones can't:
+
+| Tier | When | Who | What |
+| ---- | ---- | --- | ---- |
+| Visual goldens | every PR, in CI | automatic | Golden-image diff; on failure CI uploads the diff images as a `golden-diffs` artifact |
+| Targeted simulator pass | PRs touching the render path (`src/draw/`, `src/engine/layout/`) or interaction | agent | Drive the affected checklist stations on the iPad simulator, screenshot each, post the gallery + verdicts as a **PR comment** for review |
+| Full device verification | end of each phase, before the PRD issue closes | agent + human | The whole checklist: agent runs it on the simulator; a human runs it on the physical tablet (~10 min) and reports feel/beauty judgments the simulator can't carry. Combined note goes on the **phase issue** |
+
+The checklist itself (7 stations: cold open, navigation, rotation, adjust,
+translation switch, long chapter, backup) and the agent/human split live in the
+`verify-device` skill: [`.agents/skills/verify-device/SKILL.md`](../.agents/skills/verify-device/SKILL.md).
+Rule: **a phase issue does not close with the human half unreported.**
 
 ---
 

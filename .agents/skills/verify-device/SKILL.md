@@ -12,6 +12,13 @@ confirms on a **physical device** — never skip the human half for a phase wrap
 Everything off-device (typecheck, engine/component/visual suites) must already be
 green before starting; this skill is about what those cannot see.
 
+Where this sits in the wider workflow (per-PR goldens vs. targeted pass vs.
+phase-end full run) is documented for humans in `app/README.md` §"Verification
+workflow". Cadence rules: a **targeted** Part-A pass (only the at-risk stations)
+for PRs touching `src/draw/` or `src/engine/layout/`, gallery posted as a PR
+comment; the **full** run (Part A + Part B) only at phase end, reported on the
+phase issue.
+
 ## Part A — Claude, on the simulator
 
 Launch the app on an iPad simulator (`pnpm run ios` from `app/`, or the installed
