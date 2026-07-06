@@ -1,43 +1,16 @@
 /**
- * Cardo font loading + the Skia-backed measure seam (#8). Cardo (OFL, bundled
- * in assets/fonts) shapes Latin, polytonic Greek, and pointed Hebrew in one
- * face — the issue-#8 typeface requirement.
- *
- * The engine stays Skia-free (ADR-0008): it sees only the injected
- * `MeasureToken` built here. Measurement uses cmap glyph advances — combining
- * marks (Hebrew points) carry zero advance, and the polytonic Greek range is
- * precomposed in Cardo, so advance sums match the shaped Paragraph the picture
- * builder paints (per-token anchoring absorbs sub-pixel drift).
+ * Cardo font loading (#8): the React hook that registers the bundled faces and
+ * hands the draw layer its measure seam. The Skia-backed assembly lives in
+ * fonts-core.ts (`buildDrawFonts`) so device and headless goldens share it.
  */
 
-import {
-  FontWeight,
-  Skia,
-  useFonts,
-  type SkTypefaceFontProvider,
-} from '@shopify/react-native-skia';
+import { useFonts } from '@shopify/react-native-skia';
 import { useMemo } from 'react';
 
-import type { MeasureToken } from '../engine/layout';
+import { buildDrawFonts, CARDO, type DrawFonts } from './fonts-core';
 
-export const CARDO = 'Cardo';
-
-/** Measure at a large size and normalize — avoids small-size quantization. */
-const MEASURE_SIZE = 100;
-
-/** Font vertical metrics in em (ascent negative, Skia convention). */
-export interface FontMetricsEm {
-  readonly ascent: number;
-  readonly descent: number;
-}
-
-/** Everything the draw layer needs from the loaded fonts. */
-export interface DrawFonts {
-  readonly fontMgr: SkTypefaceFontProvider;
-  /** The engine's injected metrics seam: advance width of `text` at 1em. */
-  readonly metrics: MeasureToken;
-  readonly metricsEm: FontMetricsEm;
-}
+export { CARDO } from './fonts-core';
+export type { DrawFonts, FontMetricsEm } from './fonts-core';
 
 /**
  * Font load state. `fonts === null && error === null` is *loading*; a non-null
@@ -62,28 +35,8 @@ export function useCardoFonts(): CardoFontsResult {
 
   return useMemo(() => {
     if (!fontMgr) return LOADING;
-    const typeface = fontMgr.matchFamilyStyle(CARDO, { weight: FontWeight.Normal });
-    if (!typeface) return { fonts: null, error: `font "${CARDO}" failed to load` };
-    const font = Skia.Font(typeface, MEASURE_SIZE);
-
-    const cache = new Map<string, number>();
-    const metrics: MeasureToken = (text) => {
-      const hit = cache.get(text);
-      if (hit !== undefined) return hit;
-      const widths = font.getGlyphWidths(font.getGlyphIDs(text));
-      const em = widths.reduce((sum, w) => sum + w, 0) / MEASURE_SIZE;
-      cache.set(text, em);
-      return em;
-    };
-
-    const m = font.getMetrics();
-    return {
-      fonts: {
-        fontMgr,
-        metrics,
-        metricsEm: { ascent: m.ascent / MEASURE_SIZE, descent: m.descent / MEASURE_SIZE },
-      },
-      error: null,
-    };
+    const fonts = buildDrawFonts(fontMgr);
+    if (!fonts) return { fonts: null, error: `font "${CARDO}" failed to load` };
+    return { fonts, error: null };
   }, [fontMgr]);
 }

@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 // Vitest runs the framework-agnostic engine/model layer — plus the draw
 // layer's PURE helpers — in plain Node: no RN runtime, no Skia (ADR-0008).
@@ -23,5 +23,8 @@ export default defineConfig({
       'src/model/**/*.test.ts',
       'scripts/ingest/**/*.test.ts',
     ],
+    // Visual goldens load CanvasKit (wasm) and run under vitest.visual.config.ts
+    // instead — keep them out of the fast pure-TS unit run.
+    exclude: [...configDefaults.exclude, 'src/draw/__visual__/**'],
   },
 });

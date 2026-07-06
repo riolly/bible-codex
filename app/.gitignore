@@ -45,3 +45,8 @@ example
 # corpus ingest (issue #6): downloaded sources + generated bundled asset
 scripts/ingest/sources/
 assets/corpus/
+
+# visual goldens (Phase 1): baselines ARE committed; gallery output + pixel
+# diffs are throwaway.
+src/draw/__visual__/gallery/
+src/draw/__visual__/__image_snapshots__/__diff_output__/
