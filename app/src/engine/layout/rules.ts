@@ -64,8 +64,21 @@ export const DEFAULT_PRESET: ResolvedRules = {
 };
 
 /**
+ * Apply the user's one typographic knob (ADR-0018): `fontScale` multiplies the
+ * root scalar only — every em/em-multiplier knob rides along (ADR-0004). An
+ * invalid scale (non-finite, ≤ 0, or a null column) reads as 1.
+ */
+export function applyFontScale(
+  rules: ResolvedRules,
+  fontScale: number | null | undefined,
+): ResolvedRules {
+  const scale = fontScale != null && Number.isFinite(fontScale) && fontScale > 0 ? fontScale : 1;
+  return scale === 1 ? rules : { ...rules, fontSize: rules.fontSize * scale };
+}
+
+/**
  * Resolve a preset to concrete rules. Base-only: null/omitted knobs fall back
- * to DEFAULT_PRESET; genre/role/book overrides are #11's cascade.
+ * to DEFAULT_PRESET; genre/role/book overrides are the cascade (cascade.ts).
  */
 export function resolveRules(preset: LayoutPresetInput = {}): ResolvedRules {
   const rules: ResolvedRules = {

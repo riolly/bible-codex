@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_PRESET, resolveRules } from './rules';
+import { DEFAULT_PRESET, applyFontScale, resolveRules } from './rules';
 
 describe('resolveRules', () => {
   it('resolves a full preset to itself (base-only cascade, #7)', () => {
@@ -51,5 +51,29 @@ describe('resolveRules', () => {
   it('rejects a non-positive measure or font size', () => {
     expect(() => resolveRules({ measure: 0 })).toThrow();
     expect(() => resolveRules({ fontSize: -1 })).toThrow();
+  });
+});
+
+describe('applyFontScale', () => {
+  const rules = resolveRules({ fontSize: 18 });
+
+  it("multiplies only the root scalar — every em knob rides along for free (ADR-0004)", () => {
+    const scaled = applyFontScale(rules, 1.25);
+    expect(scaled.fontSize).toBe(22.5);
+    // the relative knobs are untouched; scaling the root scales the page
+    expect(scaled.lineHeight).toBe(rules.lineHeight);
+    expect(scaled.measure).toBe(rules.measure);
+    expect(scaled.margin).toBe(rules.margin);
+  });
+
+  it('scale 1 is identity', () => {
+    expect(applyFontScale(rules, 1)).toEqual(rules);
+  });
+
+  it('an invalid scale (zero, negative, NaN, null column) falls back to 1', () => {
+    expect(applyFontScale(rules, 0).fontSize).toBe(18);
+    expect(applyFontScale(rules, -2).fontSize).toBe(18);
+    expect(applyFontScale(rules, Number.NaN).fontSize).toBe(18);
+    expect(applyFontScale(rules, null).fontSize).toBe(18);
   });
 });

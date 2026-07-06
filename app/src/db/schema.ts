@@ -69,8 +69,20 @@ export const readingSettings = sqliteTable('reading_settings', {
   theme: text('theme', { enum: ['light', 'dark'] })
     .notNull()
     .default('light'),
-  /** The currently selected preset (→ layout_preset.id); null = default preset. */
+  /**
+   * The active BUILTIN preset slug ('classic' | 'modern') — ADR-0018: presets
+   * are shipped engine constants, not user rows. Not an enum column: an
+   * unknown slug (stale restore, a future preset) must load and fall back in
+   * code, never fail a constraint. Historically this held a layout_preset.id
+   * UUID; those resolve as unknown → the default builtin.
+   */
   activePresetId: text('active_preset_id'),
+  /**
+   * The user's one typographic knob (ADR-0018): a multiplier over the active
+   * preset's base font size. Everything else scales along (em units,
+   * ADR-0004).
+   */
+  fontScale: real('font_scale').notNull().default(1),
   /**
    * The translation the reader last chose (abbrev, e.g. 'KJV'/'BSB') — #12. The
    * ephemeral reading-position store (ADR-0008) carries the live translation;
@@ -82,9 +94,12 @@ export const readingSettings = sqliteTable('reading_settings', {
 });
 
 /**
- * A named typography bundle the user switches between ("Reading", "Study",
- * "Large print") holding the GLOBAL cascade base. Nullable knobs inherit the
- * engine's DEFAULT_PRESET.
+ * DORMANT (ADR-0018): presets became shipped engine constants; nothing seeds
+ * or resolves through this table anymore. It stays physically present — no
+ * destructive migration, backup envelope untouched — and old rows survive
+ * export/import as inert data. Historically: a named typography bundle
+ * holding the GLOBAL cascade base; nullable knobs inherit the engine's
+ * DEFAULT_PRESET.
  */
 export const layoutPreset = sqliteTable('layout_preset', {
   ...lifecycle,
@@ -93,10 +108,12 @@ export const layoutPreset = sqliteTable('layout_preset', {
 });
 
 /**
- * Per-scope overrides on top of a preset. Precedence
- * `base < genre < role < book` (most specific wins); scopes join the corpus by
- * SEMANTIC keys (genre / role / book.slug), never a corpus id. The nullable
- * knobs inherit the less-specific level.
+ * DORMANT (ADR-0018): user-row overrides no longer join the cascade — the
+ * builtins carry their own internal overrides in code. Kept physically
+ * present like layout_preset. Historically: per-scope overrides on top of a
+ * preset, precedence `base < genre < role < book` (most specific wins);
+ * scopes join the corpus by SEMANTIC keys (genre / role / book.slug), never a
+ * corpus id.
  */
 export const layoutOverride = sqliteTable(
   'layout_override',

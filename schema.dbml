@@ -236,7 +236,12 @@ Table versification_map {
 Table reading_settings {
   id               varchar     [pk]               // UUIDv7 (#4)
   theme            varchar     [not null, default: 'light']
-  active_preset_id varchar     // → layout_preset.id (the currently selected typography preset)
+  active_preset_id varchar     // BUILTIN preset slug: 'classic' | 'modern' (ADR-0018). NOT an FK
+                               // and not an enum column: presets are shipped engine constants, and
+                               // an unknown slug (stale restore / future preset / a pre-ADR-0018
+                               // layout_preset UUID) falls back to the default builtin in code.
+  font_scale       real        [not null, default: 1] // the user's ONE typographic knob (ADR-0018):
+                               // multiplies the active builtin's base font size; em knobs ride along.
   created_at       integer     [not null]
   updated_at       integer     [not null]
   deleted_at       integer                          // soft-delete tombstone; null = live
@@ -264,8 +269,12 @@ Table reading_position {
   }
 }
 
-// A named typography bundle the user can switch between ("Reading", "Study", "Large
-// print"). Holds the GLOBAL typography defaults for the cascade base.
+// DORMANT (ADR-0018): typography presets became SHIPPED ENGINE CONSTANTS ('classic' /
+// 'modern' personalities selected by slug in reading_settings.active_preset_id). Nothing
+// seeds, reads, or resolves through this table anymore. It stays physically present — no
+// destructive migration, the backup envelope (#13) is untouched, and old rows survive
+// export/import as inert data. Historically: a named typography bundle the user switched
+// between, holding the GLOBAL typography defaults for the cascade base.
 Table layout_preset {
   id                varchar [pk]                    // UUIDv7 (#4)
   name              varchar [not null]
@@ -281,11 +290,12 @@ Table layout_preset {
   deleted_at        integer
 }
 
-// Per-scope overrides on top of a preset. Q6 RESOLVED: typed nullable columns (null =
-// inherit); resolution precedence  base preset < genre < role < book  (most specific
-// wins). Scopes join the corpus by SEMANTIC KEYS (genre / role / book.slug), never
-// token.id. Per-book scope ships in v1 (e.g. a different author → a different
-// font_family for a more immersive read).
+// DORMANT (ADR-0018), like layout_preset: user-row overrides no longer join the cascade —
+// the builtins carry their own internal genre/role/book overrides in engine code (e.g.
+// Classic's poetry indent), using the same resolver. Kept physically present; old rows
+// are inert. Historically — Q6 RESOLVED: typed nullable columns (null = inherit);
+// resolution precedence  base preset < genre < role < book  (most specific wins). Scopes
+// join the corpus by SEMANTIC KEYS (genre / role / book.slug), never token.id.
 // FUTURE: an 'author' / book-class scope (set Paul's books once) — folds into
 // scope_kind later; backed by a book-classification table (cf. archived legacy
 // `Classes`/`Books_Classes`, archive/BibleCodex.legacy.sql). Deferred, additive.
@@ -641,7 +651,8 @@ Ref: token.book_id > book.id
 Ref: token.block_id > block.id
 Ref: versification_map.translation_id > translation.id
 Ref: versification_map.book_id > book.id
-Ref: reading_settings.active_preset_id > layout_preset.id
+// (reading_settings.active_preset_id → layout_preset.id REMOVED — ADR-0018: the column
+//  holds a builtin slug now, not an FK. layout_override's FK stands within the dormant pair.)
 Ref: layout_override.preset_id > layout_preset.id
 
 // Phase 2 — within-layer FKs ONLY. The corpus is referenced by coordinate, never FK.

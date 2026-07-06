@@ -7,11 +7,10 @@
 
 import { and, eq, isNull } from 'drizzle-orm';
 
-import type { ResolvedRules } from '@/engine/layout';
+import { DEFAULT_PRESET_SLUG, type ResolvedRules } from '@/engine/layout';
 import type { Theme } from '@/draw/style';
 import { db } from './client';
 import { layoutOverride, layoutPreset, readingSettings } from './schema';
-import { SEED_PRESETS } from './settings';
 import { uuidv7 } from './uuid';
 
 /** Epoch SECONDS, matching the schema's `unixepoch()` column default. */
@@ -36,15 +35,17 @@ export async function loadSettingsRow() {
 }
 
 /**
- * Idempotently seed the named presets + the global settings row on first
- * launch. Safe to call every boot: it no-ops once a live settings row exists.
+ * Idempotently seed the global settings row on first launch. Safe to call
+ * every boot: it no-ops once a live settings row exists. ADR-0018: presets are
+ * shipped engine constants — NO layout_preset rows are seeded anymore; the
+ * settings row starts on the default builtin slug at fontScale 1.
  *
  * Single-flight: `useReadingSettings` mounts in more than one place at once (the
  * reader + the adjust-panel container), and React double-invokes effects in
  * dev. Without a shared in-flight guard the concurrent callers each read "no
- * row yet" before any insert commits and seed a duplicate set (6 presets, 2
- * settings rows). We memoize the first call's promise; a failure clears it so a
- * later boot can retry.
+ * row yet" before any insert commits and seed duplicate settings rows. We
+ * memoize the first call's promise; a failure clears it so a later boot can
+ * retry.
  */
 let seedInFlight: Promise<void> | null = null;
 
@@ -59,46 +60,37 @@ export function ensureSeed(): Promise<void> {
 async function seedOnce(): Promise<void> {
   if (await loadSettingsRow()) return;
   const t = now();
-  const ids = SEED_PRESETS.map(() => uuidv7());
-  // Ship Large Print as the out-of-the-box default (readability first); fall
-  // back to the first preset if that name ever goes away.
-  const defaultIdx = Math.max(
-    0,
-    SEED_PRESETS.findIndex((p) => p.name === 'Large Print'),
-  );
-  await db.insert(layoutPreset).values(
-    SEED_PRESETS.map((preset, i) => ({
-      id: ids[i],
-      name: preset.name,
-      fontFamily: preset.fontFamily ?? null,
-      fontSize: preset.fontSize ?? null,
-      lineHeight: preset.lineHeight ?? null,
-      margin: preset.margin ?? null,
-      paragraphSpacing: preset.paragraphSpacing ?? null,
-      indentStep: preset.indentStep ?? null,
-      align: preset.align ?? null,
-      measure: preset.measure ?? null,
-      railWidth: preset.railWidth ?? null,
-      createdAt: t,
-      updatedAt: t,
-    })),
-  );
   await db.insert(readingSettings).values({
     id: uuidv7(),
     theme: 'light',
-    activePresetId: ids[defaultIdx],
+    activePresetId: DEFAULT_PRESET_SLUG,
+    fontScale: 1,
     createdAt: t,
     updatedAt: t,
   });
 }
 
-/** Switch the active preset (a global choice — the cascade base). */
-export async function selectPreset(presetId: string): Promise<void> {
+/**
+ * Switch the active builtin preset (a slug — ADR-0018 global choice).
+ * Deliberately `string`, not `PresetSlug`: the column must tolerate unknown
+ * slugs anyway (stale restore), and the read side owns the fallback.
+ */
+export async function selectPreset(slug: string): Promise<void> {
   const row = await loadSettingsRow();
   if (!row) return;
   await db
     .update(readingSettings)
-    .set({ activePresetId: presetId, updatedAt: now() })
+    .set({ activePresetId: slug, updatedAt: now() })
+    .where(eq(readingSettings.id, row.id));
+}
+
+/** Step the user's one typographic knob (ADR-0018). */
+export async function setFontScale(fontScale: number): Promise<void> {
+  const row = await loadSettingsRow();
+  if (!row) return;
+  await db
+    .update(readingSettings)
+    .set({ fontScale, updatedAt: now() })
     .where(eq(readingSettings.id, row.id));
 }
 
@@ -122,7 +114,11 @@ export async function setActiveTranslation(abbrev: string): Promise<void> {
     .where(eq(readingSettings.id, row.id));
 }
 
-/** Refine the active preset's global knobs (the cascade base). */
+/**
+ * DORMANT (ADR-0018): writes the dormant layout_preset table, and
+ * `activePresetId` is a builtin slug now, so no row matches — a no-op until
+ * the #41 preset lab points the dev knobs somewhere real.
+ */
 export async function updateActivePreset(patch: KnobPatch): Promise<void> {
   const row = await loadSettingsRow();
   const presetId = row?.activePresetId;
@@ -134,8 +130,10 @@ export async function updateActivePreset(patch: KnobPatch): Promise<void> {
 }
 
 /**
- * Insert or update a per-scope override on the active preset (ADR-0004 cascade:
- * genre / role / book refinement). Upsert by the (preset, scope) unique key.
+ * DORMANT (ADR-0018): user-row overrides no longer join the cascade, and
+ * `activePresetId` is a builtin slug, so this never fires. Kept for the #41
+ * preset lab. Historically: upsert a per-scope override on the active preset
+ * by the (preset, scope) unique key.
  */
 export async function upsertOverride(
   scopeKind: 'genre' | 'role' | 'book',

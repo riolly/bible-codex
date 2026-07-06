@@ -2,14 +2,20 @@
  * Binds the presentational AdjustPanel to the user DB: reads the live resolved
  * rules and routes every change to a mutation. Each write re-runs the panel's
  * (and the reader's) `useLiveQuery`, so edits re-typeset immediately (ADR-0004).
+ *
+ * ADR-0018: the preset cards list the shipped builtins (slug select) and the
+ * Size stepper drives `fontScale`; the other knob callbacks still write the
+ * DORMANT layout_preset table — visible no-ops until the #41 preset lab
+ * repoints them.
  */
 
 import { Alert } from 'react-native';
 
 import { exportUserData } from '@/backup/export-data';
 import { importUserData } from '@/backup/restore-data';
+import { BUILTIN_PRESETS } from '@/engine/layout';
 import { FONT_FAMILIES } from '@/db/settings';
-import { selectPreset, setTheme, updateActivePreset } from '@/db/settings-write';
+import { selectPreset, setFontScale, setTheme, updateActivePreset } from '@/db/settings-write';
 import { useReadingSettings } from '@/db/use-settings';
 import { useUiStore } from '@/store/ui-store';
 import { AdjustPanel } from './adjust-panel';
@@ -78,13 +84,15 @@ export function AdjustPanelContainer() {
         railWidth: rules.railWidth,
       }}
       fontFamilies={FONT_FAMILIES}
-      presets={settings.presets.map((p) => ({ id: p.id, name: p.name }))}
-      activePresetId={settings.activePreset?.id ?? null}
+      presets={Object.values(BUILTIN_PRESETS).map((p) => ({ id: p.slug, name: p.name }))}
+      activePresetId={settings.activePreset.slug}
       onClose={() => setOpen(false)}
       onTheme={(t) => void setTheme(t)}
-      onSelectPreset={(id) => void selectPreset(id)}
+      onSelectPreset={(slug) => void selectPreset(slug)}
       onFontFamily={(f) => void updateActivePreset({ fontFamily: f })}
-      onFontSize={(v) => void updateActivePreset({ fontSize: v })}
+      // The panel steps the DISPLAYED (scaled) size; store it as the ADR-0018
+      // multiplier over the active builtin's base.
+      onFontSize={(v) => void setFontScale(v / settings.activePreset.fontSize)}
       onLineHeight={(v) => void updateActivePreset({ lineHeight: v })}
       onMeasure={(v) => void updateActivePreset({ measure: v })}
       onMargin={(v) => void updateActivePreset({ railWidth: v })}
