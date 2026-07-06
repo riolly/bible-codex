@@ -25,9 +25,12 @@ The pillars:
    *viewing* operations — ink cannot be orphaned by them, **by construction**. This dissolves
    (not mitigates) the rotation-reflow problem. Every serious ink app (GoodNotes, Notability —
    see [ink-app-comparison.md](../design/ink-app-comparison.md)) is page-based for this reason.
-3. **Page = chapter; overflow scrolls.** No page-break algorithm exists in v1 — the chapter is
-   the break (no widows/orphans/poem-splitting engine work). Spatial landmarks stay valid when
-   a long chapter scrolls because the *canvas* geometry is fixed — the reading research
+3. **Page = semantic unit; overflow scrolls.** *(Amended by
+   [ADR-0017](0017-the-literary-edition-is-compiled-editorial-block-structure.md): the chapter
+   is the **default** unit; a curated edition may supply its own — e.g. the literary edition's
+   pericope-grain pages, Creation = Gen 1:1–2:3.)* No page-break algorithm exists — the semantic
+   boundary is the break (no widows/orphans/poem-splitting engine work). Spatial landmarks stay
+   valid when a long page scrolls because the *canvas* geometry is fixed — the reading research
    punishes moving markers, not scrolling per se.
 4. **Margins expand outward only.** The user may widen the rail beyond the preset base;
    expansion grows the page canvas into letterbox space and never squeezes the text measure —
@@ -46,8 +49,9 @@ The pillars:
   notebook and journaling Bible); annotation culture is codex culture; landscape's wide sweep
   is what makes multi-column feel like a scroll.
 - **Screen-sized pages** — rejected: needs a page-break engine and produces arbitrary
-  boundaries; chapter-grain pages are semantic and free. *(Later refinement if long-chapter
-  scroll proves painful on device: pericope-grain breaks at whole Blocks.)*
+  boundaries; chapter-grain pages are semantic and free. *(The reserved refinement —
+  pericope-grain breaks at whole Blocks — landed as the literary edition's curated pages,
+  [ADR-0017](0017-the-literary-edition-is-compiled-editorial-block-structure.md).)*
 - **Fit-chapter-to-page (shrink type to fit)** — rejected: destroys typographic consistency
   (Psalm 119); fixed type + internal scroll keeps the edition honest.
 - **Transforming ink between margin spaces** — rejected as dishonest geometry; the previously
@@ -59,7 +63,9 @@ The pillars:
 - **Honest limit, stated plainly:** fixed pages absorb rotation and device change, **not
   typography change** — a preset/font change creates a new *edition*: re-paginate, re-slot rail
   ink at verse grain. `ink_annotation` therefore keys by **edition**, not by
-  `(scroll_mode, layout_hash)`.
+  `(scroll_mode, layout_hash)`. *(ADR-0017: a `textEdition` block-set toggle is likewise a
+  new-edition event; the edition key composes as translation stamp + block set + typography
+  preset fingerprint.)*
 - `reading_settings.scroll_mode` is removed — mode derives from orientation; the `scroll_mode`
   enum leaves the schema.
 - Rotation becomes a meaningful gesture (upright = study, sideways = read) — an opinionated

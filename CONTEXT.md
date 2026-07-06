@@ -51,8 +51,16 @@ The **landscape** reading surface — the *journey* mode. Continuous horizontal 
 _Avoid_: horizontal mode
 
 **Page**:
-One **chapter**, typeset at fixed geometry (measure and typography fixed per preset; the device letterboxes/scales). Taller-than-screen chapters scroll *within* the page; the canvas never reflows on rotation or device change — only a typography change creates a new *edition* and re-paginates. Semantic pagination: the chapter is the page break; no page-break algorithm exists.
+One **semantic unit** — a chapter by default; in the literary edition, a Literary page — typeset at fixed geometry (measure and typography fixed per preset; the device letterboxes/scales). Taller-than-screen pages scroll *within* the page; the canvas never reflows on rotation or device change — only a typography or edition change creates a new *edition* and re-paginates. Semantic pagination: the semantic boundary is the page break; no page-break algorithm exists (ADR-0016 as amended by ADR-0017).
 _Avoid_: screen (a page may span several screens)
+
+**Literary edition**:
+The shipped, **curated editorial block structure** (ADR-0017) — BibleProject-style poetic lineation, indentation, inserted literary headings, and pericope-grain Literary pages — compiled at ingest from per-book sidecar data into a second block set (`literary_block` / `literary_page`; `token.literary_block_id` beside `block_id`). Toggled by `reading_settings.textEdition` (`'usfm' | 'literary'`): *translation* picks the words, *edition* picks the structure, *preset* picks the typography. **Block-grain ops only** in v1; verse-grain ops are canonical, mid-verse split points carry a per-translation word-index map (unsplit fallback). Inserted literary headings follow the standing heading rule (`verse = NULL`, not anchorable).
+_Avoid_: user formatting (it is editorial, shipped data — not a user editor), preset (that is typography, a separate axis)
+
+**Literary page**:
+A Page of the literary edition — a curated **verse range forming one literary unit**, possibly crossing chapter boundaries (Creation = Gen 1:1–2:3, the corrected literary break). Flip navigation moves between Literary pages; a swallowed chapter start shows a **discreet margin chapter marker**; chapter/verse navigation resolves through the page's verse range. Books without curated data fall back to chapter-pages.
+_Avoid_: pericope (a Literary page may group several pericopes), chapter
 
 **Margin rail**:
 The first-class reserved margin region of a Codex-mode Page (journaling-Bible precedent) — home of Note pins and Rail ink. User expansion of the rail grows the page canvas *outward* and never squeezes the text measure, so it can never reflow text or invalidate ink.

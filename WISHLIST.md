@@ -48,3 +48,24 @@ The POC shows the first taste (tap a word → gloss → original → meaning). B
 ## The engine underneath (note)
 
 Journey progression, clue/Portal pacing, and tag suggestion all draw on one latent thing: the reader's **journey state** — what they've read and how familiar they are. One model, many surfaces. Worth building once, later.
+
+## Span-grain literary emphasis (deferred from ADR-0017)
+
+The literary edition (ADR-0017) ships **block-grain** ops only. The deferred half: **emphasis on
+word ranges inside a block** — bold, italic, text color (BibleProject uses these for repeated
+keywords, e.g. the refrains of Genesis 1).
+
+Why deferred, recorded honestly:
+
+- **Word-grain coordinates are translation-bound** (KJV and BSB word orders differ) — every
+  emphasized range is curated **per translation**, doubling the work per book. Verse-grain ops
+  don't pay this; spans always do.
+- Needs a **new span table** (canonical verse + per-translation word-index range + style) and
+  **renderer support for token-range styling** — which is visually the same machinery as Mark
+  rendering (highlight/underline over a token range). Build it once, shared, or not at all.
+- The structure vocabulary (lineation, indents, headings, pages) is ~90% of the BibleProject
+  look; emphasis is garnish.
+
+**Revisit trigger:** after Genesis reads beautifully on device, if a specific passage screams for
+keyword emphasis (Gen 1's refrains are the test case), weigh the per-translation curation cost
+then — as an **additive** table, zero migration.
