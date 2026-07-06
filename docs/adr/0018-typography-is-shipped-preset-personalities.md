@@ -35,8 +35,10 @@ The pillars:
    at **book start** only. The literary edition may *author* additional versals (a significant
    narrative turn — Noah, Abraham) and **section breaks** (fleuron/asterism divider) — placement
    ops in the ADR-0017 sidecar; each preset decides what a versal or divider looks like.
-   Classic's drop cap pays the carried P1 gap. Scroll mode gets no versals by default (revisit
-   at the journey grill if book openings want ceremony).
+   Classic's drop cap pays the carried P1 gap. *(The reserved Scroll-versal question resolved at
+   the journey grill, [ADR-0019](0019-scroll-mode-is-an-altitude-ladder-overview-ribbon-hagah.md):
+   Scroll's ribbon shows a versal at the **book seam**, plus authored versals at their ADR-0017
+   placements — the biggest rungs of the landmark hierarchy.)*
 6. **Presets are designed on-device and pinned by goldens.** Fonts are **OFL/open-license only**
    (bundled like the texts); polytonic Greek + pointed Hebrew coverage is a tiebreaker for the
    Phase-3 trajectory (Cardo, the incumbent, covers both — NFC caveat #25 stands). Shortlist

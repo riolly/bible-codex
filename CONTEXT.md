@@ -47,8 +47,24 @@ The **portrait** reading surface — the *study* mode. Paged like a physical Bib
 _Avoid_: vertical mode (describes pixels, not purpose)
 
 **Scroll mode**:
-The **landscape** reading surface — the *journey* mode. Continuous horizontal columns (the original scroll form), immersive reading, Portals, progress. Clean in v1: no Ink ever, no Markup authoring yet.
+The **landscape** reading surface — the *journey* mode. Continuous horizontal columns (the original scroll form), immersive reading, Portals, progress. Clean in v1: no Ink ever, no Markup authoring yet. Carries the **Altitude ladder** (ADR-0019): Scroll overview above the ribbon, Hagah below it; literary-page seams render as landmark ceremony (hierarchy: book > page > section break).
 _Avoid_: horizontal mode
+
+**Altitude ladder**:
+Scroll mode's three altitudes on one zoom axis (ADR-0019): **Scroll overview** (pinch out) ⇄ reading ribbon ⇄ **Hagah** (spread on a verse). Descent/ascent is zoom-choreographed so a verse never loses its *place* in the story. The rung above the overview is reserved for the library.
+_Avoid_: zoom levels (the altitudes are distinct compositions, not magnifications of one layout)
+
+**Scroll overview**:
+The top altitude — the whole book as one **schematic spatial map**: body text as faint bars, landmarks (book title, page-seam headings, section ornaments) rendered full, proportional left-right geometry. Tap/spread to descend into the ribbon there. Scroll's navigation story — by place, not lookup box. Uncurated books fall back to chapter seams, numbered on the map only (the map is navigation apparatus; the "Scroll is clean" rule governs the reading surface, not the map).
+_Avoid_: minimap (it is a full navigation altitude, not a corner widget), table of contents
+
+**Hagah**:
+(הגה — murmur, meditate.) The bottom altitude: a **focus state inside Scroll mode**, one verse typeset alone — large, centered, faint prev/next edges for sense of place — styled by the active Preset. Swipe steps a verse at a time (updates the per-book reading position at verse grain); pinch ascends back to the verse's exact ribbon position. Pure view state — no tables, no session data. Not a third mode: *mode* picks the purpose; Hagah is a state within one purpose. Codex has no Hagah.
+_Avoid_: meditation mode (not a mode — orientation still derives the mode), focus mode
+
+**Yad**:
+Hagah's reader-driven pointer aid (after the Torah pointer): drag finger or pen along the words and a quiet glow follows the touch (pen hover where supported). No pacing engine, no tempo setting — the yad follows the reader, never the reverse; it never auto-advances the verse. v1: Hagah-only.
+_Avoid_: cursor, karaoke highlight (app-paced — rejected)
 
 **Page**:
 One **semantic unit** — a chapter by default; in the literary edition, a Literary page — typeset at fixed geometry (measure and typography fixed per preset; the device letterboxes/scales). Taller-than-screen pages scroll *within* the page; the canvas never reflows on rotation or device change — only a typography or edition change creates a new *edition* and re-paginates. Semantic pagination: the semantic boundary is the page break; no page-break algorithm exists (ADR-0016 as amended by ADR-0017).
@@ -131,7 +147,7 @@ _Avoid_: translation (a Gloss is an editorial under-the-original cue, not a read
 
 ## Rules
 
-- **The axis rule (ADR-0017/0018).** Four orthogonal reader choices, none duplicating another: the *translation* picks the words, the *edition* picks the structure, the *preset* picks the typography, the *mode* (orientation) picks the purpose. Verse-number visibility is mode-bound apparatus (Codex shows quietly, Scroll clean), never a setting.
+- **The axis rule (ADR-0017/0018).** Four orthogonal reader choices, none duplicating another: the *translation* picks the words, the *edition* picks the structure, the *preset* picks the typography, the *mode* (orientation) picks the purpose. Verse-number visibility is mode-bound apparatus (Codex shows quietly, Scroll clean), never a setting. Hagah is a **state within** Scroll (ADR-0019), not a fifth axis — mode stays orientation-derived.
 - **Translations are spokes, never linked directly.** Cross-translation relations are transitive through two shared hubs only: the Canonical Verse (coarse, passage grain) and the Original Word (fine, word grain). There is no Token-to-Token edge between translations.
 - **Markup is portable; Ink is scoped.** Markup re-renders from its Anchor, so it reflows across fonts and travels across translations (verse grain always; word grain via the Original Word hub). Ink is bound to one translation's layout and is never transplanted.
 - **Annotations are a scene graph anchored to scripture, never to canvas coordinates.** Every element's position resolves from a scripture Anchor (plus an offset for free-placed Notes), computed at render; Connectors bind to elements/Anchors, never to pixels. This is what keeps marks alive through reflow, scroll-mode switches, and translation changes.

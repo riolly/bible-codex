@@ -11,7 +11,10 @@ The two reading layouts stop being interchangeable orientations of one surface a
   lives here.
 - **📜 Scroll mode (landscape)** — the *journey* surface. Continuous horizontal columns (the
   original format; Latin *pagina* = one column of a scroll), immersive reading, Portals,
-  progress. **Clean in v1**: no Ink ever; no Markup authoring yet.
+  progress. **Clean in v1**: no Ink ever; no Markup authoring yet. *(Amended by
+  [ADR-0019](0019-scroll-mode-is-an-altitude-ladder-overview-ribbon-hagah.md): Scroll carries
+  an altitude ladder — schematic book overview above the ribbon, the hagah one-verse focus
+  state below it — and renders literary-page seams as landmark ceremony.)*
 
 The pillars:
 

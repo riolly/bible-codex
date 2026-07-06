@@ -31,6 +31,11 @@ The antidote to how most people feel about the Bible: overwhelmed. The app meets
 - **Books open as you journey.** As you finish books (or parts of them), new ones unlock as your next leg; the open-scroll limit grows with your reading.
 - **Adaptive to the reader.** Each person may *start* at a different place depending on familiarity, and the **pace of clues** (and Portal glows) adapts to them.
 
+**Status (P1.5 track A grill, ADR-0019):** gating **deferred, not rejected** — unlock rules,
+open-scroll limits, and adaptive pacing all hang off the journey-state engine below, which gets
+its own grill post-P1.5. The foundation shipped anyway: per-book bookmarks (`reading_position`
+unique per book) and the Scroll surface gating would decorate (landmarks, overview, hagah).
+
 ## Themes & tags
 
 - Readers **tag passages with themes** — how they *relate* to a story: forgiveness, anger, temptation, the Spirit of God…
