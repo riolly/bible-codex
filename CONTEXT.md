@@ -67,7 +67,7 @@ The top altitude — the whole book as one **schematic spatial map**: body text 
 _Avoid_: minimap (it is a full navigation altitude, not a corner widget), table of contents
 
 **Hagah**:
-(הגה — murmur, meditate.) The bottom altitude: a **focus state inside Scroll mode**, one verse typeset alone — large, centered, faint prev/next edges for sense of place — styled by the active Preset. Swipe steps a verse at a time (updates the per-book reading position at verse grain); pinch ascends back to the verse's exact ribbon position. Pure view state — no tables, no session data. Not a third mode: *mode* picks the purpose; Hagah is a state within one purpose. Codex has no Hagah.
+(הגה — murmur, meditate.) The bottom altitude: a **focus state inside Scroll mode**, one verse typeset alone — large, centered, faint prev/next edges for sense of place — styled by the active Preset. Horizontal swipe steps a verse at a time (updates the per-book reading position at verse grain); **vertical swipe flips the verse to its original language** (ADR-0021 — pointed Hebrew / Greek from the hub; sticky within the session, resets on ascent; transient apparatus, never the translation axis); pinch ascends back to the verse's exact ribbon position. Pure view state — no tables, no session data. Not a third mode: *mode* picks the purpose; Hagah is a state within one purpose. Codex has no Hagah.
 _Avoid_: meditation mode (not a mode — orientation still derives the mode), focus mode
 
 **Yad**:
@@ -128,6 +128,8 @@ _Avoid_: drawing (Markup also draws), stroke (one component of an Ink mark)
 A named, toggleable group of user marks with a `visible` flag — the "notes on/off" feature. Spans both Markup and Ink.
 
 ### Original language & lexicon (Phase 3)
+
+*(Hub ingest pulled forward by ADR-0021: `original_word` / `segment` land in P1.5 — OSHB Hebrew + Robinson-Pierpont Byzantine Greek, whole canon, Strong's/morphology stored as opaque codes — read verse-grain in Hagah. Alignment, Gloss, and lexicon decode remain Phase 3.)*
 
 **Segment**:
 The grain of an Original Word — one morpheme-occurrence. A Greek word is a single Segment; a Hebrew word is several. Siblings in order reconstruct the Written Word.

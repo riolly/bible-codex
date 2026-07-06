@@ -54,6 +54,14 @@ The POC shows the first taste (tap a word → gloss → original → meaning). B
 
 Journey progression, clue/Portal pacing, and tag suggestion all draw on one latent thing: the reader's **journey state** — what they've read and how familiar they are. One model, many surfaces. Worth building once, later.
 
+## Transliteration / pronunciation aid (deferred from ADR-0021)
+
+Hagah's original-language flip (ADR-0021) serves readers who can already sound out Hebrew/Greek
+script. The deferred companion: a **Latin-script pronunciation line** under the original, so a
+learner can murmur along. Deferred because it is word-grain editorial data — Gloss territory,
+Phase 3 — and doubles the hagah composition. Natural landing: when Gloss ships, transliteration
+rides the same word-grain rail (per Original Word / Written Word), zero new machinery.
+
 ## Span-grain literary emphasis (deferred from ADR-0017)
 
 The literary edition (ADR-0017) ships **block-grain** ops only. The deferred half: **emphasis on
