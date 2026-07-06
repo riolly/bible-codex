@@ -52,6 +52,22 @@ export function listBooks(db: SyncSqliteDb, translationAbbrev: string): MenuBook
 }
 
 /**
+ * The corpus edition stamp(s) currently bundled (ADR-0013). Recorded in the
+ * backup envelope (#13) so an export names the edition its anchors were minted
+ * against; P1 only records them (quote-witness reconciliation is P2). Usually a
+ * single edition across the bundled translations, but returns all distinct
+ * values so a mixed-edition bundle is faithfully recorded.
+ */
+export function listEditions(db: SyncSqliteDb): string[] {
+  return db
+    .selectDistinct({ edition: schema.translation.edition })
+    .from(schema.translation)
+    .orderBy(asc(schema.translation.edition))
+    .all()
+    .map((r) => r.edition);
+}
+
+/**
  * A book's highest chapter number (the Codex flip bound, #9). Scoped to one
  * book, so it reads a single MAX aggregate instead of aggregating every book
  * in the translation the way `listBooks` does. Chapter 0 front matter never

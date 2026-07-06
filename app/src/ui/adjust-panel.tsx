@@ -44,6 +44,10 @@ export interface AdjustPanelProps {
   readonly onMeasure: (next: number) => void;
   /** The Margin-rail width; expands the canvas outward only (ADR-0016). */
   readonly onMargin: (next: number) => void;
+  /** Export the user DB to a portable backup file (#13). */
+  readonly onExport: () => void;
+  /** Import a backup file, replacing local reading data (#13). */
+  readonly onImport: () => void;
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -127,6 +131,11 @@ export function AdjustPanel(props: AdjustPanelProps) {
           onDec={() => props.onMargin(clamp(values.railWidth - 1, 4, 16))}
           onInc={() => props.onMargin(clamp(values.railWidth + 1, 4, 16))}
         />
+
+        <Segment label="Data">
+          <Choice label="Export" selected={false} palette={palette} onPress={props.onExport} />
+          <Choice label="Import" selected={false} palette={palette} onPress={props.onImport} />
+        </Segment>
       </ScrollView>
     </View>
   );

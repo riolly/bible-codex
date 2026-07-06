@@ -3,7 +3,7 @@ import { importDatabaseFromAssetAsync, openDatabaseSync } from 'expo-sqlite';
 
 import type { MenuBook } from '../model/book-groups';
 import * as schema from './corpus-schema';
-import { chapterCount, listBooks, readChapter, type Chapter } from './corpus-read';
+import { chapterCount, listBooks, listEditions, readChapter, type Chapter } from './corpus-read';
 import { CORPUS_DIR } from './paths';
 
 /**
@@ -42,6 +42,11 @@ export async function openCorpus(): Promise<CorpusDb> {
 /** The renderable books with chapter counts, for the #23 book/chapter menu. */
 export function getBooks(db: CorpusDb, translationAbbrev: string): MenuBook[] {
   return listBooks(db, translationAbbrev);
+}
+
+/** The bundled corpus edition stamp(s), for the backup envelope (#13, ADR-0013). */
+export function getEditions(db: CorpusDb): string[] {
+  return listEditions(db);
 }
 
 /** A book's highest chapter number — the flip bound for Codex navigation (#9). */
