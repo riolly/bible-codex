@@ -51,8 +51,16 @@ The **landscape** reading surface — the *journey* mode. Continuous horizontal 
 _Avoid_: horizontal mode
 
 **Altitude ladder**:
-Scroll mode's three altitudes on one zoom axis (ADR-0019): **Scroll overview** (pinch out) ⇄ reading ribbon ⇄ **Hagah** (spread on a verse). Descent/ascent is zoom-choreographed so a verse never loses its *place* in the story. The rung above the overview is reserved for the library.
+Scroll mode's altitudes on one zoom axis (ADR-0019): **Library ring** (ADR-0020) ⇄ **Scroll overview** ⇄ reading ribbon ⇄ **Hagah** (spread on a verse). Descent/ascent is zoom-choreographed so a verse never loses its *place* in the story.
 _Avoid_: zoom levels (the altitudes are distinct compositions, not magnifications of one layout)
+
+**Library ring**:
+The library surface (ADR-0020): an inside-the-circle carousel of face-out book covers, Torah → Revelation → Torah, looping. One library for both orientations — landscape: the Altitude ladder's top rung; portrait: a pushed screen over Codex (reader stays home). Tap a book = open at its per-book bookmark (no chapter grid; the Scroll overview and the in-reader picker own address-picking). Carries nothing but ring, Category band, and covers — translation and every other axis toggle lives in settings.
+_Avoid_: menu (it is a place, not a list), home screen (the reader is home)
+
+**Category band**:
+The Library ring's coarse gear: the seven groups (Torah / Prophets / Writings / Gospels / Acts / Letters / Revelation — BibleProject taxonomy) as a scrollable strip below the ring; dragging it turns the ring at group grain, tapping a category spins there, and the highlight tracks the focused group (a position map of the ring). Navigation stays *rotation* at two grains — never a jump list.
+_Avoid_: tabs, filter (it never hides books — it rotates to them)
 
 **Scroll overview**:
 The top altitude — the whole book as one **schematic spatial map**: body text as faint bars, landmarks (book title, page-seam headings, section ornaments) rendered full, proportional left-right geometry. Tap/spread to descend into the ribbon there. Scroll's navigation story — by place, not lookup box. Uncurated books fall back to chapter seams, numbered on the map only (the map is navigation apparatus; the "Scroll is clean" rule governs the reading surface, not the map).

@@ -88,6 +88,8 @@ The pillars:
   hagah) — goldens for the hagah view join the preset golden set (light + dark).
 - The zoom ladder's **top rung is reserved**: zooming out past the book overview is where the
   library (nav carousel, separate grill) can attach later — designed for, not built here.
+  *(Resolved by [ADR-0020](0020-the-library-is-a-book-ring-carousel.md): the library ring
+  attaches above the overview; the axis runs ring → overview → ribbon → hagah verse.)*
 - The yad needs word hit-testing in the hagah composition — the existing word-tap machinery
   applies; pen-hover support is a device check at build time, touch is the guaranteed path.
 - Sequencing: this track builds **after** #36 steps 1–3 (the hagah typeset is preset-styled)
