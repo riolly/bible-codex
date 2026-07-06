@@ -118,6 +118,43 @@ export const layoutOverride = sqliteTable(
   ],
 );
 
+/**
+ * One live bookmark per book — the durable "each scroll keeps its place"
+ * invariant (ADR-0012). A canonical point anchor at VERSE grain
+ * (`bookSlug`/`chapter`/`verse`, canonical/av11n numbering), NOT a pixel or
+ * scroll offset (ADR-0004): verse grain is the device-independent truth that
+ * restores sanely at any viewport.
+ *
+ * Deliberately CANONICAL-ONLY — no translation column (the one exception to
+ * translation-bound user anchors, CONTEXT.md). The bookmark relates the reader
+ * to the passage, so a KJV⇄BSB switch (#12) lands in the same place via the
+ * canonical verse.
+ *
+ * In normal use the row is UPDATED, never deleted; `deletedAt` exists only for
+ * the uniform ADR-0011 sync convention. Uniqueness is a PARTIAL index (live
+ * rows only) so a soft-deleted tombstone never blocks re-bookmarking a book.
+ */
+export const readingPosition = sqliteTable(
+  'reading_position',
+  {
+    ...lifecycle,
+    /** Canonical book id (corpus book.slug) — a semantic key, never a corpus row id. */
+    bookSlug: text('book_slug').notNull(),
+    /** Canonical (av11n) chapter number. */
+    chapter: integer('chapter').notNull(),
+    /** Canonical (av11n) verse number — the grain; no word_index by design. */
+    verse: integer('verse').notNull(),
+  },
+  (table) => [
+    // Partial: only LIVE rows are unique per book, so a soft-deleted bookmark
+    // (tombstone kept for sync) does not block re-creating that book's row.
+    uniqueIndex('reading_position_book_unique')
+      .on(table.bookSlug)
+      .where(sql`${table.deletedAt} is null`),
+  ],
+);
+
 export type ReadingSettings = typeof readingSettings.$inferSelect;
 export type LayoutPreset = typeof layoutPreset.$inferSelect;
 export type LayoutOverride = typeof layoutOverride.$inferSelect;
+export type ReadingPositionRow = typeof readingPosition.$inferSelect;

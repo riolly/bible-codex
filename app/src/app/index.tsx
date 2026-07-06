@@ -5,12 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getBooks, getChapter, getChapterCount, openCorpus, type CorpusDb } from '@/db/corpus';
 import { setActiveTranslation } from '@/db/settings-write';
+import { useReadingBookmark, type PassageAnchor } from '@/db/use-bookmark';
 import { useReadingSettings } from '@/db/use-settings';
 import { CodexPage, type FlipDirection } from '@/draw/codex-page';
 import { useCardoFonts } from '@/draw/fonts';
 import { ScrollSurface } from '@/draw/scroll-surface';
 import { PALETTE } from '@/draw/style';
 import { layoutCodexPage, layoutScrollColumns, readingModeForViewport } from '@/engine/layout';
+import { bookmarkFromPosition } from '@/model/bookmark';
+import { anchorKey, positionKey } from '@/model/reading-position';
 import { useReadingPosition } from '@/store/reading-position';
 import { useUiStore } from '@/store/ui-store';
 import { AdjustPanelContainer } from '@/ui/adjust-panel-container';
@@ -54,28 +57,34 @@ export default function Reader() {
     [books, book],
   );
 
-  // The Skia surface is KEYED by passage+translation, so any change (flip,
-  // rotation, translation switch) remounts it with fresh text.
-  const passageId = `${translation}:${book}:${chapter}`;
+  // The Skia surface is KEYED by translation+passage (positionKey), so any
+  // change (flip, rotation, translation switch) remounts it with fresh text.
+  const passageId = positionKey(position);
   // The reading position also carries a canonical VERSE anchor (ADR-0016 / #14)
-  // — the pixel offset is never persisted. Its identity is CANONICAL
-  // (book:chapter, translation-free): token.verse is stored canonical (av11n),
-  // so the same verse ports directly across the bundled translations. That lets
-  // the anchor survive a rotation AND a KJV⇄BSB switch (same canonical passage,
-  // ADR-0012), while a flip or a jump to a new chapter resets it to the head.
-  const anchorId = `${book}:${chapter}`;
-  const anchor = useRef<{ id: string; verse: number } | null>(null);
+  // — the pixel offset is never persisted. Its identity is CANONICAL and
+  // translation-free (anchorKey = book:chapter): token.verse is stored canonical
+  // (av11n), so the same verse ports directly across the bundled translations.
+  // That lets the anchor survive a rotation AND a KJV⇄BSB switch (same canonical
+  // passage, ADR-0012), while a flip or a jump to a new chapter resets it to the
+  // head.
+  const anchor = useRef<PassageAnchor | null>(null);
+  // The durable bookmark (#14): restores this same anchor + position on cold
+  // open and persists every settled verse. `persist` is a no-op until restore
+  // has run, so the cold-open default never clobbers the real last bookmark.
+  const persist = useReadingBookmark(anchor);
   const onAnchorChange = useCallback(
     (verse: number) => {
-      anchor.current = { id: anchorId, verse };
+      anchor.current = { id: anchorKey(position), verse };
+      // Save the book's bookmark at verse grain — canonical-only, no pixels.
+      persist(bookmarkFromPosition(position, verse));
     },
-    [anchorId],
+    [position, persist],
   );
   // A lazy getter, not a live read: the surface resolves it once at mount, so
   // the parent never touches ref.current during render.
   const getInitialAnchor = useCallback(
-    () => (anchor.current?.id === anchorId ? anchor.current.verse : null),
-    [anchorId],
+    () => (anchor.current?.id === anchorKey(position) ? anchor.current.verse : null),
+    [position],
   );
 
   const chapterCount = useMemo(

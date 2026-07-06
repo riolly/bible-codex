@@ -1,9 +1,9 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "643000d0-a25f-4ab0-80cb-e219069a9bf8",
+  "id": "ff8236c0-2e0f-41d4-b643-1516e8bd677a",
   "prevIds": [
-    "c030f113-245f-4245-b2b0-2896a0ae01a4"
+    "52183e17-e5de-4539-ab57-670456aed040"
   ],
   "ddl": [
     {
@@ -12,6 +12,10 @@
     },
     {
       "name": "layout_preset",
+      "entityType": "tables"
+    },
+    {
+      "name": "reading_position",
       "entityType": "tables"
     },
     {
@@ -326,6 +330,76 @@
       "generated": null,
       "name": "id",
       "entityType": "columns",
+      "table": "reading_position"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "reading_position"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "reading_position"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "deleted_at",
+      "entityType": "columns",
+      "table": "reading_position"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "book_slug",
+      "entityType": "columns",
+      "table": "reading_position"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "chapter",
+      "entityType": "columns",
+      "table": "reading_position"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "verse",
+      "entityType": "columns",
+      "table": "reading_position"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
       "table": "reading_settings"
     },
     {
@@ -411,6 +485,15 @@
         "id"
       ],
       "nameExplicit": false,
+      "name": "reading_position_pk",
+      "table": "reading_position",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
       "name": "reading_settings_pk",
       "table": "reading_settings",
       "entityType": "pks"
@@ -436,6 +519,20 @@
       "name": "layout_override_scope_unique",
       "entityType": "indexes",
       "table": "layout_override"
+    },
+    {
+      "columns": [
+        {
+          "value": "book_slug",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": "\"reading_position\".\"deleted_at\" is null",
+      "origin": "manual",
+      "name": "reading_position_book_unique",
+      "entityType": "indexes",
+      "table": "reading_position"
     }
   ],
   "renames": []
