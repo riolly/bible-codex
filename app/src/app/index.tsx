@@ -221,6 +221,18 @@ export default function Reader() {
         <Text style={[styles.adjustText, { color: palette.letterbox }]}>Aa</Text>
       </Pressable>
       <AdjustPanelContainer />
+
+      {/* Lab entry (dev builds only): opens the /lab tuning screens (#47). */}
+      {__DEV__ && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open lab"
+          style={styles.labBtn}
+          onPress={() => router.push('/lab/carousel')}
+        >
+          <Text style={styles.labText}>⚗︎</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -261,4 +273,17 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   adjustText: { fontSize: 20, fontWeight: '600' },
+
+  labBtn: {
+    position: 'absolute',
+    left: 20,
+    bottom: 28,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(34,30,25,0.35)',
+  },
+  labText: { fontSize: 18, color: PALETTE.parchment },
 });
