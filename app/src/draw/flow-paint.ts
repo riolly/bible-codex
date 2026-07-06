@@ -103,9 +103,18 @@ export function createFlowPainter(
     originYPx: number,
   ) => {
     const baselinePx = originYPx + (line.y + leadingGapEm - ascent) * S;
+    // The engine measured every token role-blind at NORMAL weight, but bold
+    // headings paint wider than that slot — the overrun eats the inter-word
+    // space and crowds the words. Bold blocks are headings/titles (verse=null,
+    // no verse-num ornament and never hit-tested), so we may re-flow them:
+    // shift each token right by the accumulated (painted − measured) drift,
+    // which restores every gap to exactly one space width. Body prose is not
+    // bold, so it stays on the exact model x the engine placed (hit-testing).
+    const compensate = style.bold;
+    let drift = 0;
     for (const run of line.runs) {
       for (const item of run.items) {
-        const xPx = originXPx + item.x * S;
+        const xPx = originXPx + item.x * S + drift;
         if (item.kind === 'verse-num') {
           paintAtBaseline(
             canvas,
@@ -114,12 +123,9 @@ export function createFlowPainter(
             baselinePx - vn.raiseEm * S,
           );
         } else {
-          paintAtBaseline(
-            canvas,
-            { text: item.text, color: style.color, bold: style.bold, italic: style.italic, sizePx: S },
-            xPx,
-            baselinePx,
-          );
+          const spec = { text: item.text, color: style.color, bold: style.bold, italic: style.italic, sizePx: S };
+          paintAtBaseline(canvas, spec, xPx, baselinePx);
+          if (compensate) drift += shape(spec).getLongestLine() - item.width * S;
         }
       }
     }

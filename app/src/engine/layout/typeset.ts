@@ -96,24 +96,46 @@ export function typesetBlocks({ blocks, tokens, rules, metrics }: TypesetInput):
 }
 
 /**
+ * Opening punctuation — quotes/brackets that OPEN a span. Unlike trailing
+ * punctuation (comma, period, closing quote) these bind FORWARD: they glue to
+ * the word they introduce (space before them, none after), never to the word
+ * that precedes them. Classified by the first code point; the corpus uses
+ * unambiguous curly quotes, so straight ' / " (possessive vs elision, which are
+ * context-dependent) are deliberately excluded and stay backward-binding.
+ */
+const OPENING_PUNCT = /^[“‘([{«‹¿¡]/u;
+
+const isOpeningPunct = (token: Token): boolean =>
+  token.kind === 'punct' && OPENING_PUNCT.test(token.text);
+
+/**
  * Group tokens into unbreakable chunks. Whitespace is not a Token
- * (CONTEXT.md) — inter-chunk space is synthesized here. Punctuation glues to
- * the preceding word (never starts a line); a verse-start word is prefixed by
- * its verse-number ornament slot.
+ * (CONTEXT.md) — inter-chunk space is synthesized here. Trailing punctuation
+ * glues to the preceding word (never starts a line); opening punctuation glues
+ * to the FOLLOWING word (so `said, “Let` spaces after the comma, not after the
+ * quote); a verse-start word is prefixed by its verse-number ornament slot.
  */
 function buildChunks(tokens: readonly Token[], metrics: MeasureToken): Chunk[] {
   const chunks: { items: UnplacedItem[]; width: number }[] = [];
+  // Opening punct waits here for the word it introduces, to lead that chunk.
+  let leading: UnplacedItem[] = [];
+
+  const toItem = (token: Token): UnplacedItem => ({
+    kind: 'token' as const,
+    seq: token.seq,
+    text: token.text,
+    tokenKind: token.kind,
+    verse: token.verse,
+    width: metrics(token.text),
+  });
 
   for (const token of tokens) {
-    const item = {
-      kind: 'token' as const,
-      seq: token.seq,
-      text: token.text,
-      tokenKind: token.kind,
-      verse: token.verse,
-      width: metrics(token.text),
-    };
-    const startsChunk = token.kind === 'word' || chunks.length === 0;
+    if (isOpeningPunct(token)) {
+      leading.push(toItem(token));
+      continue;
+    }
+    const item = toItem(token);
+    const startsChunk = token.kind === 'word' || (chunks.length === 0 && leading.length === 0);
     if (startsChunk) {
       const items: UnplacedItem[] = [];
       if (token.verseStart && token.verse !== null) {
@@ -123,12 +145,26 @@ function buildChunks(tokens: readonly Token[], metrics: MeasureToken): Chunk[] {
           width: metrics(String(token.verse)) * VERSE_NUM_SCALE + VERSE_NUM_PAD,
         });
       }
-      items.push(item);
+      items.push(...leading, item);
+      leading = [];
       chunks.push({ items, width: items.reduce((w, i) => w + i.width, 0) });
     } else {
+      // Trailing punct binds backward; flush any stranded opening punct with it.
       const chunk = chunks[chunks.length - 1];
-      chunk.items.push(item);
-      chunk.width += item.width;
+      chunk.items.push(...leading, item);
+      chunk.width += leading.reduce((w, i) => w + i.width, item.width);
+      leading = [];
+    }
+  }
+  // Opening punct with no word after it (block ends on a quote) — attach
+  // backward so it never vanishes; a punct-only block becomes its own chunk.
+  if (leading.length > 0) {
+    const chunk = chunks[chunks.length - 1];
+    if (chunk) {
+      chunk.items.push(...leading);
+      chunk.width += leading.reduce((w, i) => w + i.width, 0);
+    } else {
+      chunks.push({ items: leading, width: leading.reduce((w, i) => w + i.width, 0) });
     }
   }
 
@@ -187,6 +223,10 @@ function itemDirection(item: LineItem): 'ltr' | 'rtl' | null {
   return RTL_CHAR.test(item.text) ? 'rtl' : 'ltr';
 }
 
+/** A placed opening-punct item — binds FORWARD like a verse-num (see buildChunks). */
+const isOpeningItem = (item: LineItem): boolean =>
+  item.kind === 'token' && item.tokenKind === 'punct' && OPENING_PUNCT.test(item.text);
+
 /**
  * Split a placed line into maximal same-direction runs. Items keep LOGICAL
  * order in each run's array; within an rtl run the x positions are mirrored so
@@ -203,9 +243,9 @@ function splitRuns(items: readonly LineItem[]): TokenRun[] {
     const dir = itemDirection(item);
     const current = runs[runs.length - 1];
     if (dir === null) {
-      // Verse-num binds FORWARD to the word it introduces; punctuation binds
-      // BACKWARD to the word it follows (leading punctuation waits forward).
-      if (item.kind === 'verse-num' || !current) pending.push(item);
+      // Verse-num and opening punct bind FORWARD to the word they introduce;
+      // trailing punctuation binds BACKWARD to the word it follows.
+      if (item.kind === 'verse-num' || isOpeningItem(item) || !current) pending.push(item);
       else current.items.push(item);
     } else if (current && current.direction === dir) {
       current.items.push(...pending, item);

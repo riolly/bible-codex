@@ -136,10 +136,11 @@ describe('useReadingBookmark', () => {
     persist({ bookSlug: 'John', chapter: 3, verse: 11 });
     persist({ bookSlug: 'John', chapter: 3, verse: 12 });
 
-    act(() => jest.advanceTimersByTime(BOOKMARK_SAVE_DEBOUNCE_MS - 1));
+    jest.advanceTimersByTime(BOOKMARK_SAVE_DEBOUNCE_MS - 1);
     expect(mockSave).not.toHaveBeenCalled(); // still coalescing
 
-    act(() => jest.advanceTimersByTime(1));
+    jest.advanceTimersByTime(1);
+    await Promise.resolve(); // let the fired write's mock promise settle
     expect(mockSave).toHaveBeenCalledTimes(1); // one write, not three
     expect(mockSave).toHaveBeenCalledWith({ bookSlug: 'John', chapter: 3, verse: 12 });
   });

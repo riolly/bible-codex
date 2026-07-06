@@ -60,6 +60,12 @@ async function seedOnce(): Promise<void> {
   if (await loadSettingsRow()) return;
   const t = now();
   const ids = SEED_PRESETS.map(() => uuidv7());
+  // Ship Large Print as the out-of-the-box default (readability first); fall
+  // back to the first preset if that name ever goes away.
+  const defaultIdx = Math.max(
+    0,
+    SEED_PRESETS.findIndex((p) => p.name === 'Large Print'),
+  );
   await db.insert(layoutPreset).values(
     SEED_PRESETS.map((preset, i) => ({
       id: ids[i],
@@ -80,7 +86,7 @@ async function seedOnce(): Promise<void> {
   await db.insert(readingSettings).values({
     id: uuidv7(),
     theme: 'light',
-    activePresetId: ids[0],
+    activePresetId: ids[defaultIdx],
     createdAt: t,
     updatedAt: t,
   });
