@@ -19,7 +19,7 @@ import type { BlockRole, Genre } from '../model/corpus';
 export interface Palette {
   /** Body ink. */
   readonly ink: string;
-  /** Gilt — verse-number ornaments, acrostic letters, the versal. */
+  /** Gilt — verse-number ornaments and acrostic letters. */
   readonly gilt: string;
   /** Muted ink — superscriptions and secondary headings. */
   readonly muted: string;

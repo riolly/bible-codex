@@ -12,7 +12,7 @@ import { loadHeadlessFonts, renderPageToPng, renderScrollToPng } from './harness
 
 type Chapter = ReturnType<typeof miniChapter>;
 
-/** Passages: a mixed narrative w/ drop-cap, a poetry psalm, a prose paragraph. */
+/** Passages: a mixed narrative, a poetry psalm, a prose paragraph, BSB speech. */
 const PASSAGES: Record<string, () => Chapter> = {
   creation: () => miniChapter(),
   psalm: () =>
@@ -51,6 +51,24 @@ const PASSAGES: Record<string, () => Chapter> = {
         genre: 'prose',
         verse: 3,
         text: 'All things were made by him ; and without him was not any thing made that was made .',
+      })
+      .build(),
+  // BSB-style speech: curly quotes as their own tokens (`,` then `“` split, the
+  // closing `,”` glued) — exercises opening-punct forward-binding (`said, “Let`)
+  // and the bold section heading. KJV carries no quote marks; this is the case
+  // that would have shown the `said,“ Let` mis-spacing before the engine fix.
+  speech: () =>
+    new ChapterBuilder(1)
+      .block({ genre: 'heading', role: 'section', text: 'The First Day' })
+      .block({
+        genre: 'prose',
+        verse: 3,
+        text: 'And God said , “ Let there be light ,” and there was light .',
+      })
+      .block({
+        genre: 'prose',
+        verse: 4,
+        text: 'And God saw that the light was good ( it was the first day ) , and He divided the light from the darkness .',
       })
       .build(),
 };
