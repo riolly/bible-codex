@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  tree-sitter@0.25.0:
+    hash: bce48a368ec18e71fe72822d958e1f663eddcaf3a022fad8c0946650c3610d80
+    path: patches/tree-sitter@0.25.0.patch
+
 importers:
 
   .:
@@ -7564,7 +7569,9 @@ snapshots:
       metro-runtime: 0.84.4
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@react-native/normalize-colors@0.86.0': {}
 
@@ -11925,13 +11932,13 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  tree-sitter-usfm3@3.2.0(tree-sitter@0.25.0):
+  tree-sitter-usfm3@3.2.0(tree-sitter@0.25.0(patch_hash=bce48a368ec18e71fe72822d958e1f663eddcaf3a022fad8c0946650c3610d80)):
     dependencies:
       node-addon-api: 8.4.0
       node-gyp-build: 4.8.4
-      tree-sitter: 0.25.0
+      tree-sitter: 0.25.0(patch_hash=bce48a368ec18e71fe72822d958e1f663eddcaf3a022fad8c0946650c3610d80)
 
-  tree-sitter@0.25.0:
+  tree-sitter@0.25.0(patch_hash=bce48a368ec18e71fe72822d958e1f663eddcaf3a022fad8c0946650c3610d80):
     dependencies:
       node-addon-api: 8.9.0
       node-gyp-build: 4.8.4
@@ -12112,8 +12119,8 @@ snapshots:
     dependencies:
       '@xmldom/xmldom': 0.8.13
       ajv: 8.20.0
-      tree-sitter: 0.25.0
-      tree-sitter-usfm3: 3.2.0(tree-sitter@0.25.0)
+      tree-sitter: 0.25.0(patch_hash=bce48a368ec18e71fe72822d958e1f663eddcaf3a022fad8c0946650c3610d80)
+      tree-sitter-usfm3: 3.2.0(tree-sitter@0.25.0(patch_hash=bce48a368ec18e71fe72822d958e1f663eddcaf3a022fad8c0946650c3610d80))
       xpath: 0.0.34
     transitivePeerDependencies:
       - tree_sitter

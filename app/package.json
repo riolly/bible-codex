@@ -76,6 +76,9 @@
       "better-sqlite3",
       "tree-sitter",
       "tree-sitter-usfm3"
-    ]
+    ],
+    "patchedDependencies": {
+      "tree-sitter@0.25.0": "patches/tree-sitter@0.25.0.patch"
+    }
   }
 }
