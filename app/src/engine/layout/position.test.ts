@@ -42,8 +42,14 @@ describe('codex position (vertical)', () => {
     expect(codexVerseAtOffset(page, 0)).toBe(1);
   });
 
-  it('falls back to page top for an absent verse', () => {
-    expect(codexOffsetForVerse(page, 999)).toBe(0);
+  it('falls back to the nearest earlier verse for an absent verse (translation omission)', () => {
+    // A verse past the end (e.g. one the switched-to translation relegates to a
+    // note) lands on the last present verse, not the page top.
+    expect(codexOffsetForVerse(page, 999)).toBe(codexOffsetForVerse(page, 3));
+  });
+
+  it('falls back to page top when no earlier verse exists', () => {
+    expect(codexOffsetForVerse(page, 0)).toBe(0);
   });
 });
 

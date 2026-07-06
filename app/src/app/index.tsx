@@ -104,9 +104,14 @@ export default function Reader() {
   // the durable settings row resolves, adopt its translation and then step back;
   // later toggles drive the store directly and must not be overwritten here.
   const translationSeeded = useRef(false);
+  // Set the instant the user picks a translation. If a toggle beats the async
+  // settings load, the (now stale) seed must NOT clobber that choice back — the
+  // user's write is already in flight and will win in the durable row.
+  const userChoseTranslation = useRef(false);
   useEffect(() => {
     if (!settingsReady || translationSeeded.current) return;
     translationSeeded.current = true;
+    if (userChoseTranslation.current) return; // user already chose before the seed resolved
     const p = useReadingPosition.getState().position;
     if (activeTranslation !== p.translation) goTo({ ...p, translation: activeTranslation });
   }, [settingsReady, activeTranslation, goTo]);
@@ -117,6 +122,7 @@ export default function Reader() {
   // are canonical-keyed, so they survive the switch untouched.
   const onChangeTranslation = useCallback(
     (next: Translation) => {
+      userChoseTranslation.current = true;
       if (next === translation) return;
       goTo({ translation: next, book, chapter });
       void setActiveTranslation(next);

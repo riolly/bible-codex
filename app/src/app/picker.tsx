@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getBooks, openCorpus, type CorpusDb } from '@/db/corpus';
+import { setActiveTranslation } from '@/db/settings-write';
 import { PALETTE } from '@/draw/style';
 import { groupBooks, type MenuBook } from '@/model/book-groups';
 import { samePosition } from '@/model/reading-position';
@@ -51,6 +52,9 @@ export default function Picker() {
 
   function jump(book: string, chapter: number) {
     goTo({ translation, book, chapter });
+    // Persist the picker's translation too (#12): the reader header toggle is not
+    // the only way to switch, so a picker jump must seed a cold open just the same.
+    void setActiveTranslation(translation);
     router.back();
   }
 
