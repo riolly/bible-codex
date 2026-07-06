@@ -1,0 +1,13 @@
+# av11n versification — the CANONICAL base (KJV/English numbering, ADR-0010).
+#
+# The corpus canonical numbering IS av11n, so an av11n translation diverges from
+# canonical NOWHERE: this file intentionally carries zero mapping lines and its
+# versification_map is empty (the sparse table's identity case). Both bundled
+# translations (KJV, BSB) declare `versification: av11n`, so neither populates a
+# single row — correct, and exactly the OVERVIEW §5 gap the divergent test
+# fixture (scripts/ingest/fixtures/divergent.vrs) exists to exercise instead.
+#
+# Adding a translation on a DIFFERENT scheme (e.g. a Hebrew/org-numbered
+# edition) = dropping its `<scheme>.vrs` here with `NATIVE = CANONICAL` mapping
+# lines; run.ts resolves the file by the translation's `versification` field and
+# parseVrs() (vrs.ts) turns it into rows.

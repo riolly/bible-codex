@@ -64,8 +64,9 @@ describe('useReadingBookmark', () => {
       chapter: 3,
     });
     // Verse anchor seeded and stamped with the restored passage, so the surface
-    // opens on John 3:16, not the chapter head.
-    expect(anchorRef.current).toEqual({ id: 'KJV/John/3', verse: 16 });
+    // opens on John 3:16, not the chapter head. The anchor key is translation-free
+    // (#12: book:chapter), so a later KJV⇄BSB switch keeps the restored verse.
+    expect(anchorRef.current).toEqual({ id: 'John:3', verse: 16 });
   });
 
   it('leaves the default position when there is no bookmark yet', async () => {

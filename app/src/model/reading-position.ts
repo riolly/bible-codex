@@ -44,3 +44,12 @@ export function samePosition(a: ReadingPosition, b: ReadingPosition): boolean {
 export function positionKey(p: ReadingPosition): string {
   return `${p.translation}/${p.book}/${p.chapter}`;
 }
+
+/**
+ * Translation-FREE passage key for the verse anchor (#12). A KJV⇄BSB switch
+ * keeps the same book:chapter, so the carried canonical verse survives the
+ * switch; a flip or a jump to a new chapter changes it and resets to the head.
+ */
+export function anchorKey(p: Pick<ReadingPosition, 'book' | 'chapter'>): string {
+  return `${p.book}:${p.chapter}`;
+}

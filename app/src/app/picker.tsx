@@ -4,19 +4,18 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getBooks, openCorpus, type CorpusDb } from '@/db/corpus';
+import { setActiveTranslation } from '@/db/settings-write';
 import { PALETTE } from '@/draw/style';
 import { groupBooks, type MenuBook } from '@/model/book-groups';
 import { samePosition } from '@/model/reading-position';
 import { useReadingPosition } from '@/store/reading-position';
+import { TRANSLATIONS, TranslationToggle, type Translation } from '@/ui/translation-toggle';
 
 // The book/chapter picker (#10): random-access navigation over the bundled
 // corpus. Two-pane master/detail — grouped book list, chapter grid — seeded
 // from the current position and driving the ONE shared source: selecting a
 // chapter calls `goTo` and returns to the reader, so the picker and the flip
 // gesture (#9) never disagree about where the reader is.
-
-const TRANSLATIONS = ['KJV', 'BSB'] as const;
-type Translation = (typeof TRANSLATIONS)[number];
 
 export default function Picker() {
   const position = useReadingPosition((s) => s.position);
@@ -53,6 +52,9 @@ export default function Picker() {
 
   function jump(book: string, chapter: number) {
     goTo({ translation, book, chapter });
+    // Persist the picker's translation too (#12): the reader header toggle is not
+    // the only way to switch, so a picker jump must seed a cold open just the same.
+    void setActiveTranslation(translation);
     router.back();
   }
 
@@ -141,31 +143,6 @@ function BookRow({
   );
 }
 
-function TranslationToggle({
-  value,
-  onChange,
-}: {
-  value: Translation;
-  onChange: (t: Translation) => void;
-}) {
-  return (
-    <View style={styles.toggle}>
-      {TRANSLATIONS.map((t) => {
-        const on = t === value;
-        return (
-          <Pressable
-            key={t}
-            style={[styles.toggleItem, on && styles.toggleItemOn]}
-            onPress={() => onChange(t)}
-          >
-            <Text style={[styles.toggleText, on && styles.toggleTextOn]}>{t}</Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
-
 const RULE = '#DCCFB4';
 
 const styles = StyleSheet.create({
@@ -225,10 +202,4 @@ const styles = StyleSheet.create({
   cellCurrent: { backgroundColor: PALETTE.ink, borderColor: PALETTE.ink },
   cellText: { fontSize: 16, color: PALETTE.ink },
   cellTextCurrent: { color: PALETTE.parchment },
-
-  toggle: { flexDirection: 'row', borderWidth: 1, borderColor: RULE, borderRadius: 999, overflow: 'hidden' },
-  toggleItem: { paddingVertical: 5, paddingHorizontal: 14 },
-  toggleItemOn: { backgroundColor: PALETTE.ink },
-  toggleText: { fontSize: 12, letterSpacing: 1, color: PALETTE.muted },
-  toggleTextOn: { color: PALETTE.parchment },
 });

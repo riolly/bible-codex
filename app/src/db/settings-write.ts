@@ -106,6 +106,16 @@ export async function setTheme(theme: Theme): Promise<void> {
     .where(eq(readingSettings.id, row.id));
 }
 
+/** Persist the reader's chosen translation (abbrev) — the durable seed (#12). */
+export async function setActiveTranslation(abbrev: string): Promise<void> {
+  const row = await loadSettingsRow();
+  if (!row) return;
+  await db
+    .update(readingSettings)
+    .set({ activeTranslation: abbrev, updatedAt: now() })
+    .where(eq(readingSettings.id, row.id));
+}
+
 /** Refine the active preset's global knobs (the cascade base). */
 export async function updateActivePreset(patch: KnobPatch): Promise<void> {
   const row = await loadSettingsRow();

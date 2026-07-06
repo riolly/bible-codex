@@ -3,6 +3,11 @@ import type { BaseSQLiteDatabase } from 'drizzle-orm/sqlite-core';
 
 import type { MenuBook } from '../model/book-groups';
 import type { Block, Token } from '../model/corpus';
+import {
+  buildVersificationMap,
+  type VersificationMap,
+  type VersificationRow,
+} from '../model/versification';
 import * as schema from './corpus-schema';
 
 /**
@@ -123,4 +128,36 @@ export function readChapter(
     .all();
 
   return { blocks, tokens };
+}
+
+/**
+ * A translation's sparse native↔canonical divergence rows (#12). Empty for an
+ * av11n translation (KJV/BSB) — the map is identity there. Book slug (not the
+ * storage id) is returned, matching the coordinate-keyed model (ADR-0001).
+ */
+export function readVersification(
+  db: SyncSqliteDb,
+  translationAbbrev: string,
+): VersificationRow[] {
+  return db
+    .select({
+      book: schema.book.slug,
+      srcChapter: schema.versificationMap.srcChapter,
+      srcVerse: schema.versificationMap.srcVerse,
+      canonChapter: schema.versificationMap.canonChapter,
+      canonVerse: schema.versificationMap.canonVerse,
+    })
+    .from(schema.versificationMap)
+    .innerJoin(schema.translation, eq(schema.versificationMap.translationId, schema.translation.id))
+    .innerJoin(schema.book, eq(schema.versificationMap.bookId, schema.book.id))
+    .where(eq(schema.translation.abbrev, translationAbbrev))
+    .all();
+}
+
+/** Build the in-memory native↔canonical map for a translation (identity if empty). */
+export function loadVersificationMap(
+  db: SyncSqliteDb,
+  translationAbbrev: string,
+): VersificationMap {
+  return buildVersificationMap(readVersification(db, translationAbbrev));
 }

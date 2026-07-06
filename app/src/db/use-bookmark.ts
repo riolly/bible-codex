@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
 
 import { positionForBookmark, type Bookmark } from '@/model/bookmark';
-import { positionKey } from '@/model/reading-position';
+import { anchorKey } from '@/model/reading-position';
 import { useReadingPosition } from '@/store/reading-position';
 import { loadLastBookmark, saveBookmark } from './bookmark';
 
@@ -75,7 +75,9 @@ export function useReadingBookmark(
         const position = positionForBookmark(row, translation);
         // Seed the anchor first so the surface's mount-time read sees the verse,
         // then move the store — the reader re-renders onto the restored passage.
-        anchorRef.current = { id: positionKey(position), verse: row.verse };
+        // The anchor key is translation-free (#12): restore lands the verse even
+        // if the cold-open translation later swaps to the seeded one.
+        anchorRef.current = { id: anchorKey(position), verse: row.verse };
         goTo(position);
       })
       .catch(() => {

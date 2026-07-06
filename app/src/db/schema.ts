@@ -71,6 +71,14 @@ export const readingSettings = sqliteTable('reading_settings', {
     .default('light'),
   /** The currently selected preset (→ layout_preset.id); null = default preset. */
   activePresetId: text('active_preset_id'),
+  /**
+   * The translation the reader last chose (abbrev, e.g. 'KJV'/'BSB') — #12. The
+   * ephemeral reading-position store (ADR-0008) carries the live translation;
+   * this is its durable seed so a cold open reopens in the last translation
+   * rather than always the KJV default. Canonical-only bookmark (#14, ADR-0012)
+   * stays translation-free; the translation CHOICE lives here.
+   */
+  activeTranslation: text('active_translation').notNull().default('KJV'),
 });
 
 /**

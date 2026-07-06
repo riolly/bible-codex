@@ -1,0 +1,25 @@
+# DIVERGENT versification fixture (ADR-0010 hard gate, OVERVIEW §5).
+#
+# A synthetic Hebrew/critical-style numbering that DIFFERS from the av11n
+# canonical at the four classic sites. Both bundled translations (KJV, BSB) are
+# av11n and diverge nowhere, so this fixture is the ONLY thing that exercises the
+# native↔canonical round-trip every Anchor depends on. Each line is
+#   NATIVE = CANONICAL
+# and every site below is bijective within its range so the round-trip is exact.
+
+# Psalm 3 — Hebrew counts the superscription as verse 1, shifting the psalm by
+# one (canonical treats the title as the unversed verse 0).
+PSA 3:1-9 = PSA 3:0-8
+
+# Joel — Hebrew has 4 chapters. 3:1-5 folds into canonical 2:28-32; Hebrew ch.4
+# is canonical ch.3.
+JOL 3:1-5 = JOL 2:28-32
+JOL 4:1-21 = JOL 3:1-21
+
+# Malachi — Hebrew ch.3 runs to v24; canonical splits those into ch.4.
+MAL 3:19-24 = MAL 4:1-6
+
+# Revelation — the sea-shore line: native 12:18 is canonical 13:1, shifting the
+# rest of ch.13 by one.
+REV 12:18 = REV 13:1
+REV 13:1-17 = REV 13:2-18

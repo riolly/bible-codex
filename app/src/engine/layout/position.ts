@@ -66,16 +66,27 @@ function columnVerses(column: ScrollColumn): Set<number> {
 // ── Codex (vertical) ────────────────────────────────────────────────────────
 
 /**
- * Canvas-em Y of the first line that introduces `verse` (0 = page top when the
- * verse is absent — a safe fallback that never scrolls out of range).
+ * Canvas-em Y of the first line that introduces `verse`. When the verse is
+ * absent (e.g. a KJV⇄BSB switch onto a verse the target relegates to a note),
+ * fall back to the nearest EARLIER verse present, so the switch lands on
+ * adjacent scripture rather than jumping to the page top; 0 only when no
+ * earlier verse exists either.
  */
 export function codexOffsetForVerse(page: PageLayout, verse: number): number {
+  let fallback = 0;
+  let fallbackVerse = -Infinity;
   for (const block of page.blocks) {
     for (const line of block.lines) {
-      if (lineVerse(line) === verse) return page.text.y + line.y;
+      const v = lineVerse(line);
+      if (v === null) continue;
+      if (v === verse) return page.text.y + line.y;
+      if (v < verse && v > fallbackVerse) {
+        fallbackVerse = v;
+        fallback = page.text.y + line.y;
+      }
     }
   }
-  return 0;
+  return fallback;
 }
 
 /**
@@ -106,13 +117,24 @@ export function codexVerseAtOffset(page: PageLayout, offset: number): number | n
 
 /**
  * Canvas-em X of the column that contains `verse` (its frame origin, so the
- * column's leading margin shows). 0 when the verse is absent.
+ * column's leading margin shows). When the verse is absent (a translation that
+ * omits it), fall back to the column of the nearest EARLIER verse present, so a
+ * switch lands on adjacent scripture rather than the first column; 0 only when
+ * no earlier verse exists either.
  */
 export function scrollOffsetForVerse(layout: ScrollLayout, verse: number, marginEm: number): number {
+  let fallback = 0;
+  let fallbackVerse = -Infinity;
   for (const column of layout.columns) {
-    if (columnVerses(column).has(verse)) return Math.max(0, column.x - marginEm);
+    for (const v of columnVerses(column)) {
+      if (v === verse) return Math.max(0, column.x - marginEm);
+      if (v < verse && v > fallbackVerse) {
+        fallbackVerse = v;
+        fallback = Math.max(0, column.x - marginEm);
+      }
+    }
   }
-  return 0;
+  return fallback;
 }
 
 /**

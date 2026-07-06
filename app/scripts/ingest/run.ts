@@ -10,7 +10,7 @@
  * an asset; run this before a native/dev build that renders scripture.
  */
 
-import { readdirSync, readFileSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { IngestStats } from './normalize';
@@ -19,9 +19,17 @@ import { computeEdition, type SourceFile } from './edition';
 import { normalizeUsj } from './normalize';
 import { usfmToUsj, usjBookCode } from './parse';
 import { SOURCES } from './sources';
-import { createCorpusDb, insertBook, insertBookRows, insertTranslation } from './write-db';
+import { parseVrs } from './vrs';
+import {
+  createCorpusDb,
+  insertBook,
+  insertBookRows,
+  insertTranslation,
+  insertVersification,
+} from './write-db';
 
 const SOURCES_ROOT = join(import.meta.dirname, 'sources');
+const VRS_ROOT = join(import.meta.dirname, 'vrs');
 const OUT_DIR = join(import.meta.dirname, '..', '..', 'assets', 'corpus');
 const OUT_PATH = join(OUT_DIR, 'corpus.db');
 
@@ -63,12 +71,15 @@ function main() {
     const totals: Record<string, number> = {};
     let blockCount = 0;
     let tokenCount = 0;
+    let vmapCount = 0;
+    const bookIdBySlug = new Map<string, number>();
     const ingestAll = sqlite.transaction(() => {
       for (const file of [...files].sort(
         (a, b) => CANON_BY_CODE.get(a.code)!.position - CANON_BY_CODE.get(b.code)!.position,
       )) {
         const bookDef = CANON_BY_CODE.get(file.code)!;
         const bookId = insertBook(db, bookDef);
+        bookIdBySlug.set(bookDef.slug, bookId);
         const { usj, parseErrors, versifiedTitleRewrites } = usfmToUsj(file.usfm, {
           rewriteVersifiedD: src.rewriteVersifiedD,
         });
@@ -95,15 +106,49 @@ function main() {
         blockCount += blocks.length;
         tokenCount += tokens.length;
       }
+      // Sparse native↔canonical map (#12, ADR-0010): resolve the translation's
+      // versification scheme to its .vrs file. av11n == canonical → no file
+      // needed / zero rows; a divergent scheme drops its rows here.
+      vmapCount = insertVersificationForScheme(db, translationId, src.meta.versification, bookIdBySlug);
     });
     ingestAll();
-    console.log(`  ${blockCount} blocks, ${tokenCount} tokens`);
+    console.log(`  ${blockCount} blocks, ${tokenCount} tokens, ${vmapCount} versification rows`);
     console.log(`  not modelled in Phase 1 (dropped/unwrapped, counted): ${JSON.stringify(totals)}`);
   }
 
   sqlite.exec('VACUUM; ANALYZE;');
   sqlite.close();
   console.log(`\n✓ wrote ${OUT_PATH}`);
+}
+
+/**
+ * Populate one translation's `versification_map` from its scheme's `.vrs` file
+ * (vrs/<scheme>.vrs). Returns the row count. A missing file or an all-identity
+ * (av11n) file yields 0 rows — the sparse-table contract. A row for a book not
+ * in this corpus is a fixture/data error and fails the build.
+ */
+function insertVersificationForScheme(
+  db: ReturnType<typeof createCorpusDb>['db'],
+  translationId: number,
+  scheme: string,
+  bookIdBySlug: ReadonlyMap<string, number>,
+): number {
+  const path = join(VRS_ROOT, `${scheme}.vrs`);
+  if (!existsSync(path)) return 0; // scheme without a divergence file = identity
+  const rows = parseVrs(readFileSync(path, 'utf8'));
+  const resolved = rows.map((r) => {
+    const bookId = bookIdBySlug.get(r.book);
+    if (bookId == null) throw new Error(`${scheme}.vrs: maps book "${r.book}" absent from corpus`);
+    return {
+      bookId,
+      srcChapter: r.srcChapter,
+      srcVerse: r.srcVerse,
+      canonChapter: r.canonChapter,
+      canonVerse: r.canonVerse,
+    };
+  });
+  insertVersification(db, translationId, resolved);
+  return resolved.length;
 }
 
 /** Corpus invariants (CONTEXT.md) — fail the build, not the reader. */
