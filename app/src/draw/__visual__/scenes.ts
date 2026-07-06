@@ -73,7 +73,9 @@ const PASSAGES: Record<string, () => Chapter> = {
       .build(),
 };
 
-const THEME_NAMES: readonly Theme[] = ['light', 'dark'];
+// Dark theme dropped from the golden matrix — light is the shipped default and
+// the only surface we gate on (halves the baseline count).
+const THEME_NAMES: readonly Theme[] = ['light'];
 const FONT_SIZES: readonly { readonly label: string; readonly px: number }[] = [
   { label: 'base', px: 18 },
   { label: 'large', px: 26 },
