@@ -50,3 +50,13 @@ jobs:
       - run: pnpm run lint
 
       - run: pnpm run test
+
+      # A failed visual golden is a pass/fail without a picture unless we ship
+      # the diff images out of the runner.
+      - name: Upload golden diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-diffs
+          path: app/src/draw/__visual__/__image_snapshots__/__diff_output__/
+          if-no-files-found: ignore

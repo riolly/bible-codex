@@ -1,6 +1,6 @@
 # bible-codex
 
-Use /caveman always except when done or reporting/explaining to me.
+Always use /caveman except when you are done and reporting/answering back to me (make it easy to understand).
 
 ## Agent skills
 
@@ -10,16 +10,14 @@ Leverage these skills during development:
 /codebase-design
 
 And these skill when needed:
-/diagnosing-bugs
-/prototype
 /research
-
-/code-review
+/prototype
+/diagnosing-bugs
+/verify-device (before closing a phase/PRD issue)
 
 ### Code navigation
 
-Prefer `ast-grep` for structural search/codemods, and use the `ts-app` / `ts-teach` Use LSP-MCP on big/unknown files where whole-file reads are costly; plain `Read` for small or
-already-known files (LSP startup + round-trips aren't worth it).
+Prefer `ast-grep` for structural search/codemods, and use the `ts-app` / `ts-teach` Use LSP-MCP on big/unknown files where whole-file reads are costly; plain `Read` for small or already-known files (LSP startup + round-trips aren't worth it).
 
 ### Issue tracker
 
