@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BUILTIN_PRESETS, DEFAULT_PRESET_SLUG } from '@/engine/layout';
 import type { CascadeContext } from '@/engine/layout';
-import { resolveSettings, settingsPalette } from './settings';
+import { normalizeTextEdition, resolveSettings, settingsPalette } from './settings';
 
 const PROSE: CascadeContext = { genre: 'prose', role: null, bookSlug: 'Genesis' };
 const POETRY: CascadeContext = { genre: 'poetry', role: null, bookSlug: 'Psalms' };
@@ -52,5 +52,14 @@ describe('settingsPalette', () => {
   it('keeps dark/light as a global ink toggle', () => {
     expect(settingsPalette('classic', 'light').ink).not.toBe(settingsPalette('classic', 'dark').ink);
     expect(settingsPalette('classic', 'dark').ink).toBe(settingsPalette('modern', 'dark').ink);
+  });
+});
+
+describe('normalizeTextEdition', () => {
+  it('accepts the literary edition and falls back to usfm for missing or stale values', () => {
+    expect(normalizeTextEdition('literary')).toBe('literary');
+    expect(normalizeTextEdition('usfm')).toBe('usfm');
+    expect(normalizeTextEdition(null)).toBe('usfm');
+    expect(normalizeTextEdition('future-edition')).toBe('usfm');
   });
 });

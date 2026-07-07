@@ -25,10 +25,12 @@ function props(over: Partial<SettingsSurfaceProps> = {}): SettingsSurfaceProps {
     ],
     activePresetId: 'classic',
     fontScale: 1,
+    textEdition: 'usfm',
     onClose: jest.fn(),
     onTheme: jest.fn(),
     onSelectPreset: jest.fn(),
     onFontScale: jest.fn(),
+    onTextEdition: jest.fn(),
     ...over,
   };
 }
@@ -73,6 +75,13 @@ describe('SettingsSurface', () => {
     await render(<SettingsSurface {...props({ onTheme })} />);
     fireEvent.press(screen.getByLabelText('Dark'));
     expect(onTheme).toHaveBeenCalledWith('dark');
+  });
+
+  it('selecting the literary text edition reports it', async () => {
+    const onTextEdition = jest.fn();
+    await render(<SettingsSurface {...props({ onTextEdition })} />);
+    fireEvent.press(screen.getByLabelText('Literary'));
+    expect(onTextEdition).toHaveBeenCalledWith('literary');
   });
 
   it('closes through the Done button', async () => {

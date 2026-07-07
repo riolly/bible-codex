@@ -11,7 +11,7 @@
  * learns about roles too.
  */
 
-import { VERSE_NUM_SCALE, type ApparatusTone } from '../engine/layout';
+import { DEFAULT_VERSE_NUMBER_STYLE, type ApparatusTone } from '../engine/layout';
 import type { RunningHeadStyle as LayoutRunningHeadStyle } from '../engine/layout';
 import type { VerseNumberStyle as LayoutVerseNumberStyle } from '../engine/layout';
 import type { BlockRole, Genre } from '../model/corpus';
@@ -105,12 +105,6 @@ export interface VerseNumStyle {
   /** Baseline raise above the body baseline, in em of the body size. */
   readonly raiseEm: number;
 }
-
-const DEFAULT_VERSE_NUMBER_STYLE: LayoutVerseNumberStyle = {
-  scale: VERSE_NUM_SCALE,
-  raiseEm: 0.33,
-  tone: 'gilt',
-};
 
 function apparatusColor(tone: ApparatusTone, palette: Palette): string {
   return tone === 'gilt' ? palette.gilt : palette.muted;

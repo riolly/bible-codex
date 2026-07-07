@@ -57,7 +57,7 @@ export function PresetLab() {
           rules,
           metrics: fonts.metrics,
           verseNumberStyle: candidate.preset.verseNumber,
-          runningHead: `${candidate.label} lab`,
+          runningHead: { bookName: candidate.label, locator: 'Lab spread' },
           runningHeadStyle: candidate.preset.runningHead,
         }),
         palette: labPalette(candidate, lab.theme),

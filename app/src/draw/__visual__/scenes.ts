@@ -112,7 +112,7 @@ export function visualCases(): VisualCase[] {
               rules,
               metrics: fonts.metrics,
               verseNumberStyle: BUILTIN_PRESETS.classic.verseNumber,
-              runningHead: `${passage} 1`,
+              runningHead: { bookName: passage, locator: 'Chapter 1' },
               runningHeadStyle: BUILTIN_PRESETS.classic.runningHead,
             });
             return renderPageToPng(page, rules, fonts, THEMES[theme], 2);

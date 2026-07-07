@@ -131,12 +131,13 @@ describe('layoutCodexPage — block structure', () => {
       ...miniChapter(),
       rules: BUILTIN_PRESETS.classic,
       metrics: fakeMetrics,
-      runningHead: 'Genesis 1',
+      runningHead: { bookName: 'Genesis', locator: 'Chapter 1' },
       runningHeadStyle: BUILTIN_PRESETS.classic.runningHead,
     });
 
     expect(p.runningHead).toEqual({
-      text: 'Genesis 1',
+      text: 'Genesis - Chapter 1',
+      identity: { bookName: 'Genesis', locator: 'Chapter 1' },
       x: BUILTIN_PRESETS.classic.margin,
       baselineY: BUILTIN_PRESETS.classic.margin * 0.65,
       style: BUILTIN_PRESETS.classic.runningHead,

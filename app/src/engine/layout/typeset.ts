@@ -39,7 +39,7 @@ export const VERSE_NUM_SCALE = 0.65;
 /** … and carry a hair of padding before the word they introduce. */
 const VERSE_NUM_PAD = 0.15;
 
-const DEFAULT_VERSE_NUMBER_STYLE: VerseNumberStyle = {
+export const DEFAULT_VERSE_NUMBER_STYLE: VerseNumberStyle = {
   scale: VERSE_NUM_SCALE,
   raiseEm: 0.33,
   tone: 'gilt',

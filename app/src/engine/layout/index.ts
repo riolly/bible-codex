@@ -35,6 +35,7 @@ export type {
   PageLayout,
   Region,
   RunningHead,
+  RunningHeadIdentity,
   RunningHeadStyle,
   ScrollColumn,
   ScrollLayout,
@@ -57,4 +58,4 @@ export {
 export { DEFAULT_PRESET, applyFontScale, fontScaleFromDisplayedSize, resolveRules } from './rules';
 export type { Align, LayoutPresetInput, ResolvedRules } from './rules';
 export { layoutScrollColumns, type ScrollInput } from './scroll';
-export { VERSE_NUM_SCALE, type MeasureToken } from './typeset';
+export { DEFAULT_VERSE_NUMBER_STYLE, VERSE_NUM_SCALE, type MeasureToken } from './typeset';

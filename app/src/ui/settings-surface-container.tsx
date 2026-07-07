@@ -4,13 +4,13 @@
  * theme stays global.
  */
 
-import { BUILTIN_PRESETS } from '@/engine/layout';
-import { selectPreset, setFontScale, setTheme } from '@/db/settings-write';
+import { BUILTIN_PRESETS, type PresetSlug } from '@/engine/layout';
+import { selectPreset, setFontScale, setTextEdition, setTheme } from '@/db/settings-write';
 import { useReadingSettings } from '@/db/use-settings';
 import { useUiStore } from '@/store/ui-store';
 import { SettingsSurface, type SettingsPresetChoice } from './settings-surface';
 
-const PRESET_DESCRIPTIONS: Record<string, string> = {
+const PRESET_DESCRIPTIONS: Record<PresetSlug, string> = {
   classic: 'Traditional print Bible: justified prose, drop-cap openings, warm paper.',
   modern: 'Contemporary reading: airy spacing, left-aligned prose, cooler paper.',
 };
@@ -35,10 +35,12 @@ export function SettingsSurfaceContainer() {
       presets={presets}
       activePresetId={settings.activePreset.slug}
       fontScale={settings.fontScale}
+      textEdition={settings.textEdition}
       onClose={() => setOpen(false)}
       onTheme={(theme) => void setTheme(theme)}
       onSelectPreset={(slug) => void selectPreset(slug)}
       onFontScale={(fontScale) => void setFontScale(fontScale)}
+      onTextEdition={(textEdition) => void setTextEdition(textEdition)}
     />
   );
 }

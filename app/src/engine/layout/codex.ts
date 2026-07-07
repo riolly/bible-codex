@@ -6,7 +6,12 @@
  */
 
 import type { Block, Token } from '../../model/corpus';
-import type { PageLayout, RunningHeadStyle, VerseNumberStyle } from './model';
+import type {
+  PageLayout,
+  RunningHeadIdentity,
+  RunningHeadStyle,
+  VerseNumberStyle,
+} from './model';
 import { builtinPreset } from './presets';
 import type { ResolvedRules } from './rules';
 import { typesetBlocks, type MeasureToken } from './typeset';
@@ -18,7 +23,7 @@ export interface CodexPageInput {
   readonly rules: ResolvedRules;
   readonly metrics: MeasureToken;
   readonly verseNumberStyle?: VerseNumberStyle;
-  readonly runningHead?: string | null;
+  readonly runningHead?: string | RunningHeadIdentity | null;
   readonly runningHeadStyle?: RunningHeadStyle;
   /**
    * User rail expansion in em (ADR-0016 pillar 4). Clamped to the preset base
@@ -33,7 +38,8 @@ export function layoutCodexPage(input: CodexPageInput): PageLayout {
   const defaultPreset = builtinPreset(null);
   const verseNumberStyle = input.verseNumberStyle ?? defaultPreset.verseNumber;
   const runningHeadStyle = input.runningHeadStyle ?? defaultPreset.runningHead;
-  const runningHeadText = input.runningHead?.trim() || null;
+  const runningHead = normalizeRunningHead(input.runningHead);
+  const runningHeadText = runningHead?.text ?? null;
   const headSlot = runningHeadText ? rules.lineHeight : 0;
   const { blocks, height } = typesetBlocks({ ...input, verseNumberStyle });
 
@@ -54,9 +60,10 @@ export function layoutCodexPage(input: CodexPageInput): PageLayout {
       width: railWidth,
       height: canvasHeight,
     },
-    runningHead: runningHeadText
+    runningHead: runningHead
       ? {
-          text: runningHeadText,
+          text: runningHead.text,
+          identity: runningHead.identity,
           x: rules.margin,
           baselineY: rules.margin * 0.65,
           style: runningHeadStyle,
@@ -65,6 +72,20 @@ export function layoutCodexPage(input: CodexPageInput): PageLayout {
     blocks,
     dropCap: findDropCap(input.tokens),
   };
+}
+
+function normalizeRunningHead(
+  input: CodexPageInput['runningHead'],
+): { readonly text: string; readonly identity: RunningHeadIdentity | null } | null {
+  if (!input) return null;
+  if (typeof input === 'string') {
+    const text = input.trim();
+    return text ? { text, identity: null } : null;
+  }
+  const bookName = input.bookName.trim();
+  const locator = input.locator.trim();
+  if (!bookName || !locator) return null;
+  return { text: `${bookName} - ${locator}`, identity: { bookName, locator } };
 }
 
 /**

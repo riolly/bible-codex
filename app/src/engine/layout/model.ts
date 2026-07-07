@@ -109,8 +109,15 @@ export interface RunningHeadStyle {
   readonly tone: ApparatusTone;
 }
 
+export interface RunningHeadIdentity {
+  readonly bookName: string;
+  /** Chapter today; literary page label/range when the curated edition lands. */
+  readonly locator: string;
+}
+
 export interface RunningHead {
   readonly text: string;
+  readonly identity: RunningHeadIdentity | null;
   readonly x: number;
   readonly baselineY: number;
   readonly style: RunningHeadStyle;

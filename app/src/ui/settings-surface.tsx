@@ -6,10 +6,12 @@
 
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import type { TextEdition } from '@/db/settings';
 import type { Palette, Theme } from '@/draw/style';
+import type { PresetSlug } from '@/engine/layout';
 
 export interface SettingsPresetChoice {
-  readonly id: string;
+  readonly id: PresetSlug;
   readonly name: string;
   readonly description: string;
   readonly paperTint: string;
@@ -22,10 +24,12 @@ export interface SettingsSurfaceProps {
   readonly presets: readonly SettingsPresetChoice[];
   readonly activePresetId: string | null;
   readonly fontScale: number;
+  readonly textEdition: TextEdition;
   readonly onClose: () => void;
   readonly onTheme: (theme: Theme) => void;
-  readonly onSelectPreset: (id: string) => void;
+  readonly onSelectPreset: (id: PresetSlug) => void;
   readonly onFontScale: (fontScale: number) => void;
+  readonly onTextEdition: (textEdition: TextEdition) => void;
 }
 
 const FONT_SCALE_MIN = 0.75;
@@ -90,10 +94,30 @@ export function SettingsSurface(props: SettingsSurfaceProps) {
             ))}
           </View>
         </View>
+
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Text edition</Text>
+          <View style={styles.themeChoices}>
+            {TEXT_EDITION_CHOICES.map((choice) => (
+              <Choice
+                key={choice.id}
+                label={choice.label}
+                selected={props.textEdition === choice.id}
+                palette={props.palette}
+                onPress={() => props.onTextEdition(choice.id)}
+              />
+            ))}
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
 }
+
+const TEXT_EDITION_CHOICES: readonly { readonly id: TextEdition; readonly label: string }[] = [
+  { id: 'usfm', label: 'USFM' },
+  { id: 'literary', label: 'Literary' },
+];
 
 function PresetCard({
   preset,

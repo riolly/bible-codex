@@ -24,6 +24,13 @@ import { THEMES, type Palette, type Theme } from '@/draw/style';
  * faces drop in without a schema change (the #45 bake-off feeds this list). */
 export const FONT_FAMILIES = ['Cardo'] as const;
 
+export const TEXT_EDITIONS = ['usfm', 'literary'] as const;
+export type TextEdition = (typeof TEXT_EDITIONS)[number];
+
+export function normalizeTextEdition(value: string | null | undefined): TextEdition {
+  return value === 'literary' ? 'literary' : 'usfm';
+}
+
 /**
  * Resolve the concrete rules for one block from the live settings row: the
  * builtin the slug names (unknown/null slug → default builtin) is the cascade

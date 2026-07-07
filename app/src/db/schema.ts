@@ -84,6 +84,13 @@ export const readingSettings = sqliteTable('reading_settings', {
    */
   fontScale: real('font_scale').notNull().default(1),
   /**
+   * The structural edition axis (ADR-0017/0018): 'usfm' uses the source block
+   * structure; 'literary' selects the curated block set when bundled (#35).
+   */
+  textEdition: text('text_edition', { enum: ['usfm', 'literary'] })
+    .notNull()
+    .default('usfm'),
+  /**
    * The translation the reader last chose (abbrev, e.g. 'KJV'/'BSB') — #12. The
    * ephemeral reading-position store (ADR-0008) carries the live translation;
    * this is its durable seed so a cold open reopens in the last translation

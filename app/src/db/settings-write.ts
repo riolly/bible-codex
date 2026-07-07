@@ -11,6 +11,7 @@ import { DEFAULT_PRESET_SLUG } from '@/engine/layout';
 import type { Theme } from '@/draw/style';
 import { db } from './client';
 import { readingSettings } from './schema';
+import type { TextEdition } from './settings';
 import { uuidv7 } from './uuid';
 
 /** Epoch SECONDS, matching the schema's `unixepoch()` column default. */
@@ -57,6 +58,7 @@ async function seedOnce(): Promise<void> {
     theme: 'light',
     activePresetId: DEFAULT_PRESET_SLUG,
     fontScale: 1,
+    textEdition: 'usfm',
     createdAt: t,
     updatedAt: t,
   });
@@ -93,6 +95,16 @@ export async function setTheme(theme: Theme): Promise<void> {
   await db
     .update(readingSettings)
     .set({ theme, updatedAt: now() })
+    .where(eq(readingSettings.id, row.id));
+}
+
+/** Set the structural text edition axis (ADR-0017/0018). */
+export async function setTextEdition(textEdition: TextEdition): Promise<void> {
+  const row = await loadSettingsRow();
+  if (!row) return;
+  await db
+    .update(readingSettings)
+    .set({ textEdition, updatedAt: now() })
     .where(eq(readingSettings.id, row.id));
 }
 

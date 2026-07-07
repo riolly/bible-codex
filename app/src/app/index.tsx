@@ -156,7 +156,7 @@ export default function Reader() {
       rules,
       metrics: fonts.metrics,
       verseNumberStyle: activePreset.verseNumber,
-      runningHead: `${bookName} ${chapter}`,
+      runningHead: { bookName, locator: `Chapter ${chapter}` },
       runningHeadStyle: activePreset.runningHead,
     });
   }, [source, fonts, mode, chapter, rules, activePreset, bookName]);

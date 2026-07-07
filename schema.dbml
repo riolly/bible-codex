@@ -242,6 +242,8 @@ Table reading_settings {
                                // layout_preset UUID) falls back to the default builtin in code.
   font_scale       real        [not null, default: 1] // the user's ONE typographic knob (ADR-0018):
                                // multiplies the active builtin's base font size; em knobs ride along.
+  text_edition     varchar     [not null, default: 'usfm'] // 'usfm' | 'literary' (ADR-0017/0018):
+                               // edition picks the block structure; translation picks the words.
   created_at       integer     [not null]
   updated_at       integer     [not null]
   deleted_at       integer                          // soft-delete tombstone; null = live
