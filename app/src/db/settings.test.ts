@@ -1,81 +1,42 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_PRESET } from '@/engine/layout';
+import { BUILTIN_PRESETS, DEFAULT_PRESET_SLUG } from '@/engine/layout';
 import type { CascadeContext } from '@/engine/layout';
-import type { LayoutOverride, LayoutPreset } from './schema';
-import { overrideRowToCascade, presetRowToInput, resolveSettings } from './settings';
-
-const LIFECYCLE = { createdAt: 0, updatedAt: 0, deletedAt: null };
-
-function preset(over: Partial<LayoutPreset> = {}): LayoutPreset {
-  return {
-    id: 'p1',
-    ...LIFECYCLE,
-    name: 'Reading',
-    fontFamily: 'Cardo',
-    fontSize: 18,
-    lineHeight: null,
-    margin: null,
-    paragraphSpacing: null,
-    indentStep: null,
-    align: null,
-    measure: 30,
-    railWidth: null,
-    ...over,
-  } as LayoutPreset;
-}
-
-function override(over: Partial<LayoutOverride>): LayoutOverride {
-  return {
-    id: 'o1',
-    ...LIFECYCLE,
-    presetId: 'p1',
-    scopeKind: 'genre',
-    scopeValue: 'poetry',
-    fontFamily: null,
-    fontSize: null,
-    lineHeight: null,
-    margin: null,
-    paragraphSpacing: null,
-    indentStep: null,
-    align: null,
-    measure: null,
-    railWidth: null,
-    ...over,
-  } as LayoutOverride;
-}
+import { resolveSettings } from './settings';
 
 const PROSE: CascadeContext = { genre: 'prose', role: null, bookSlug: 'Genesis' };
 const POETRY: CascadeContext = { genre: 'poetry', role: null, bookSlug: 'Psalms' };
 
-describe('presetRowToInput', () => {
-  it('passes knob columns through, including nulls (= inherit)', () => {
-    const input = presetRowToInput(preset());
-    expect(input.fontFamily).toBe('Cardo');
-    expect(input.fontSize).toBe(18);
-    expect(input.lineHeight).toBeNull();
-  });
-});
-
-describe('overrideRowToCascade', () => {
-  it('carries the scope selector plus the knobs', () => {
-    const o = overrideRowToCascade(override({ scopeValue: 'poetry', lineHeight: 1.9 }));
-    expect(o.scopeKind).toBe('genre');
-    expect(o.scopeValue).toBe('poetry');
-    expect(o.lineHeight).toBe(1.9);
-  });
-});
-
 describe('resolveSettings', () => {
-  it('null preset falls back to the engine default', () => {
-    const rules = resolveSettings(null, [], PROSE);
-    expect(rules.fontFamily).toBe(DEFAULT_PRESET.fontFamily);
+  it('resolves each builtin slug to its own personality', () => {
+    expect(resolveSettings('classic', 1, PROSE).align).toBe('justify');
+    expect(resolveSettings('modern', 1, PROSE).align).toBe('left');
   });
 
-  it('resolves the preset and applies a matching override', () => {
-    const rows = [override({ scopeKind: 'genre', scopeValue: 'poetry', lineHeight: 2.0 })];
-    expect(resolveSettings(preset(), rows, POETRY).lineHeight).toBe(2.0);
-    // prose block ignores the poetry override → default line height
-    expect(resolveSettings(preset(), rows, PROSE).lineHeight).toBe(DEFAULT_PRESET.lineHeight);
+  it('null slug (pre-seed row) and an unknown slug fall back to the default builtin', () => {
+    const fallback = BUILTIN_PRESETS[DEFAULT_PRESET_SLUG];
+    expect(resolveSettings(null, 1, PROSE).align).toBe(fallback.align);
+    expect(resolveSettings('large-print-uuid-from-old-db', 1, PROSE).align).toBe(fallback.align);
+  });
+
+  it("applies the builtin's internal cascade (Classic's poetry indent)", () => {
+    const poetry = resolveSettings('classic', 1, POETRY);
+    const prose = resolveSettings('classic', 1, PROSE);
+    expect(poetry.indentStep).toBeGreaterThan(prose.indentStep);
+  });
+
+  it('fontScale multiplies the resolved base size; null column reads as 1', () => {
+    const base = resolveSettings('classic', null, PROSE).fontSize;
+    expect(resolveSettings('classic', 1.5, PROSE).fontSize).toBe(base * 1.5);
+    expect(resolveSettings('classic', 1, PROSE).fontSize).toBe(base);
+  });
+
+  it('fontScale scales the internally-overridden knobs consistently too', () => {
+    // The scale applies AFTER the cascade — whatever fontSize the cascade
+    // resolved is what the user's knob multiplies.
+    const unscaled = resolveSettings('classic', 1, POETRY);
+    const scaled = resolveSettings('classic', 2, POETRY);
+    expect(scaled.fontSize).toBe(unscaled.fontSize * 2);
+    expect(scaled.indentStep).toBe(unscaled.indentStep);
   });
 });

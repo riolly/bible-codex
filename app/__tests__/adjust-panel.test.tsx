@@ -59,6 +59,23 @@ describe('AdjustPanel', () => {
     expect(onMargin).toHaveBeenCalledWith(7);
   });
 
+  it('hides controls that have no live callback', async () => {
+    await render(
+      <AdjustPanel
+        {...props({
+          onFontFamily: undefined,
+          onLineHeight: undefined,
+          onMeasure: undefined,
+          onMargin: undefined,
+        })}
+      />,
+    );
+    expect(screen.queryByText('Font')).toBeNull();
+    expect(screen.queryByLabelText('Increase Line spacing')).toBeNull();
+    expect(screen.queryByLabelText('Increase Measure')).toBeNull();
+    expect(screen.queryByLabelText('Increase Margin')).toBeNull();
+  });
+
   it('selecting the dark theme reports it', async () => {
     const onTheme = jest.fn();
     await render(<AdjustPanel {...props({ onTheme })} />);

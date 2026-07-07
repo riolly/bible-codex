@@ -1,7 +1,7 @@
 /**
  * The layout-adjust panel (#11) — presentational only. It renders the current
- * resolved rules and reports every change through callbacks; the container
- * (adjust-panel-container.tsx) binds those to the user-DB mutations, which
+ * resolved rules and reports changes through callbacks; the container
+ * (adjust-panel-container.tsx) binds live controls to mutations, which
  * re-typeset the page reactively (ADR-0004). Kept prop-driven so it unit-tests
  * without the expo-sqlite client.
  *
@@ -38,12 +38,12 @@ export interface AdjustPanelProps {
   readonly onClose: () => void;
   readonly onTheme: (theme: Theme) => void;
   readonly onSelectPreset: (id: string) => void;
-  readonly onFontFamily: (family: string) => void;
+  readonly onFontFamily?: (family: string) => void;
   readonly onFontSize: (next: number) => void;
-  readonly onLineHeight: (next: number) => void;
-  readonly onMeasure: (next: number) => void;
+  readonly onLineHeight?: (next: number) => void;
+  readonly onMeasure?: (next: number) => void;
   /** The Margin-rail width; expands the canvas outward only (ADR-0016). */
-  readonly onMargin: (next: number) => void;
+  readonly onMargin?: (next: number) => void;
   /** Export the user DB to a portable backup file (#13). */
   readonly onExport: () => void;
   /** Import a backup file, replacing local reading data (#13). */
@@ -91,17 +91,19 @@ export function AdjustPanel(props: AdjustPanelProps) {
           ))}
         </Segment>
 
-        <Segment label="Font">
-          {props.fontFamilies.map((f) => (
-            <Choice
-              key={f}
-              label={f}
-              selected={f === values.fontFamily}
-              palette={palette}
-              onPress={() => props.onFontFamily(f)}
-            />
-          ))}
-        </Segment>
+        {props.onFontFamily ? (
+          <Segment label="Font">
+            {props.fontFamilies.map((f) => (
+              <Choice
+                key={f}
+                label={f}
+                selected={f === values.fontFamily}
+                palette={palette}
+                onPress={() => props.onFontFamily?.(f)}
+              />
+            ))}
+          </Segment>
+        ) : null}
 
         <Stepper
           label="Size"
@@ -110,27 +112,33 @@ export function AdjustPanel(props: AdjustPanelProps) {
           onDec={() => props.onFontSize(clamp(values.fontSize - 1, 12, 32))}
           onInc={() => props.onFontSize(clamp(values.fontSize + 1, 12, 32))}
         />
-        <Stepper
-          label="Line spacing"
-          value={values.lineHeight.toFixed(2)}
-          palette={palette}
-          onDec={() => props.onLineHeight(clamp(round2(values.lineHeight - 0.05), 1.2, 2.2))}
-          onInc={() => props.onLineHeight(clamp(round2(values.lineHeight + 0.05), 1.2, 2.2))}
-        />
-        <Stepper
-          label="Measure"
-          value={`${Math.round(values.measure)}`}
-          palette={palette}
-          onDec={() => props.onMeasure(clamp(values.measure - 1, 20, 45))}
-          onInc={() => props.onMeasure(clamp(values.measure + 1, 20, 45))}
-        />
-        <Stepper
-          label="Margin"
-          value={`${Math.round(values.railWidth)}`}
-          palette={palette}
-          onDec={() => props.onMargin(clamp(values.railWidth - 1, 4, 16))}
-          onInc={() => props.onMargin(clamp(values.railWidth + 1, 4, 16))}
-        />
+        {props.onLineHeight ? (
+          <Stepper
+            label="Line spacing"
+            value={values.lineHeight.toFixed(2)}
+            palette={palette}
+            onDec={() => props.onLineHeight?.(clamp(round2(values.lineHeight - 0.05), 1.2, 2.2))}
+            onInc={() => props.onLineHeight?.(clamp(round2(values.lineHeight + 0.05), 1.2, 2.2))}
+          />
+        ) : null}
+        {props.onMeasure ? (
+          <Stepper
+            label="Measure"
+            value={`${Math.round(values.measure)}`}
+            palette={palette}
+            onDec={() => props.onMeasure?.(clamp(values.measure - 1, 20, 45))}
+            onInc={() => props.onMeasure?.(clamp(values.measure + 1, 20, 45))}
+          />
+        ) : null}
+        {props.onMargin ? (
+          <Stepper
+            label="Margin"
+            value={`${Math.round(values.railWidth)}`}
+            palette={palette}
+            onDec={() => props.onMargin?.(clamp(values.railWidth - 1, 4, 16))}
+            onInc={() => props.onMargin?.(clamp(values.railWidth + 1, 4, 16))}
+          />
+        ) : null}
 
         <Segment label="Data">
           <Choice label="Export" selected={false} palette={palette} onPress={props.onExport} />

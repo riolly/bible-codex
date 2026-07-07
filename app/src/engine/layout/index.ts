@@ -40,7 +40,17 @@ export type {
   VerseNumItem,
   Viewport,
 } from './model';
-export { DEFAULT_PRESET, resolveRules } from './rules';
+export {
+  BUILTIN_PRESETS,
+  DEFAULT_PRESET_SLUG,
+  builtinPreset,
+  type BuiltinPreset,
+  type PaperTint,
+  type PresetSlug,
+  type VersalStyle,
+  type VerseNumberStyle,
+} from './presets';
+export { DEFAULT_PRESET, applyFontScale, fontScaleFromDisplayedSize, resolveRules } from './rules';
 export type { Align, LayoutPresetInput, ResolvedRules } from './rules';
 export { layoutScrollColumns, type ScrollInput } from './scroll';
 export { VERSE_NUM_SCALE, type MeasureToken } from './typeset';
