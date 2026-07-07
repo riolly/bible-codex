@@ -52,7 +52,7 @@ export interface VersalStyle {
   readonly lines: number;
 }
 
-/** The first-letter ornament occupying a word's opening code point. */
+/** The first-letter ornament occupying a word Token's opening code point. */
 export interface VersalItem {
   readonly kind: 'versal';
   readonly tokenSeq: number;

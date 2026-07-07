@@ -49,6 +49,7 @@ export interface TypesetResult {
 export const VERSE_NUM_SCALE = 0.65;
 /** … and carry a hair of padding before the word they introduce. */
 const VERSE_NUM_PAD = 0.15;
+const DROP_VERSAL_GUTTER_EM = 0.35;
 
 export const DEFAULT_VERSE_NUMBER_STYLE: VerseNumberStyle = {
   scale: VERSE_NUM_SCALE,
@@ -121,7 +122,9 @@ export function typesetBlocks(input: TypesetInput): TypesetResult {
             .flatMap((chunk) => chunk.items)
             .find((item): item is Omit<VersalItem, 'x'> => item.kind === 'versal');
           const dropInset =
-            firstVersal?.style.kind === 'drop' ? firstVersal.width + 0.35 : 0;
+            firstVersal?.style.kind === 'drop'
+              ? firstVersal.width + DROP_VERSAL_GUTTER_EM
+              : 0;
           const chunkLines = breakChunks(chunks, available, spaceWidth, (lineIndex) =>
             lineIndex < (firstVersal?.style.kind === 'drop' ? firstVersal.style.lines : 0)
               ? dropInset
@@ -229,12 +232,12 @@ function buildChunks(
         });
       }
       leading = [];
-      chunks.push({ items, width: items.reduce((w, i) => w + i.width, 0) });
+      chunks.push({ items, width: items.reduce((w, i) => w + flowWidth(i), 0) });
     } else {
       // Trailing punct binds backward; flush any stranded opening punct with it.
       const chunk = chunks[chunks.length - 1];
       chunk.items.push(...leading, item);
-      chunk.width += leading.reduce((w, i) => w + i.width, item.width);
+      chunk.width += leading.reduce((w, i) => w + flowWidth(i), flowWidth(item));
       leading = [];
     }
   }
@@ -244,13 +247,17 @@ function buildChunks(
     const chunk = chunks[chunks.length - 1];
     if (chunk) {
       chunk.items.push(...leading);
-      chunk.width += leading.reduce((w, i) => w + i.width, 0);
+      chunk.width += leading.reduce((w, i) => w + flowWidth(i), 0);
     } else {
-      chunks.push({ items: leading, width: leading.reduce((w, i) => w + i.width, 0) });
+      chunks.push({ items: leading, width: leading.reduce((w, i) => w + flowWidth(i), 0) });
     }
   }
 
   return chunks;
+}
+
+function flowWidth(item: UnplacedItem): number {
+  return item.kind === 'versal' && item.style.kind === 'drop' ? 0 : item.width;
 }
 
 function splitFirstCodePoint(text: string): { readonly first: string; readonly rest: string } | null {
@@ -296,7 +303,7 @@ function placeChunks(chunks: readonly Chunk[], indentEm: number, spaceWidth: num
     if (i > 0) x += spaceWidth;
     for (const item of chunk.items) {
       if (item.kind === 'versal' && item.style.kind === 'drop') {
-        items.push({ ...item, x: x - item.width - 0.35 });
+        items.push({ ...item, x: x - item.width - DROP_VERSAL_GUTTER_EM });
         continue;
       }
       items.push({ ...item, x });

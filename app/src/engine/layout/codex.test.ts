@@ -154,11 +154,11 @@ describe('layoutCodexPage — block structure', () => {
       metrics: fakeMetrics,
       bookStart: false,
     });
-    const firstWord = miniChapter().tokens.find((t) => t.verse !== null && t.kind === 'word');
+    const firstWordToken = miniChapter().tokens.find((t) => t.verse !== null && t.kind === 'word');
 
     expect(firstPage.versal).toMatchObject({
       kind: 'versal',
-      tokenSeq: firstWord!.seq,
+      tokenSeq: firstWordToken!.seq,
       text: 'I',
       style: BUILTIN_PRESETS.classic.versal,
     });
@@ -186,6 +186,11 @@ describe('layoutCodexPage — block structure', () => {
     expect(classic.versal?.style.kind).toBe('drop');
     expect(classic.versal!.x).toBeLessThan(firstClassicToken!.x);
     expect(firstClassicToken!.x).toBeGreaterThan(firstPlainToken!.x);
+    expect(
+      classicProse.lines[0].runs.flatMap((r) =>
+        r.items.flatMap((i) => (i.kind === 'token' ? [i.text] : [])),
+      ),
+    ).toEqual(['n', 'the', 'beginning', 'God']);
 
     const firstUncarved = BUILTIN_PRESETS.classic.versal.lines;
     if (classicProse.lines[firstUncarved] && plainProse.lines[firstUncarved]) {
