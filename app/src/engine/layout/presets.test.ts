@@ -31,7 +31,7 @@ describe('BUILTIN_PRESETS', () => {
     expect(modern.paper.light).not.toBe(BUILTIN_PRESETS.classic.paper.light);
   });
 
-  it('every preset is a full personality: verse-number style + paper tint per theme', () => {
+  it('every preset is a full personality: verse-number style + ornaments + paper tint per theme', () => {
     for (const slug of Object.keys(BUILTIN_PRESETS) as PresetSlug[]) {
       const preset = BUILTIN_PRESETS[slug];
       expect(preset.slug).toBe(slug);
@@ -39,6 +39,8 @@ describe('BUILTIN_PRESETS', () => {
       expect(preset.verseNumber.scale).toBeLessThan(1);
       expect(preset.runningHead.scale).toBeGreaterThan(0);
       expect(preset.runningHead.scale).toBeLessThan(1);
+      expect(preset.sectionBreak.glyph.length).toBeGreaterThan(0);
+      expect(preset.sectionBreak.scale).toBeGreaterThan(0);
       expect(preset.paper.light).toMatch(/^#/);
       expect(preset.paper.dark).toMatch(/^#/);
       // fully concrete base rules — the engine never falls through a builtin

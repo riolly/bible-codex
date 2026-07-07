@@ -57,6 +57,8 @@ export function PresetLab() {
           rules,
           metrics: fonts.metrics,
           verseNumberStyle: candidate.preset.verseNumber,
+          versalStyle: candidate.preset.versal,
+          sectionBreakStyle: candidate.preset.sectionBreak,
           runningHead: { bookName: candidate.label, locator: 'Lab spread' },
           runningHeadStyle: candidate.preset.runningHead,
         }),

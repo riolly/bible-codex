@@ -9,7 +9,7 @@ import { resolveRules } from './rules';
 const rules = resolveRules({ measure: 12 }); // narrow measure to force line breaks
 
 function page() {
-  return layoutCodexPage({ ...miniChapter(), rules, metrics: fakeMetrics });
+  return layoutCodexPage({ ...miniChapter(), rules, metrics: fakeMetrics, bookStart: false });
 }
 
 describe('layoutCodexPage — block structure', () => {
@@ -145,11 +145,109 @@ describe('layoutCodexPage — block structure', () => {
     expect(p.text.y).toBeGreaterThan(BUILTIN_PRESETS.classic.margin);
   });
 
-  it('cues a drop cap on the first word of the chapter opening', () => {
-    const p = page();
-    // First verse-bearing word of the chapter: "In" (heading is not the opening).
+  it('renders a versal at book start only, not every chapter start', () => {
+    const firstPage = layoutCodexPage({ ...miniChapter(), rules, metrics: fakeMetrics, bookStart: true });
+    const chapterTwo = layoutCodexPage({
+      ...miniChapter(),
+      chapter: 2,
+      rules,
+      metrics: fakeMetrics,
+      bookStart: false,
+    });
     const firstWord = miniChapter().tokens.find((t) => t.verse !== null && t.kind === 'word');
-    expect(p.dropCap).toEqual({ tokenSeq: firstWord!.seq });
+
+    expect(firstPage.versal).toMatchObject({
+      kind: 'versal',
+      tokenSeq: firstWord!.seq,
+      text: 'I',
+      style: BUILTIN_PRESETS.classic.versal,
+    });
+    expect(chapterTwo.versal).toBeNull();
+  });
+
+  it('carves Classic drop-cap lines without moving later lines', () => {
+    const plain = layoutCodexPage({
+      ...miniChapter(),
+      rules,
+      metrics: fakeMetrics,
+      bookStart: false,
+    });
+    const classic = layoutCodexPage({
+      ...miniChapter(),
+      rules,
+      metrics: fakeMetrics,
+      versalStyle: BUILTIN_PRESETS.classic.versal,
+    });
+
+    const plainProse = plain.blocks[1];
+    const classicProse = classic.blocks[1];
+    const firstClassicToken = classicProse.lines[0].runs.flatMap((r) => r.items).find((i) => i.kind === 'token');
+    const firstPlainToken = plainProse.lines[0].runs.flatMap((r) => r.items).find((i) => i.kind === 'token');
+    expect(classic.versal?.style.kind).toBe('drop');
+    expect(classic.versal!.x).toBeLessThan(firstClassicToken!.x);
+    expect(firstClassicToken!.x).toBeGreaterThan(firstPlainToken!.x);
+
+    const firstUncarved = BUILTIN_PRESETS.classic.versal.lines;
+    if (classicProse.lines[firstUncarved] && plainProse.lines[firstUncarved]) {
+      expect(classicProse.lines[firstUncarved].indent).toBeCloseTo(plainProse.lines[firstUncarved].indent);
+    }
+  });
+
+  it('renders Modern raised versal inline with no carved line inset', () => {
+    const modern = layoutCodexPage({
+      ...miniChapter(),
+      rules,
+      metrics: fakeMetrics,
+      versalStyle: BUILTIN_PRESETS.modern.versal,
+    });
+
+    expect(modern.versal).toMatchObject({
+      kind: 'versal',
+      text: 'I',
+      style: BUILTIN_PRESETS.modern.versal,
+    });
+    expect(modern.versal?.style.kind).toBe('raised');
+    expect(modern.blocks[1].lines[0].indent).toBeCloseTo(0);
+  });
+
+  it('centers a preset-styled section-break glyph from a literary fixture block', () => {
+    const corpus = new ChapterBuilder(1)
+      .block({ genre: 'prose', verse: 1, text: 'Before the break .' })
+      .block({ genre: 'heading', role: 'section_break', text: '' })
+      .block({ genre: 'prose', verse: 2, text: 'After the break .' })
+      .build();
+    const p = layoutCodexPage({
+      ...corpus,
+      rules,
+      metrics: fakeMetrics,
+      sectionBreakStyle: BUILTIN_PRESETS.classic.sectionBreak,
+    });
+
+    const item = p.blocks[1].lines[0].runs[0].items[0];
+    expect(item).toMatchObject({
+      kind: 'section-break',
+      style: BUILTIN_PRESETS.classic.sectionBreak,
+    });
+    expect(item.x + item.width / 2).toBeCloseTo(rules.measure / 2);
+  });
+
+  it('keeps versal geometry proportional under fontScale-derived rules', () => {
+    const base = layoutCodexPage({
+      ...miniChapter(),
+      rules: BUILTIN_PRESETS.classic,
+      metrics: fakeMetrics,
+      versalStyle: BUILTIN_PRESETS.classic.versal,
+    });
+    const largeRules = { ...BUILTIN_PRESETS.classic, fontSize: BUILTIN_PRESETS.classic.fontSize * 1.25 };
+    const large = layoutCodexPage({
+      ...miniChapter(),
+      rules: largeRules,
+      metrics: fakeMetrics,
+      versalStyle: BUILTIN_PRESETS.classic.versal,
+    });
+
+    expect(large.versal?.width).toBeCloseTo(base.versal!.width);
+    expect(large.versal?.style.lines).toBe(base.versal!.style.lines);
   });
 
   it('separates blocks by paragraphSpacing and lines by lineHeight', () => {
@@ -229,6 +327,7 @@ describe('layoutCodexPage — Page geometry & Margin rail (ADR-0016)', () => {
       ...miniChapter(),
       rules,
       metrics: fakeMetrics,
+      bookStart: false,
       railWidth: rules.railWidth + 5,
     });
     // Canvas grew by exactly the extra rail width…
@@ -245,6 +344,7 @@ describe('layoutCodexPage — Page geometry & Margin rail (ADR-0016)', () => {
       ...miniChapter(),
       rules,
       metrics: fakeMetrics,
+      bookStart: false,
       railWidth: 0,
     });
     expect(narrowed.rail.width).toBeCloseTo(rules.railWidth);

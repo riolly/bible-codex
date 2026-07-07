@@ -8,7 +8,16 @@
  */
 
 import type { Block, Token } from '../../model/corpus';
-import type { Line, LayoutBlock, LineItem, TokenRun, VerseNumberStyle } from './model';
+import type {
+  Line,
+  LayoutBlock,
+  LineItem,
+  SectionBreakStyle,
+  TokenRun,
+  VersalItem,
+  VersalStyle,
+  VerseNumberStyle,
+} from './model';
 import type { ResolvedRules } from './rules';
 
 /**
@@ -24,6 +33,8 @@ export interface TypesetInput {
   readonly rules: ResolvedRules;
   readonly metrics: MeasureToken;
   readonly verseNumberStyle?: VerseNumberStyle | null;
+  readonly versal?: { readonly tokenSeq: number; readonly style: VersalStyle } | null;
+  readonly sectionBreakStyle?: SectionBreakStyle | null;
 }
 
 export interface TypesetResult {
@@ -79,16 +90,55 @@ export function typesetBlocks(input: TypesetInput): TypesetResult {
       );
     }
 
-    const chunkLines = breakChunks(
-      buildChunks(blockTokens, metrics, verseNumberStyle),
-      available,
-      spaceWidth,
-    );
-    const lines: Line[] = chunkLines.map((chunks, i) => ({
-      y: cursor + i * rules.lineHeight,
-      indent: indentEm,
-      runs: splitRuns(placeChunks(chunks, indentEm, spaceWidth)),
-    }));
+    const sectionBreakStyle =
+      block.role === 'section_break' ? (input.sectionBreakStyle ?? null) : null;
+    const lines: Line[] = sectionBreakStyle
+      ? [
+          {
+            y: cursor,
+            indent: indentEm,
+            runs: [
+              {
+                direction: 'ltr',
+                items: [
+                  {
+                    kind: 'section-break',
+                    x:
+                      indentEm +
+                      Math.max(0, available - metrics(sectionBreakStyle.glyph) * sectionBreakStyle.scale) /
+                        2,
+                    width: metrics(sectionBreakStyle.glyph) * sectionBreakStyle.scale,
+                    style: sectionBreakStyle,
+                  },
+                ],
+              },
+            ],
+          },
+        ]
+      : (() => {
+          const chunks = buildChunks(blockTokens, metrics, verseNumberStyle, input.versal ?? null);
+          const firstVersal = chunks
+            .flatMap((chunk) => chunk.items)
+            .find((item): item is Omit<VersalItem, 'x'> => item.kind === 'versal');
+          const dropInset =
+            firstVersal?.style.kind === 'drop' ? firstVersal.width + 0.35 : 0;
+          const chunkLines = breakChunks(chunks, available, spaceWidth, (lineIndex) =>
+            lineIndex < (firstVersal?.style.kind === 'drop' ? firstVersal.style.lines : 0)
+              ? dropInset
+              : 0,
+          );
+          return chunkLines.map((lineChunks, i) => {
+            const inset =
+              i < (firstVersal?.style.kind === 'drop' ? firstVersal.style.lines : 0)
+                ? dropInset
+                : 0;
+            return {
+              y: cursor + i * rules.lineHeight,
+              indent: indentEm + inset,
+              runs: splitRuns(placeChunks(lineChunks, indentEm + inset, spaceWidth)),
+            };
+          });
+        })();
 
     const height = lines.length * rules.lineHeight;
     laidOut.push({
@@ -133,26 +183,29 @@ function buildChunks(
   tokens: readonly Token[],
   metrics: MeasureToken,
   verseNumberStyle: VerseNumberStyle | null,
+  versal: { readonly tokenSeq: number; readonly style: VersalStyle } | null,
 ): Chunk[] {
   const chunks: { items: UnplacedItem[]; width: number }[] = [];
   // Opening punct waits here for the word it introduces, to lead that chunk.
   let leading: UnplacedItem[] = [];
 
-  const toItem = (token: Token): UnplacedItem => ({
+  const toTokenItem = (token: Token, text = token.text): UnplacedItem => ({
     kind: 'token' as const,
     seq: token.seq,
-    text: token.text,
+    text,
     tokenKind: token.kind,
     verse: token.verse,
-    width: metrics(token.text),
+    width: metrics(text),
   });
 
   for (const token of tokens) {
     if (isOpeningPunct(token)) {
-      leading.push(toItem(token));
+      leading.push(toTokenItem(token));
       continue;
     }
-    const item = toItem(token);
+    const activeVersal = versal && token.seq === versal.tokenSeq && token.kind === 'word' ? versal : null;
+    const versalParts = activeVersal ? splitFirstCodePoint(token.text) : null;
+    const item = toTokenItem(token, versalParts?.rest ?? token.text);
     const startsChunk = token.kind === 'word' || (chunks.length === 0 && leading.length === 0);
     if (startsChunk) {
       const items: UnplacedItem[] = [];
@@ -165,6 +218,16 @@ function buildChunks(
         });
       }
       items.push(...leading, item);
+      if (versalParts && activeVersal) {
+        const versalWidth = metrics(versalParts.first) * activeVersal.style.lines;
+        items.splice(items.length - 1, 0, {
+          kind: 'versal' as const,
+          tokenSeq: token.seq,
+          text: versalParts.first,
+          width: versalWidth,
+          style: activeVersal.style,
+        });
+      }
       leading = [];
       chunks.push({ items, width: items.reduce((w, i) => w + i.width, 0) });
     } else {
@@ -190,17 +253,28 @@ function buildChunks(
   return chunks;
 }
 
+function splitFirstCodePoint(text: string): { readonly first: string; readonly rest: string } | null {
+  const [first, ...rest] = Array.from(text);
+  return first ? { first, rest: rest.join('') } : null;
+}
+
 /** Greedy line-breaker over chunks; an over-measure chunk takes its own line. */
-function breakChunks(chunks: readonly Chunk[], available: number, spaceWidth: number): Chunk[][] {
+function breakChunks(
+  chunks: readonly Chunk[],
+  available: number,
+  spaceWidth: number,
+  lineInset: (lineIndex: number) => number = () => 0,
+): Chunk[][] {
   const lines: Chunk[][] = [];
   let line: Chunk[] = [];
   let width = 0;
 
   for (const chunk of chunks) {
+    const lineAvailable = available - lineInset(lines.length);
     if (line.length === 0) {
       line = [chunk];
       width = chunk.width;
-    } else if (width + spaceWidth + chunk.width <= available) {
+    } else if (width + spaceWidth + chunk.width <= lineAvailable) {
       line.push(chunk);
       width += spaceWidth + chunk.width;
     } else {
@@ -221,6 +295,10 @@ function placeChunks(chunks: readonly Chunk[], indentEm: number, spaceWidth: num
   for (const [i, chunk] of chunks.entries()) {
     if (i > 0) x += spaceWidth;
     for (const item of chunk.items) {
+      if (item.kind === 'versal' && item.style.kind === 'drop') {
+        items.push({ ...item, x: x - item.width - 0.35 });
+        continue;
+      }
       items.push({ ...item, x });
       x += item.width;
     }
@@ -238,6 +316,8 @@ const RTL_CHAR = /[\u0590-\u05FF\uFB1D-\uFB4F]/;
  * introduces (buildChunks prefixes it to that word's chunk).
  */
 function itemDirection(item: LineItem): 'ltr' | 'rtl' | null {
+  if (item.kind === 'section-break') return 'ltr';
+  if (item.kind === 'versal') return RTL_CHAR.test(item.text) ? 'rtl' : 'ltr';
   if (item.kind !== 'token' || item.tokenKind !== 'word') return null;
   return RTL_CHAR.test(item.text) ? 'rtl' : 'ltr';
 }
@@ -264,7 +344,7 @@ function splitRuns(items: readonly LineItem[]): TokenRun[] {
     if (dir === null) {
       // Verse-num and opening punct bind FORWARD to the word they introduce;
       // trailing punctuation binds BACKWARD to the word it follows.
-      if (item.kind === 'verse-num' || isOpeningItem(item) || !current) pending.push(item);
+      if (item.kind === 'verse-num' || item.kind === 'section-break' || isOpeningItem(item) || !current) pending.push(item);
       else current.items.push(item);
     } else if (current && current.direction === dir) {
       current.items.push(...pending, item);

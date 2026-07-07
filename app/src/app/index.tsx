@@ -156,6 +156,8 @@ export default function Reader() {
       rules,
       metrics: fonts.metrics,
       verseNumberStyle: activePreset.verseNumber,
+      versalStyle: activePreset.versal,
+      sectionBreakStyle: activePreset.sectionBreak,
       runningHead: { bookName, locator: `Chapter ${chapter}` },
       runningHeadStyle: activePreset.runningHead,
     });

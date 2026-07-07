@@ -10,6 +10,7 @@ describe('labSpread', () => {
   it('is the ADR-0018 judging spread: Genesis prose, a Psalm, a heading', () => {
     const roles = spread.blocks.map((b) => b.role);
     expect(roles).toContain('section');
+    expect(roles).toContain('section_break');
     expect(roles).toContain('psalm_title');
     const genres = spread.blocks.map((b) => b.genre);
     expect(genres).toContain('prose');
@@ -33,5 +34,10 @@ describe('labSpread', () => {
   it('lays out cleanly through the production Codex path', () => {
     const page = layoutCodexPage({ ...spread, rules: resolveRules(), metrics: fakeMetrics });
     expect(page.blocks.length).toBe(spread.blocks.length);
+    expect(
+      page.blocks.flatMap((b) => b.lines.flatMap((l) => l.runs.flatMap((r) => r.items))).some(
+        (i) => i.kind === 'section-break',
+      ),
+    ).toBe(true);
   });
 });

@@ -21,7 +21,12 @@
  */
 
 import type { LayoutOverride } from './cascade';
-import type { RunningHeadStyle, VerseNumberStyle } from './model';
+import type {
+  RunningHeadStyle,
+  SectionBreakStyle,
+  VersalStyle,
+  VerseNumberStyle,
+} from './model';
 import type { ResolvedRules } from './rules';
 import { VERSE_NUM_SCALE } from './typeset';
 
@@ -34,14 +39,6 @@ export interface PaperTint {
   readonly dark: string;
 }
 
-/** How this personality renders a versal at its editorial placements (#43 consumes). */
-export interface VersalStyle {
-  /** Drop cap sinks into the text block; raised cap sits on the first baseline. */
-  readonly kind: 'drop' | 'raised';
-  /** Size of the versal, in body line-heights. */
-  readonly lines: number;
-}
-
 /** One shipped personality: concrete base rules + the non-cascade styling. */
 export interface BuiltinPreset extends ResolvedRules {
   readonly slug: PresetSlug;
@@ -49,6 +46,7 @@ export interface BuiltinPreset extends ResolvedRules {
   readonly verseNumber: VerseNumberStyle;
   readonly runningHead: RunningHeadStyle;
   readonly versal: VersalStyle;
+  readonly sectionBreak: SectionBreakStyle;
   readonly paper: PaperTint;
   /** The preset's own internal cascade refinements (genre/role/book). */
   readonly overrides: readonly LayoutOverride[];
@@ -73,6 +71,7 @@ const CLASSIC: BuiltinPreset = {
   verseNumber: { scale: VERSE_NUM_SCALE, raiseEm: 0.33, tone: 'gilt' },
   runningHead: { scale: 0.72, tone: 'gilt' },
   versal: { kind: 'drop', lines: 3 },
+  sectionBreak: { glyph: '✦', scale: 0.9, tone: 'gilt' },
   paper: { light: '#F6F0E4', dark: '#211D18' },
   overrides: [
     // The print-Bible poetry convention: deeper hanging indents than prose.
@@ -99,6 +98,7 @@ const MODERN: BuiltinPreset = {
   verseNumber: { scale: 0.58, raiseEm: 0.25, tone: 'muted' },
   runningHead: { scale: 0.68, tone: 'muted' },
   versal: { kind: 'raised', lines: 2 },
+  sectionBreak: { glyph: '✶', scale: 0.75, tone: 'muted' },
   paper: { light: '#FAFAF8', dark: '#1B1D20' },
   overrides: [],
 };

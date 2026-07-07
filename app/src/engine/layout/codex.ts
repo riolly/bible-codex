@@ -10,6 +10,8 @@ import type {
   PageLayout,
   RunningHeadIdentity,
   RunningHeadStyle,
+  SectionBreakStyle,
+  VersalStyle,
   VerseNumberStyle,
 } from './model';
 import { builtinPreset } from './presets';
@@ -23,6 +25,10 @@ export interface CodexPageInput {
   readonly rules: ResolvedRules;
   readonly metrics: MeasureToken;
   readonly verseNumberStyle?: VerseNumberStyle;
+  readonly versalStyle?: VersalStyle;
+  readonly sectionBreakStyle?: SectionBreakStyle;
+  /** True only for the first page of a book; defaults to chapter 1 in USFM pages. */
+  readonly bookStart?: boolean;
   readonly runningHead?: string | RunningHeadIdentity | null;
   readonly runningHeadStyle?: RunningHeadStyle;
   /**
@@ -37,11 +43,19 @@ export function layoutCodexPage(input: CodexPageInput): PageLayout {
   const { rules } = input;
   const defaultPreset = builtinPreset(null);
   const verseNumberStyle = input.verseNumberStyle ?? defaultPreset.verseNumber;
+  const versalStyle = input.versalStyle ?? defaultPreset.versal;
+  const sectionBreakStyle = input.sectionBreakStyle ?? defaultPreset.sectionBreak;
   const runningHeadStyle = input.runningHeadStyle ?? defaultPreset.runningHead;
   const runningHead = normalizeRunningHead(input.runningHead);
   const runningHeadText = runningHead?.text ?? null;
   const headSlot = runningHeadText ? rules.lineHeight : 0;
-  const { blocks, height } = typesetBlocks({ ...input, verseNumberStyle });
+  const versal = findBookStartVersal(input.tokens, input.bookStart ?? input.chapter === 1);
+  const { blocks, height } = typesetBlocks({
+    ...input,
+    verseNumberStyle,
+    versal: versal ? { tokenSeq: versal.tokenSeq, style: versalStyle } : null,
+    sectionBreakStyle,
+  });
 
   const railWidth = Math.max(input.railWidth ?? rules.railWidth, rules.railWidth);
   const canvasHeight = rules.margin + headSlot + height + rules.margin;
@@ -70,7 +84,10 @@ export function layoutCodexPage(input: CodexPageInput): PageLayout {
         }
       : null,
     blocks,
-    dropCap: findDropCap(input.tokens),
+    versal:
+      blocks
+        .flatMap((b) => b.lines.flatMap((l) => l.runs.flatMap((r) => r.items)))
+        .find((i) => i.kind === 'versal') ?? null,
   };
 }
 
@@ -88,12 +105,11 @@ function normalizeRunningHead(
   return { text: `${bookName} - ${locator}`, identity: { bookName, locator } };
 }
 
-/**
- * Drop-cap structural cue (#7): the chapter opens with a versal on its first
- * verse-bearing word — headings/titles never carry it. The engine only marks
- * the token; carving the cap's line inset is the draw layer's business (#9).
- */
-function findDropCap(tokens: readonly Token[]): PageLayout['dropCap'] {
+function findBookStartVersal(
+  tokens: readonly Token[],
+  bookStart: boolean,
+): { readonly tokenSeq: number } | null {
+  if (!bookStart) return null;
   let first: Token | null = null;
   for (const token of tokens) {
     if (token.verse === null || token.kind !== 'word') continue;

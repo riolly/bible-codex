@@ -11,9 +11,14 @@
  * learns about roles too.
  */
 
-import { DEFAULT_VERSE_NUMBER_STYLE, type ApparatusTone } from '../engine/layout';
-import type { RunningHeadStyle as LayoutRunningHeadStyle } from '../engine/layout';
-import type { VerseNumberStyle as LayoutVerseNumberStyle } from '../engine/layout';
+import {
+  DEFAULT_VERSE_NUMBER_STYLE,
+  type ApparatusTone,
+  type RunningHeadStyle as LayoutRunningHeadStyle,
+  type SectionBreakStyle as LayoutSectionBreakStyle,
+  type VersalStyle as LayoutVersalStyle,
+  type VerseNumberStyle as LayoutVerseNumberStyle,
+} from '../engine/layout';
 import type { BlockRole, Genre } from '../model/corpus';
 
 /** The manuscript palette — resolved per theme (light/dark). Same warm-ink /
@@ -73,6 +78,7 @@ function roleStyle(p: Palette, role: BlockRole): BlockStyle | undefined {
     case 'psalm_title':
       return { color: p.muted, bold: false, italic: true };
     case 'acrostic':
+    case 'section_break':
       return { color: p.gilt, bold: true, italic: false };
     case 'refrain':
       return { color: p.ink, bold: false, italic: true };
@@ -130,5 +136,29 @@ export function runningHeadStyle(
   style: LayoutRunningHeadStyle,
   palette: Palette = PALETTE,
 ): RunningHeadPaintStyle {
+  return { color: apparatusColor(style.tone, palette), scale: style.scale };
+}
+
+export interface VersalPaintStyle {
+  readonly color: string;
+  readonly scale: number;
+}
+
+export function versalStyle(style: LayoutVersalStyle, palette: Palette = PALETTE): VersalPaintStyle {
+  return {
+    color: style.kind === 'drop' ? palette.gilt : palette.ink,
+    scale: style.lines,
+  };
+}
+
+export interface SectionBreakPaintStyle {
+  readonly color: string;
+  readonly scale: number;
+}
+
+export function sectionBreakStyle(
+  style: LayoutSectionBreakStyle,
+  palette: Palette = PALETTE,
+): SectionBreakPaintStyle {
   return { color: apparatusColor(style.tone, palette), scale: style.scale };
 }

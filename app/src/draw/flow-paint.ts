@@ -20,7 +20,14 @@ import {
 
 import type { Line, ResolvedRules } from '../engine/layout';
 import { CARDO, type DrawFonts } from './fonts';
-import { PALETTE, verseNumStyle, type BlockStyle, type Palette } from './style';
+import {
+  PALETTE,
+  sectionBreakStyle,
+  versalStyle,
+  verseNumStyle,
+  type BlockStyle,
+  type Palette,
+} from './style';
 
 export interface ParaSpec {
   readonly text: string;
@@ -121,6 +128,35 @@ export function createFlowPainter(
             { text: String(item.verse), color: vn.color, bold: false, italic: false, sizePx: S * vn.scale },
             xPx,
             baselinePx - vn.raiseEm * S,
+          );
+        } else if (item.kind === 'versal') {
+          const vs = versalStyle(item.style, palette);
+          const drop = item.style.kind === 'drop';
+          paintAtBaseline(
+            canvas,
+            {
+              text: item.text,
+              color: vs.color,
+              bold: true,
+              italic: false,
+              sizePx: S * vs.scale,
+            },
+            xPx,
+            drop ? baselinePx + (item.style.lines - 1) * rules.lineHeight * S * 0.72 : baselinePx,
+          );
+        } else if (item.kind === 'section-break') {
+          const sb = sectionBreakStyle(item.style, palette);
+          paintAtBaseline(
+            canvas,
+            {
+              text: item.style.glyph,
+              color: sb.color,
+              bold: false,
+              italic: false,
+              sizePx: S * sb.scale,
+            },
+            xPx,
+            baselinePx,
           );
         } else {
           const spec = { text: item.text, color: style.color, bold: style.bold, italic: style.italic, sizePx: S };

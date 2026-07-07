@@ -30,6 +30,7 @@ describe('emitPresetSource', () => {
     const src = emitPresetSource(BUILTIN_PRESETS.classic);
     expect(src).toContain("verseNumber: { scale: VERSE_NUM_SCALE, raiseEm: 0.33, tone: 'gilt' },");
     expect(src).toContain("versal: { kind: 'drop', lines: 3 },");
+    expect(src).toContain("sectionBreak: { glyph: '✦', scale: 0.9, tone: 'gilt' },");
     expect(src).toContain("paper: { light: '#F6F0E4', dark: '#211D18' },");
     expect(src).toContain("{ scopeKind: 'genre', scopeValue: 'poetry', indentStep: 1.5 },");
   });

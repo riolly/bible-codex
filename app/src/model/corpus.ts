@@ -31,6 +31,7 @@ export type BlockRole =
   | 'section' // \s
   | 'psalm_title' // \d
   | 'acrostic' // \qa (heading; e.g. Psalm 119 stanza letters)
+  | 'section_break' // literary-edition ornament op (ADR-0017/0018)
   | 'margin' // \m
   | 'no_break' // \nb
   | 'indented' // \pi

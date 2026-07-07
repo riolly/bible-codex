@@ -18,6 +18,7 @@ type EmittedPresetField =
   | 'verseNumber'
   | 'runningHead'
   | 'versal'
+  | 'sectionBreak'
   | 'paper'
   | 'overrides';
 
@@ -49,6 +50,7 @@ export function emitPresetSource(preset: BuiltinPreset): string {
     `  verseNumber: { scale: ${verseNumberScale}, raiseEm: ${lit(preset.verseNumber.raiseEm)}, tone: ${lit(preset.verseNumber.tone)} },`,
     `  runningHead: { scale: ${lit(preset.runningHead.scale)}, tone: ${lit(preset.runningHead.tone)} },`,
     `  versal: { kind: ${lit(preset.versal.kind)}, lines: ${lit(preset.versal.lines)} },`,
+    `  sectionBreak: { glyph: ${lit(preset.sectionBreak.glyph)}, scale: ${lit(preset.sectionBreak.scale)}, tone: ${lit(preset.sectionBreak.tone)} },`,
     `  paper: { light: ${lit(preset.paper.light)}, dark: ${lit(preset.paper.dark)} },`,
     preset.overrides.length === 0
       ? '  overrides: [],'

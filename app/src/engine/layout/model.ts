@@ -44,6 +44,24 @@ export interface TokenItem {
   readonly width: number;
 }
 
+/** How a preset renders a versal at an editorial placement (ADR-0018). */
+export interface VersalStyle {
+  /** Drop cap sinks into the text block; raised cap sits on the first baseline. */
+  readonly kind: 'drop' | 'raised';
+  /** Size of the versal, in body line-heights. */
+  readonly lines: number;
+}
+
+/** The first-letter ornament occupying a word's opening code point. */
+export interface VersalItem {
+  readonly kind: 'versal';
+  readonly tokenSeq: number;
+  readonly text: string;
+  readonly x: number;
+  readonly width: number;
+  readonly style: VersalStyle;
+}
+
 /**
  * The gilt superscript verse-number ornament — a structural cue: the engine
  * reserves its slot; the draw layer styles it (ADR-0016 look).
@@ -56,7 +74,20 @@ export interface VerseNumItem {
   readonly style: VerseNumberStyle;
 }
 
-export type LineItem = TokenItem | VerseNumItem;
+export interface SectionBreakStyle {
+  readonly glyph: string;
+  readonly scale: number;
+  readonly tone: ApparatusTone;
+}
+
+export interface SectionBreakItem {
+  readonly kind: 'section-break';
+  readonly x: number;
+  readonly width: number;
+  readonly style: SectionBreakStyle;
+}
+
+export type LineItem = TokenItem | VerseNumItem | VersalItem | SectionBreakItem;
 
 /** Maximal span of same-direction items — the draw layer shapes each run whole. */
 export interface TokenRun {
@@ -82,11 +113,6 @@ export interface LayoutBlock {
   readonly y: number;
   readonly height: number;
   readonly lines: readonly Line[];
-}
-
-/** Drop-cap structural cue: which token opens the chapter as a versal. */
-export interface DropCap {
-  readonly tokenSeq: number;
 }
 
 export type ApparatusTone = 'gilt' | 'muted';
@@ -172,5 +198,6 @@ export interface PageLayout {
   readonly rail: Region;
   readonly runningHead: RunningHead | null;
   readonly blocks: readonly LayoutBlock[];
-  readonly dropCap: DropCap | null;
+  /** Book-start/default or literary-authored versal painted by the draw layer. */
+  readonly versal: VersalItem | null;
 }

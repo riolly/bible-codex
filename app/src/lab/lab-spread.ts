@@ -26,6 +26,7 @@ export function labSpread() {
       verse: 3,
       text: 'And God said , Let there be light : and there was light .',
     })
+    .block({ genre: 'heading', role: 'section_break', text: '' })
     .block({ genre: 'heading', role: 'psalm_title', text: 'A Psalm of David .' })
     .block({ genre: 'poetry', indent: 1, verse: 4, text: 'Blessed is the man' })
     .block({

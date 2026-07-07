@@ -1,4 +1,20 @@
+allowBuilds:
+  '@shopify/react-native-skia': true
+  better-sqlite3: true
+  esbuild: true
+  tree-sitter: true
+  tree-sitter-usfm3: true
+  unrs-resolver: true
 # React Native / Metro needs a flat, hoisted node_modules — pnpm's default
 # symlinked layout breaks native module + Metro resolution. Kept here (pnpm's
 # own config) rather than .npmrc so npm doesn't warn on the unknown key.
 nodeLinker: hoisted
+onlyBuiltDependencies:
+  - '@shopify/react-native-skia'
+  - better-sqlite3
+  - esbuild
+  - tree-sitter
+  - tree-sitter-usfm3
+  - unrs-resolver
+patchedDependencies:
+  tree-sitter@0.25.0: patches/tree-sitter@0.25.0.patch

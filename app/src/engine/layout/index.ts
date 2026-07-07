@@ -27,7 +27,6 @@ export {
 } from './position';
 export type {
   Direction,
-  DropCap,
   ApparatusTone,
   LayoutBlock,
   Line,
@@ -37,11 +36,15 @@ export type {
   RunningHead,
   RunningHeadIdentity,
   RunningHeadStyle,
+  SectionBreakItem,
+  SectionBreakStyle,
   ScrollColumn,
   ScrollLayout,
   ScrollLine,
   TokenItem,
   TokenRun,
+  VersalItem,
+  VersalStyle,
   VerseNumItem,
   VerseNumberStyle,
   Viewport,
@@ -53,7 +56,6 @@ export {
   type BuiltinPreset,
   type PaperTint,
   type PresetSlug,
-  type VersalStyle,
 } from './presets';
 export { DEFAULT_PRESET, applyFontScale, fontScaleFromDisplayedSize, resolveRules } from './rules';
 export type { Align, LayoutPresetInput, ResolvedRules } from './rules';

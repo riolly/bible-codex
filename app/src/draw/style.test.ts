@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { BUILTIN_PRESETS, VERSE_NUM_SCALE } from '../engine/layout';
-import { PALETTE, runningHeadStyle, styleForBlock, verseNumStyle } from './style';
+import {
+  PALETTE,
+  runningHeadStyle,
+  sectionBreakStyle,
+  styleForBlock,
+  versalStyle,
+  verseNumStyle,
+} from './style';
 
 // Style resolution is the pure half of the draw layer (#8): block genre/role →
 // ink treatment. CONSTRAINT: the engine (#7) measured every token at 1em with
@@ -47,6 +54,10 @@ describe('styleForBlock', () => {
     expect(styleForBlock('heading', 'acrostic').color).toBe(PALETTE.gilt);
   });
 
+  it('section-break literary ornament is gilt', () => {
+    expect(styleForBlock('heading', 'section_break').color).toBe(PALETTE.gilt);
+  });
+
   it('refrain is italic body ink', () => {
     expect(styleForBlock('poetry', 'refrain')).toEqual({
       color: PALETTE.ink,
@@ -82,5 +93,14 @@ describe('runningHeadStyle', () => {
   it('maps the active preset running-head tone through the palette', () => {
     expect(runningHeadStyle(BUILTIN_PRESETS.classic.runningHead).color).toBe(PALETTE.gilt);
     expect(runningHeadStyle(BUILTIN_PRESETS.modern.runningHead).color).toBe(PALETTE.muted);
+  });
+});
+
+describe('versalStyle and sectionBreakStyle', () => {
+  it('maps preset ornament tones through the palette', () => {
+    expect(versalStyle(BUILTIN_PRESETS.classic.versal).color).toBe(PALETTE.gilt);
+    expect(versalStyle(BUILTIN_PRESETS.modern.versal).color).toBe(PALETTE.ink);
+    expect(sectionBreakStyle(BUILTIN_PRESETS.classic.sectionBreak).color).toBe(PALETTE.gilt);
+    expect(sectionBreakStyle(BUILTIN_PRESETS.modern.sectionBreak).color).toBe(PALETTE.muted);
   });
 });
