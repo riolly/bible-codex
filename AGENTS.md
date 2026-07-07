@@ -1,19 +1,19 @@
 # bible-codex
 
-Always use `/caveman full` skill except when you are done and reporting/answering back to me (make it easy to understand).
+Always use `$caveman full` skill except when you are done and reporting/answering back to me (make it easy to understand).
 
 ## Agent skills
 
 Leverage these skills during development:
-`/tdd`
-`/domain-modeling`
-`/codebase-design`
+`$tdd`
+`$domain-modeling`
+`$codebase-design`
 
 And these skill when needed:
-`/research`
-`/prototype`
-`/diagnosing-bugs`
-`/verify-device` (before closing a phase/PRD issue)
+`$research`
+`$prototype`
+`$diagnosing-bugs`
+`$verify-device` (before closing a phase/PRD issue)
 
 ### Code navigation
 
