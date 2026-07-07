@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { layoutCodexPage } from './codex';
 import { ChapterBuilder, fakeMetrics, miniChapter } from './fixtures';
+import { BUILTIN_PRESETS } from './presets';
 import { resolveRules } from './rules';
 
 // Structural assertions only — em-relative geometry, NEVER pixels (ADR-0004).
@@ -93,6 +94,55 @@ describe('layoutCodexPage — block structure', () => {
     if (next.kind === 'token') expect(next.text).toBe('In');
     // The slot occupies real width — line breaking accounted for it.
     for (const v of verseNums) expect(v.width).toBeGreaterThan(0);
+  });
+
+  it("carries the active preset's quiet verse-number style", () => {
+    const classic = layoutCodexPage({
+      ...miniChapter(),
+      rules: BUILTIN_PRESETS.classic,
+      metrics: fakeMetrics,
+      verseNumberStyle: BUILTIN_PRESETS.classic.verseNumber,
+    });
+    const modern = layoutCodexPage({
+      ...miniChapter(),
+      rules: BUILTIN_PRESETS.modern,
+      metrics: fakeMetrics,
+      verseNumberStyle: BUILTIN_PRESETS.modern.verseNumber,
+    });
+
+    const firstVerseNum = (p: typeof classic) =>
+      p.blocks
+        .flatMap((b) => b.lines.flatMap((l) => l.runs.flatMap((r) => r.items)))
+        .find((i) => i.kind === 'verse-num');
+
+    expect(firstVerseNum(classic)).toMatchObject({
+      kind: 'verse-num',
+      style: BUILTIN_PRESETS.classic.verseNumber,
+    });
+    expect(firstVerseNum(modern)).toMatchObject({
+      kind: 'verse-num',
+      style: BUILTIN_PRESETS.modern.verseNumber,
+    });
+    expect(BUILTIN_PRESETS.classic.verseNumber).not.toEqual(BUILTIN_PRESETS.modern.verseNumber);
+  });
+
+  it('renders Codex running-head metadata above the text region when supplied', () => {
+    const p = layoutCodexPage({
+      ...miniChapter(),
+      rules: BUILTIN_PRESETS.classic,
+      metrics: fakeMetrics,
+      runningHead: { bookName: 'Genesis', locator: 'Chapter 1' },
+      runningHeadStyle: BUILTIN_PRESETS.classic.runningHead,
+    });
+
+    expect(p.runningHead).toEqual({
+      text: 'Genesis - Chapter 1',
+      identity: { bookName: 'Genesis', locator: 'Chapter 1' },
+      x: BUILTIN_PRESETS.classic.margin,
+      baselineY: BUILTIN_PRESETS.classic.margin * 0.65,
+      style: BUILTIN_PRESETS.classic.runningHead,
+    });
+    expect(p.text.y).toBeGreaterThan(BUILTIN_PRESETS.classic.margin);
   });
 
   it('cues a drop cap on the first word of the chapter opening', () => {

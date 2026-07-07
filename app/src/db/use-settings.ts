@@ -20,10 +20,15 @@ import {
   type CascadeContext,
   type ResolvedRules,
 } from '@/engine/layout';
-import { THEMES, type Palette, type Theme } from '@/draw/style';
+import type { Palette, Theme } from '@/draw/style';
 import { db } from './client';
 import { readingSettings } from './schema';
-import { resolveSettings } from './settings';
+import {
+  normalizeTextEdition,
+  resolveSettings,
+  settingsPalette,
+  type TextEdition,
+} from './settings';
 import { ensureSeed } from './settings-write';
 
 export interface ReadingSettings {
@@ -33,6 +38,8 @@ export interface ReadingSettings {
   readonly palette: Palette;
   /** Durable translation choice (abbrev) that seeds the reader on cold open (#12). */
   readonly activeTranslation: string;
+  /** Structural edition axis: source USFM blocks or curated literary structure. */
+  readonly textEdition: TextEdition;
   /** The resolved builtin personality (unknown/null slug already fell back). */
   readonly activePreset: BuiltinPreset;
   /** The user's one typographic knob (ADR-0018). */
@@ -55,6 +62,7 @@ export function useReadingSettings(): ReadingSettings {
   const theme: Theme = settingsRow?.theme ?? 'light';
   const activePresetId = settingsRow?.activePresetId ?? null;
   const fontScale = settingsRow?.fontScale ?? 1;
+  const textEdition = normalizeTextEdition(settingsRow?.textEdition);
 
   const rulesFor = useMemo(
     () => (context: CascadeContext) => resolveSettings(activePresetId, fontScale, context),
@@ -64,8 +72,9 @@ export function useReadingSettings(): ReadingSettings {
   return {
     ready: settingsRow !== null,
     theme,
-    palette: THEMES[theme],
+    palette: settingsPalette(activePresetId, theme),
     activeTranslation: settingsRow?.activeTranslation ?? 'KJV',
+    textEdition,
     activePreset: builtinPreset(activePresetId),
     fontScale,
     rulesFor,

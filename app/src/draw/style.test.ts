@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { VERSE_NUM_SCALE } from '../engine/layout';
-import { PALETTE, styleForBlock, verseNumStyle } from './style';
+import { BUILTIN_PRESETS, VERSE_NUM_SCALE } from '../engine/layout';
+import { PALETTE, runningHeadStyle, styleForBlock, verseNumStyle } from './style';
 
 // Style resolution is the pure half of the draw layer (#8): block genre/role →
 // ink treatment. CONSTRAINT: the engine (#7) measured every token at 1em with
@@ -61,11 +61,26 @@ describe('styleForBlock', () => {
 });
 
 describe('verseNumStyle', () => {
-  it('is gilt, superscript-raised, at the exact scale the engine reserved its slot with', () => {
+  it('defaults to the legacy gilt superscript scale when no preset is supplied', () => {
     const style = verseNumStyle();
     expect(style.color).toBe(PALETTE.gilt);
     expect(style.scale).toBe(VERSE_NUM_SCALE);
     expect(style.raiseEm).toBeGreaterThan(0);
     expect(style.raiseEm).toBeLessThan(1);
+  });
+
+  it('maps Classic and Modern preset verse-number tones to different palette ink', () => {
+    expect(verseNumStyle(BUILTIN_PRESETS.classic.verseNumber).color).toBe(PALETTE.gilt);
+    expect(verseNumStyle(BUILTIN_PRESETS.modern.verseNumber).color).toBe(PALETTE.muted);
+    expect(verseNumStyle(BUILTIN_PRESETS.modern.verseNumber).scale).toBe(
+      BUILTIN_PRESETS.modern.verseNumber.scale,
+    );
+  });
+});
+
+describe('runningHeadStyle', () => {
+  it('maps the active preset running-head tone through the palette', () => {
+    expect(runningHeadStyle(BUILTIN_PRESETS.classic.runningHead).color).toBe(PALETTE.gilt);
+    expect(runningHeadStyle(BUILTIN_PRESETS.modern.runningHead).color).toBe(PALETTE.muted);
   });
 });

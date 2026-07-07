@@ -6,15 +6,16 @@ import m0002 from './20260705133931_flawless_firedrake/migration.sql';
 import m0003 from './20260705202700_short_war_machine/migration.sql';
 import m0004 from './20260706043049_woozy_photon/migration.sql';
 import m0005 from './20260706193808_handy_legion/migration.sql';
+import m0006 from './20260707134500_text_edition_setting/migration.sql';
 
-  export default {
-    migrations: {
-      "20260629050607_large_grey_gargoyle": m0000,
-"20260705112511_drop_scroll_mode": m0001,
-"20260705133931_flawless_firedrake": m0002,
-"20260705202700_short_war_machine": m0003,
-"20260706043049_woozy_photon": m0004,
-"20260706193808_handy_legion": m0005
-}
-  }
-  
+export default {
+  migrations: {
+    '20260629050607_large_grey_gargoyle': m0000,
+    '20260705112511_drop_scroll_mode': m0001,
+    '20260705133931_flawless_firedrake': m0002,
+    '20260705202700_short_war_machine': m0003,
+    '20260706043049_woozy_photon': m0004,
+    '20260706193808_handy_legion': m0005,
+    '20260707134500_text_edition_setting': m0006,
+  },
+};

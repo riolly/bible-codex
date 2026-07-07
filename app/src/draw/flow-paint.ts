@@ -93,7 +93,6 @@ export function createFlowPainter(
   // Baseline inside a line box: center the font's natural extent in lineHeight.
   const { ascent, descent } = fonts.metricsEm; // ascent < 0
   const leadingGapEm = (rules.lineHeight - (descent - ascent)) / 2;
-  const vn = verseNumStyle(palette);
 
   const paintLine = (
     canvas: SkCanvas,
@@ -116,6 +115,7 @@ export function createFlowPainter(
       for (const item of run.items) {
         const xPx = originXPx + item.x * S + drift;
         if (item.kind === 'verse-num') {
+          const vn = verseNumStyle(item.style, palette);
           paintAtBaseline(
             canvas,
             { text: String(item.verse), color: vn.color, bold: false, italic: false, sizePx: S * vn.scale },

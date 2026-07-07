@@ -4,7 +4,12 @@
  * a real production layout (passage × theme × fontSize × mode) to a PNG.
  */
 
-import { layoutCodexPage, layoutScrollColumns, resolveRules } from '../../engine/layout';
+import {
+  BUILTIN_PRESETS,
+  layoutCodexPage,
+  layoutScrollColumns,
+  resolveRules,
+} from '../../engine/layout';
 import { ChapterBuilder, miniChapter } from '../../engine/layout/fixtures';
 import type { DrawFonts } from '../fonts-core';
 import { THEMES, type Theme } from '../style';
@@ -102,7 +107,14 @@ export function visualCases(): VisualCase[] {
           label: `${passage} · ${theme} · ${size.label}`,
           render: (fonts) => {
             const rules = resolveRules({ fontSize: size.px });
-            const page = layoutCodexPage({ ...build(), rules, metrics: fonts.metrics });
+            const page = layoutCodexPage({
+              ...build(),
+              rules,
+              metrics: fonts.metrics,
+              verseNumberStyle: BUILTIN_PRESETS.classic.verseNumber,
+              runningHead: { bookName: passage, locator: 'Chapter 1' },
+              runningHeadStyle: BUILTIN_PRESETS.classic.runningHead,
+            });
             return renderPageToPng(page, rules, fonts, THEMES[theme], 2);
           },
         });

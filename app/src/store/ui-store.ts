@@ -6,11 +6,11 @@ import { create } from 'zustand';
  * looking at right now, panel open/closed, etc. Seeded minimally for #5.
  */
 interface UiState {
-  adjustPanelOpen: boolean;
-  setAdjustPanelOpen: (open: boolean) => void;
+  settingsSurfaceOpen: boolean;
+  setSettingsSurfaceOpen: (open: boolean) => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
-  adjustPanelOpen: false,
-  setAdjustPanelOpen: (open) => set({ adjustPanelOpen: open }),
+  settingsSurfaceOpen: false,
+  setSettingsSurfaceOpen: (open) => set({ settingsSurfaceOpen: open }),
 }));

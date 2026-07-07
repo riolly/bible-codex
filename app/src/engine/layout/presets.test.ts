@@ -37,6 +37,8 @@ describe('BUILTIN_PRESETS', () => {
       expect(preset.slug).toBe(slug);
       expect(preset.verseNumber.scale).toBeGreaterThan(0);
       expect(preset.verseNumber.scale).toBeLessThan(1);
+      expect(preset.runningHead.scale).toBeGreaterThan(0);
+      expect(preset.runningHead.scale).toBeLessThan(1);
       expect(preset.paper.light).toMatch(/^#/);
       expect(preset.paper.dark).toMatch(/^#/);
       // fully concrete base rules — the engine never falls through a builtin

@@ -5,24 +5,17 @@
  * the reactive read lives in use-settings.ts.
  */
 
-import { and, eq, isNull } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 
-import { DEFAULT_PRESET_SLUG, type ResolvedRules } from '@/engine/layout';
+import { DEFAULT_PRESET_SLUG } from '@/engine/layout';
 import type { Theme } from '@/draw/style';
 import { db } from './client';
-import { layoutOverride, layoutPreset, readingSettings } from './schema';
+import { readingSettings } from './schema';
+import type { TextEdition } from './settings';
 import { uuidv7 } from './uuid';
 
 /** Epoch SECONDS, matching the schema's `unixepoch()` column default. */
 const now = () => Math.floor(Date.now() / 1000);
-
-/** The knobs a preset/override write may set. */
-export type KnobPatch = Partial<
-  Pick<
-    ResolvedRules,
-    'fontFamily' | 'fontSize' | 'lineHeight' | 'margin' | 'paragraphSpacing' | 'indentStep' | 'align' | 'measure' | 'railWidth'
-  >
->;
 
 /** The single live reading-settings row, or null before the first seed. */
 export async function loadSettingsRow() {
@@ -65,6 +58,7 @@ async function seedOnce(): Promise<void> {
     theme: 'light',
     activePresetId: DEFAULT_PRESET_SLUG,
     fontScale: 1,
+    textEdition: 'usfm',
     createdAt: t,
     updatedAt: t,
   });
@@ -104,6 +98,16 @@ export async function setTheme(theme: Theme): Promise<void> {
     .where(eq(readingSettings.id, row.id));
 }
 
+/** Set the structural text edition axis (ADR-0017/0018). */
+export async function setTextEdition(textEdition: TextEdition): Promise<void> {
+  const row = await loadSettingsRow();
+  if (!row) return;
+  await db
+    .update(readingSettings)
+    .set({ textEdition, updatedAt: now() })
+    .where(eq(readingSettings.id, row.id));
+}
+
 /** Persist the reader's chosen translation (abbrev) — the durable seed (#12). */
 export async function setActiveTranslation(abbrev: string): Promise<void> {
   const row = await loadSettingsRow();
@@ -112,64 +116,4 @@ export async function setActiveTranslation(abbrev: string): Promise<void> {
     .update(readingSettings)
     .set({ activeTranslation: abbrev, updatedAt: now() })
     .where(eq(readingSettings.id, row.id));
-}
-
-/**
- * DORMANT (ADR-0018): writes the dormant layout_preset table, and
- * `activePresetId` is a builtin slug now, so no row matches — a no-op until
- * the #41 preset lab points the dev knobs somewhere real.
- */
-export async function updateActivePreset(patch: KnobPatch): Promise<void> {
-  const row = await loadSettingsRow();
-  const presetId = row?.activePresetId;
-  if (!presetId) return;
-  await db
-    .update(layoutPreset)
-    .set({ ...patch, updatedAt: now() })
-    .where(eq(layoutPreset.id, presetId));
-}
-
-/**
- * DORMANT (ADR-0018): user-row overrides no longer join the cascade, and
- * `activePresetId` is a builtin slug, so this never fires. Kept for the #41
- * preset lab. Historically: upsert a per-scope override on the active preset
- * by the (preset, scope) unique key.
- */
-export async function upsertOverride(
-  scopeKind: 'genre' | 'role' | 'book',
-  scopeValue: string,
-  patch: KnobPatch,
-): Promise<void> {
-  const row = await loadSettingsRow();
-  const presetId = row?.activePresetId;
-  if (!presetId) return;
-  const t = now();
-  const existing = await db
-    .select()
-    .from(layoutOverride)
-    .where(
-      and(
-        eq(layoutOverride.presetId, presetId),
-        eq(layoutOverride.scopeKind, scopeKind),
-        eq(layoutOverride.scopeValue, scopeValue),
-        isNull(layoutOverride.deletedAt),
-      ),
-    )
-    .limit(1);
-  if (existing[0]) {
-    await db
-      .update(layoutOverride)
-      .set({ ...patch, updatedAt: t })
-      .where(eq(layoutOverride.id, existing[0].id));
-    return;
-  }
-  await db.insert(layoutOverride).values({
-    id: uuidv7(),
-    presetId,
-    scopeKind,
-    scopeValue,
-    ...patch,
-    createdAt: t,
-    updatedAt: t,
-  });
 }

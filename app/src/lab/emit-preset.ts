@@ -16,6 +16,7 @@ type EmittedPresetField =
   | 'name'
   | (typeof LAYOUT_RULE_KNOBS)[number]
   | 'verseNumber'
+  | 'runningHead'
   | 'versal'
   | 'paper'
   | 'overrides';
@@ -46,6 +47,7 @@ export function emitPresetSource(preset: BuiltinPreset): string {
     `  name: ${lit(preset.name)},`,
     ...LAYOUT_RULE_KNOBS.map((knob) => `  ${knob}: ${lit(preset[knob])},`),
     `  verseNumber: { scale: ${verseNumberScale}, raiseEm: ${lit(preset.verseNumber.raiseEm)}, tone: ${lit(preset.verseNumber.tone)} },`,
+    `  runningHead: { scale: ${lit(preset.runningHead.scale)}, tone: ${lit(preset.runningHead.tone)} },`,
     `  versal: { kind: ${lit(preset.versal.kind)}, lines: ${lit(preset.versal.lines)} },`,
     `  paper: { light: ${lit(preset.paper.light)}, dark: ${lit(preset.paper.dark)} },`,
     preset.overrides.length === 0

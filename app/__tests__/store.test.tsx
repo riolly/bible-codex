@@ -6,14 +6,14 @@ import { useUiStore } from '@/store/ui-store';
 
 // Component test under jest-expo: a RN component reads the Zustand store and
 // renders. Proves the RN runtime + store wiring without touching Skia.
-function AdjustLabel() {
-  const open = useUiStore((s) => s.adjustPanelOpen);
+function SettingsSurfaceLabel() {
+  const open = useUiStore((s) => s.settingsSurfaceOpen);
   return <Text>{open ? 'open' : 'closed'}</Text>;
 }
 
-describe('AdjustLabel', () => {
+describe('SettingsSurfaceLabel', () => {
   it('renders the initial store state', async () => {
-    await render(<AdjustLabel />);
+    await render(<SettingsSurfaceLabel />);
     expect(screen.getByText('closed')).toBeTruthy();
   });
 });

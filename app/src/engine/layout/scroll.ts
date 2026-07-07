@@ -30,7 +30,7 @@ export function layoutScrollColumns(input: ScrollInput): ScrollLayout {
     );
   }
 
-  const { blocks } = typesetBlocks(input);
+  const { blocks } = typesetBlocks({ ...input, verseNumberStyle: null });
 
   const columns: ScrollLine[][] = [];
   let column: ScrollLine[] = [];

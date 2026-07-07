@@ -16,7 +16,7 @@ import { bookmarkFromPosition } from '@/model/bookmark';
 import { anchorKey, positionKey } from '@/model/reading-position';
 import { useReadingPosition } from '@/store/reading-position';
 import { useUiStore } from '@/store/ui-store';
-import { AdjustPanelContainer } from '@/ui/adjust-panel-container';
+import { SettingsSurfaceContainer } from '@/ui/settings-surface-container';
 import { TranslationToggle, type Translation } from '@/ui/translation-toggle';
 
 // The reader — the app's home surface (#10). It renders whatever the SINGLE
@@ -38,7 +38,7 @@ export default function Reader() {
   const { fonts, error: fontError } = useCardoFonts();
   const [db, setDb] = useState<CorpusDb | null>(null);
   const [dbError, setDbError] = useState<string | null>(null);
-  const setAdjustOpen = useUiStore((s) => s.setAdjustPanelOpen);
+  const setSettingsOpen = useUiStore((s) => s.setSettingsSurfaceOpen);
 
   useEffect(() => {
     openCorpus()
@@ -107,7 +107,7 @@ export default function Reader() {
   // in the hook), NOT the settings object — that literal is rebuilt every render
   // and would defeat this memo, re-shaping the Skia picture each frame.
   const settings = useReadingSettings();
-  const { rulesFor, palette, activeTranslation, ready: settingsReady } = settings;
+  const { rulesFor, palette, activeTranslation, activePreset, ready: settingsReady } = settings;
 
   // Cold-open seed (#12): reopen in the last-chosen translation. One-shot — once
   // the durable settings row resolves, adopt its translation and then step back;
@@ -150,8 +150,16 @@ export default function Reader() {
 
   const page = useMemo(() => {
     if (!source || !fonts || mode !== 'codex') return null;
-    return layoutCodexPage({ chapter, ...source, rules, metrics: fonts.metrics });
-  }, [source, fonts, mode, chapter, rules]);
+    return layoutCodexPage({
+      chapter,
+      ...source,
+      rules,
+      metrics: fonts.metrics,
+      verseNumberStyle: activePreset.verseNumber,
+      runningHead: { bookName, locator: `Chapter ${chapter}` },
+      runningHeadStyle: activePreset.runningHead,
+    });
+  }, [source, fonts, mode, chapter, rules, activePreset, bookName]);
 
   const scroll = useMemo(() => {
     if (!source || !fonts || mode !== 'scroll') return null;
@@ -211,12 +219,12 @@ export default function Reader() {
         </View>
       </SafeAreaView>
 
-      {/* Layout-adjust affordance (#11): opens the preset/knob/theme panel. */}
+      {/* Reading settings (#44): preset cards, font scale, and global theme. */}
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Open adjust"
+        accessibilityLabel="Open settings"
         style={[styles.adjustBtn, { backgroundColor: palette.gilt }]}
-        onPress={() => setAdjustOpen(true)}
+        onPress={() => setSettingsOpen(true)}
       >
         <Text style={[styles.adjustText, { color: palette.letterbox }]}>Aa</Text>
       </Pressable>
@@ -226,12 +234,12 @@ export default function Reader() {
           accessibilityRole="button"
           accessibilityLabel="Open preset lab"
           style={[styles.adjustBtn, styles.labBtn, { backgroundColor: palette.muted }]}
-          onPress={() => router.push('/lab')}
+          onPress={() => router.push('/lab' as never)}
         >
           <Text style={[styles.adjustText, { color: palette.letterbox }]}>Lab</Text>
         </Pressable>
       )}
-      <AdjustPanelContainer />
+      <SettingsSurfaceContainer />
     </View>
   );
 }

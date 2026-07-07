@@ -53,6 +53,7 @@ export interface VerseNumItem {
   readonly verse: number;
   readonly x: number;
   readonly width: number;
+  readonly style: VerseNumberStyle;
 }
 
 export type LineItem = TokenItem | VerseNumItem;
@@ -86,6 +87,40 @@ export interface LayoutBlock {
 /** Drop-cap structural cue: which token opens the chapter as a versal. */
 export interface DropCap {
   readonly tokenSeq: number;
+}
+
+export type ApparatusTone = 'gilt' | 'muted';
+
+/** How this personality renders quiet Codex verse numbers. */
+export interface VerseNumberStyle {
+  /** Font-size multiplier over the body em. */
+  readonly scale: number;
+  /** Baseline raise above the body baseline, in em of the body size. */
+  readonly raiseEm: number;
+  /** Which palette ink the number takes. */
+  readonly tone: ApparatusTone;
+}
+
+/** How this personality renders the Codex running head. */
+export interface RunningHeadStyle {
+  /** Font-size multiplier over the body em. */
+  readonly scale: number;
+  /** Which palette ink the head takes. */
+  readonly tone: ApparatusTone;
+}
+
+export interface RunningHeadIdentity {
+  readonly bookName: string;
+  /** Chapter today; literary page label/range when the curated edition lands. */
+  readonly locator: string;
+}
+
+export interface RunningHead {
+  readonly text: string;
+  readonly identity: RunningHeadIdentity | null;
+  readonly x: number;
+  readonly baselineY: number;
+  readonly style: RunningHeadStyle;
 }
 
 /** One line of the Scroll flow — block identity travels with it because a
@@ -135,6 +170,7 @@ export interface PageLayout {
   readonly text: Region;
   /** The Margin rail — home of Note pins and Rail ink (Phase 2). */
   readonly rail: Region;
+  readonly runningHead: RunningHead | null;
   readonly blocks: readonly LayoutBlock[];
   readonly dropCap: DropCap | null;
 }

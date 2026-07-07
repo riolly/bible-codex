@@ -8,7 +8,7 @@
  */
 
 import type { Block, Token } from '../../model/corpus';
-import type { Line, LayoutBlock, LineItem, TokenRun } from './model';
+import type { Line, LayoutBlock, LineItem, TokenRun, VerseNumberStyle } from './model';
 import type { ResolvedRules } from './rules';
 
 /**
@@ -23,6 +23,7 @@ export interface TypesetInput {
   readonly tokens: readonly Token[];
   readonly rules: ResolvedRules;
   readonly metrics: MeasureToken;
+  readonly verseNumberStyle?: VerseNumberStyle | null;
 }
 
 export interface TypesetResult {
@@ -38,6 +39,12 @@ export const VERSE_NUM_SCALE = 0.65;
 /** … and carry a hair of padding before the word they introduce. */
 const VERSE_NUM_PAD = 0.15;
 
+export const DEFAULT_VERSE_NUMBER_STYLE: VerseNumberStyle = {
+  scale: VERSE_NUM_SCALE,
+  raiseEm: 0.33,
+  tone: 'gilt',
+};
+
 /** A LineItem before x-placement (distributive omit — LineItem is a union). */
 type UnplacedItem = LineItem extends infer I ? (I extends LineItem ? Omit<I, 'x'> : never) : never;
 
@@ -47,7 +54,10 @@ interface Chunk {
   readonly width: number;
 }
 
-export function typesetBlocks({ blocks, tokens, rules, metrics }: TypesetInput): TypesetResult {
+export function typesetBlocks(input: TypesetInput): TypesetResult {
+  const { blocks, tokens, rules, metrics } = input;
+  const verseNumberStyle =
+    input.verseNumberStyle === undefined ? DEFAULT_VERSE_NUMBER_STYLE : input.verseNumberStyle;
   const tokensByBlock = new Map<number, Token[]>();
   for (const token of tokens) {
     const list = tokensByBlock.get(token.blockId);
@@ -69,7 +79,11 @@ export function typesetBlocks({ blocks, tokens, rules, metrics }: TypesetInput):
       );
     }
 
-    const chunkLines = breakChunks(buildChunks(blockTokens, metrics), available, spaceWidth);
+    const chunkLines = breakChunks(
+      buildChunks(blockTokens, metrics, verseNumberStyle),
+      available,
+      spaceWidth,
+    );
     const lines: Line[] = chunkLines.map((chunks, i) => ({
       y: cursor + i * rules.lineHeight,
       indent: indentEm,
@@ -115,7 +129,11 @@ const isOpeningPunct = (token: Token): boolean =>
  * to the FOLLOWING word (so `said, “Let` spaces after the comma, not after the
  * quote); a verse-start word is prefixed by its verse-number ornament slot.
  */
-function buildChunks(tokens: readonly Token[], metrics: MeasureToken): Chunk[] {
+function buildChunks(
+  tokens: readonly Token[],
+  metrics: MeasureToken,
+  verseNumberStyle: VerseNumberStyle | null,
+): Chunk[] {
   const chunks: { items: UnplacedItem[]; width: number }[] = [];
   // Opening punct waits here for the word it introduces, to lead that chunk.
   let leading: UnplacedItem[] = [];
@@ -138,11 +156,12 @@ function buildChunks(tokens: readonly Token[], metrics: MeasureToken): Chunk[] {
     const startsChunk = token.kind === 'word' || (chunks.length === 0 && leading.length === 0);
     if (startsChunk) {
       const items: UnplacedItem[] = [];
-      if (token.verseStart && token.verse !== null) {
+      if (token.verseStart && token.verse !== null && verseNumberStyle) {
         items.push({
           kind: 'verse-num' as const,
           verse: token.verse,
-          width: metrics(String(token.verse)) * VERSE_NUM_SCALE + VERSE_NUM_PAD,
+          width: metrics(String(token.verse)) * verseNumberStyle.scale + VERSE_NUM_PAD,
+          style: verseNumberStyle,
         });
       }
       items.push(...leading, item);

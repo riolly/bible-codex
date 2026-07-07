@@ -17,11 +17,19 @@ import {
   type CascadeContext,
   type ResolvedRules,
 } from '@/engine/layout';
+import { THEMES, type Palette, type Theme } from '@/draw/style';
 
 /** Font faces offered by the adjust panel (demoted to a __DEV__ tuning tool
  * by #44). Only Cardo is bundled today; the knob is a plain string so more
  * faces drop in without a schema change (the #45 bake-off feeds this list). */
 export const FONT_FAMILIES = ['Cardo'] as const;
+
+export const TEXT_EDITIONS = ['usfm', 'literary'] as const;
+export type TextEdition = (typeof TEXT_EDITIONS)[number];
+
+export function normalizeTextEdition(value: string | null | undefined): TextEdition {
+  return value === 'literary' ? 'literary' : 'usfm';
+}
 
 /**
  * Resolve the concrete rules for one block from the live settings row: the
@@ -36,4 +44,10 @@ export function resolveSettings(
 ): ResolvedRules {
   const preset = builtinPreset(activePresetId);
   return applyFontScale(resolveCascade(preset, preset.overrides, context), fontScale);
+}
+
+/** Resolve global theme inks over the active preset's paper tint. */
+export function settingsPalette(activePresetId: string | null, theme: Theme): Palette {
+  const preset = builtinPreset(activePresetId);
+  return { ...THEMES[theme], parchment: preset.paper[theme] };
 }
