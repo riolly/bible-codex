@@ -77,6 +77,16 @@ export function applyFontScale(
 }
 
 /**
+ * Inverse of `applyFontScale` for UI that steps the displayed size. Invalid
+ * base/displayed sizes collapse back to the neutral scale.
+ */
+export function fontScaleFromDisplayedSize(baseFontSize: number, displayedFontSize: number): number {
+  if (!Number.isFinite(baseFontSize) || baseFontSize <= 0) return 1;
+  if (!Number.isFinite(displayedFontSize) || displayedFontSize <= 0) return 1;
+  return displayedFontSize / baseFontSize;
+}
+
+/**
  * Resolve a preset to concrete rules. Base-only: null/omitted knobs fall back
  * to DEFAULT_PRESET; genre/role/book overrides are the cascade (cascade.ts).
  */

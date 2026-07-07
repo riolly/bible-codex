@@ -50,7 +50,7 @@ export {
   type VersalStyle,
   type VerseNumberStyle,
 } from './presets';
-export { DEFAULT_PRESET, applyFontScale, resolveRules } from './rules';
+export { DEFAULT_PRESET, applyFontScale, fontScaleFromDisplayedSize, resolveRules } from './rules';
 export type { Align, LayoutPresetInput, ResolvedRules } from './rules';
 export { layoutScrollColumns, type ScrollInput } from './scroll';
 export { VERSE_NUM_SCALE, type MeasureToken } from './typeset';

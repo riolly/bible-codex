@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_PRESET, applyFontScale, resolveRules } from './rules';
+import { DEFAULT_PRESET, applyFontScale, fontScaleFromDisplayedSize, resolveRules } from './rules';
 
 describe('resolveRules', () => {
   it('resolves a full preset to itself (base-only cascade, #7)', () => {
@@ -75,5 +75,16 @@ describe('applyFontScale', () => {
     expect(applyFontScale(rules, -2).fontSize).toBe(18);
     expect(applyFontScale(rules, Number.NaN).fontSize).toBe(18);
     expect(applyFontScale(rules, null).fontSize).toBe(18);
+  });
+});
+
+describe('fontScaleFromDisplayedSize', () => {
+  it('inverts applyFontScale for displayed size steppers', () => {
+    expect(fontScaleFromDisplayedSize(18, 22.5)).toBe(1.25);
+  });
+
+  it('falls back to neutral scale for invalid inputs', () => {
+    expect(fontScaleFromDisplayedSize(0, 22.5)).toBe(1);
+    expect(fontScaleFromDisplayedSize(18, Number.NaN)).toBe(1);
   });
 });

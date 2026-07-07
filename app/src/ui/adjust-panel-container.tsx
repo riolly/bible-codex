@@ -4,18 +4,17 @@
  * (and the reader's) `useLiveQuery`, so edits re-typeset immediately (ADR-0004).
  *
  * ADR-0018: the preset cards list the shipped builtins (slug select) and the
- * Size stepper drives `fontScale`; the other knob callbacks still write the
- * DORMANT layout_preset table — visible no-ops until the #41 preset lab
- * repoints them.
+ * Size stepper drives `fontScale`. Other tuning knobs stay hidden here until
+ * the #41 preset lab points them at local candidate state.
  */
 
 import { Alert } from 'react-native';
 
 import { exportUserData } from '@/backup/export-data';
 import { importUserData } from '@/backup/restore-data';
-import { BUILTIN_PRESETS } from '@/engine/layout';
+import { BUILTIN_PRESETS, fontScaleFromDisplayedSize } from '@/engine/layout';
 import { FONT_FAMILIES } from '@/db/settings';
-import { selectPreset, setFontScale, setTheme, updateActivePreset } from '@/db/settings-write';
+import { selectPreset, setFontScale, setTheme } from '@/db/settings-write';
 import { useReadingSettings } from '@/db/use-settings';
 import { useUiStore } from '@/store/ui-store';
 import { AdjustPanel } from './adjust-panel';
@@ -89,13 +88,9 @@ export function AdjustPanelContainer() {
       onClose={() => setOpen(false)}
       onTheme={(t) => void setTheme(t)}
       onSelectPreset={(slug) => void selectPreset(slug)}
-      onFontFamily={(f) => void updateActivePreset({ fontFamily: f })}
       // The panel steps the DISPLAYED (scaled) size; store it as the ADR-0018
       // multiplier over the active builtin's base.
-      onFontSize={(v) => void setFontScale(v / settings.activePreset.fontSize)}
-      onLineHeight={(v) => void updateActivePreset({ lineHeight: v })}
-      onMeasure={(v) => void updateActivePreset({ measure: v })}
-      onMargin={(v) => void updateActivePreset({ railWidth: v })}
+      onFontSize={(v) => void setFontScale(fontScaleFromDisplayedSize(settings.activePreset.fontSize, v))}
       onExport={() => void handleExport()}
       onImport={handleImport}
     />
