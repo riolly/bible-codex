@@ -220,6 +220,17 @@ export default function Reader() {
       >
         <Text style={[styles.adjustText, { color: palette.letterbox }]}>Aa</Text>
       </Pressable>
+      {/* Dev-only preset lab (#41): __DEV__ folds this out of release builds. */}
+      {__DEV__ && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open preset lab"
+          style={[styles.adjustBtn, styles.labBtn, { backgroundColor: palette.muted }]}
+          onPress={() => router.push('/lab')}
+        >
+          <Text style={[styles.adjustText, { color: palette.letterbox }]}>Lab</Text>
+        </Pressable>
+      )}
       <AdjustPanelContainer />
     </View>
   );
@@ -261,4 +272,5 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   adjustText: { fontSize: 20, fontWeight: '600' },
+  labBtn: { bottom: 92 },
 });

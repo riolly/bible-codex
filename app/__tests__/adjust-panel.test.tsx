@@ -90,6 +90,14 @@ describe('AdjustPanel', () => {
     expect(onSelectPreset).toHaveBeenCalledWith('b');
   });
 
+  it('importLabel renames the Import button (the lab uses it as Reset, #41)', async () => {
+    const onImport = jest.fn();
+    await render(<AdjustPanel {...props({ onImport, importLabel: 'Reset' })} />);
+    expect(screen.queryByText('Import')).toBeNull();
+    fireEvent.press(screen.getByLabelText('Reset'));
+    expect(onImport).toHaveBeenCalledTimes(1);
+  });
+
   it('the Data buttons fire export and import (#13)', async () => {
     const onExport = jest.fn();
     const onImport = jest.fn();

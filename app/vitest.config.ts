@@ -20,6 +20,7 @@ export default defineConfig({
       'src/db/**/*.test.ts',
       'src/draw/**/*.test.ts',
       'src/engine/**/*.test.ts',
+      'src/lab/**/*.test.ts',
       'src/model/**/*.test.ts',
       'scripts/ingest/**/*.test.ts',
     ],
