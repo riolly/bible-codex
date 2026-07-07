@@ -16,8 +16,10 @@ import { emitPresetSource } from './emit-preset';
  * Emit + deliver one candidate. Console first (always works, even where the
  * share sheet is unavailable, e.g. some emulators); share sheet best-effort.
  */
-export async function sharePresetSource(preset: BuiltinPreset): Promise<void> {
-  const source = emitPresetSource(preset);
+export async function sharePresetSource(
+  preset: BuiltinPreset,
+  source = emitPresetSource(preset),
+): Promise<void> {
   console.log(`[preset-lab] ${preset.slug} →\n${source}`);
 
   const file = new File(Paths.cache, `preset-${preset.slug}.ts`);

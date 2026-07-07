@@ -3,7 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { BUILTIN_PRESETS } from '@/engine/layout';
 import type { CascadeContext } from '@/engine/layout';
 import { THEMES } from '@/draw/style';
-import { adjustValuesOf, applyTweak, candidateRules, labPalette, seedCandidates } from './candidates';
+import {
+  adjustValuesOf,
+  applyTweak,
+  candidateRules,
+  labPalette,
+  resetCandidate,
+  seedCandidates,
+} from './candidates';
 
 const PROSE: CascadeContext = { genre: 'prose', role: null, bookSlug: 'Genesis' };
 const POETRY: CascadeContext = { genre: 'poetry', role: null, bookSlug: 'Psalms' };
@@ -33,9 +40,10 @@ describe('applyTweak', () => {
     );
   });
 
-  it('unknown candidate id is a no-op', () => {
+  it('resetCandidate returns the named candidate to its seeded builtin', () => {
     const seeded = seedCandidates();
-    expect(applyTweak(seeded, 'manuscript', { fontSize: 40 })).toEqual(seeded);
+    const tweaked = applyTweak(seeded, 'classic', { fontSize: 40 });
+    expect(resetCandidate(tweaked, seeded, 'classic')[0].preset).toEqual(BUILTIN_PRESETS.classic);
   });
 });
 

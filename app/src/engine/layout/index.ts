@@ -6,6 +6,7 @@
  */
 
 export {
+  LAYOUT_RULE_KNOBS,
   resolveCascade,
   type CascadeContext,
   type LayoutOverride,

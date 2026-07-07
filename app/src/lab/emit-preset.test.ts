@@ -28,7 +28,7 @@ describe('emitPresetSource', () => {
 
   it('carries the personality blocks', () => {
     const src = emitPresetSource(BUILTIN_PRESETS.classic);
-    expect(src).toContain("verseNumber: { scale: 0.65, raiseEm: 0.33, tone: 'gilt' },");
+    expect(src).toContain("verseNumber: { scale: VERSE_NUM_SCALE, raiseEm: 0.33, tone: 'gilt' },");
     expect(src).toContain("versal: { kind: 'drop', lines: 3 },");
     expect(src).toContain("paper: { light: '#F6F0E4', dark: '#211D18' },");
     expect(src).toContain("{ scopeKind: 'genre', scopeValue: 'poetry', indentStep: 1.5 },");
@@ -41,6 +41,16 @@ describe('emitPresetSource', () => {
   it('escapes apostrophes in string knobs — the source always parses', () => {
     const tuned = { ...BUILTIN_PRESETS.classic, fontFamily: "Baskerville 'Classic'" };
     expect(emitPresetSource(tuned)).toContain("fontFamily: 'Baskerville \\'Classic\\'',");
+  });
+
+  it('emits a numeric verse scale when a candidate diverges from the shared constant', () => {
+    const tuned = {
+      ...BUILTIN_PRESETS.classic,
+      verseNumber: { ...BUILTIN_PRESETS.classic.verseNumber, scale: 0.7 },
+    };
+    expect(emitPresetSource(tuned)).toContain(
+      "verseNumber: { scale: 0.7, raiseEm: 0.33, tone: 'gilt' },",
+    );
   });
 
   it('is deterministic — same preset, same source', () => {

@@ -11,6 +11,7 @@ import {
   resolveCascade,
   type BuiltinPreset,
   type CascadeContext,
+  type PresetSlug,
   type ResolvedRules,
 } from '@/engine/layout';
 import { THEMES, type Palette, type Theme } from '@/draw/style';
@@ -18,7 +19,7 @@ import type { AdjustValues } from '@/ui/adjust-panel';
 
 export interface LabCandidate {
   /** The seeded builtin's slug — stable through tweaks. */
-  readonly id: string;
+  readonly id: PresetSlug;
   readonly label: string;
   readonly preset: BuiltinPreset;
 }
@@ -37,13 +38,24 @@ export function seedCandidates(): readonly LabCandidate[] {
   }));
 }
 
-/** Patch one candidate's knobs; unknown id is a no-op. Never mutates. */
+/** Patch one shipped candidate's knobs. Never mutates. */
 export function applyTweak(
   candidates: readonly LabCandidate[],
-  id: string,
+  id: PresetSlug,
   tweak: LabTweak,
 ): readonly LabCandidate[] {
   return candidates.map((c) => (c.id === id ? { ...c, preset: { ...c.preset, ...tweak } } : c));
+}
+
+/** Return one candidate to its seeded builtin values. */
+export function resetCandidate(
+  candidates: readonly LabCandidate[],
+  seeded: readonly LabCandidate[],
+  id: PresetSlug,
+): readonly LabCandidate[] {
+  const seed = seeded.find((s) => s.id === id);
+  if (!seed) return candidates;
+  return candidates.map((c) => (c.id === id ? seed : c));
 }
 
 /** Resolve a candidate's concrete rules for one block context — the same

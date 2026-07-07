@@ -40,7 +40,7 @@ export interface CascadeContext {
 const PRECEDENCE: readonly ScopeKind[] = ['genre', 'role', 'book'];
 
 /** The tunable knobs — the keys shared by a preset and an override. */
-const KNOBS = [
+export const LAYOUT_RULE_KNOBS = [
   'fontFamily',
   'fontSize',
   'lineHeight',
@@ -66,7 +66,7 @@ function matchesScope(override: LayoutOverride, context: CascadeContext): boolea
 
 /** Copy only the knobs the override actually SETS (non-null) onto the accumulator. */
 function applyKnobs(into: Record<string, unknown>, from: LayoutOverride): void {
-  for (const knob of KNOBS) {
+  for (const knob of LAYOUT_RULE_KNOBS) {
     const value = from[knob];
     if (value !== null && value !== undefined) into[knob] = value;
   }
@@ -84,7 +84,7 @@ export function resolveCascade(
   context: CascadeContext,
 ): ResolvedRules {
   const merged: Record<string, unknown> = {};
-  for (const knob of KNOBS) {
+  for (const knob of LAYOUT_RULE_KNOBS) {
     const value = base[knob];
     if (value !== null && value !== undefined) merged[knob] = value;
   }

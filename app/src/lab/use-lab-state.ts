@@ -8,10 +8,12 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import type { Theme } from '@/draw/style';
+import type { PresetSlug } from '@/engine/layout';
 import type { AdjustValues } from '@/ui/adjust-panel';
 import {
   adjustValuesOf,
   applyTweak,
+  resetCandidate,
   seedCandidates,
   type LabCandidate,
   type LabTweak,
@@ -20,12 +22,12 @@ import { emitPresetSource } from './emit-preset';
 
 export interface LabState {
   readonly candidates: readonly LabCandidate[];
-  readonly selectedId: string;
+  readonly selectedId: PresetSlug;
   readonly selected: LabCandidate;
   /** The selected candidate's knobs, shaped for the adjust panel. */
   readonly selectedValues: AdjustValues;
   readonly theme: Theme;
-  readonly select: (id: string) => void;
+  readonly select: (id: PresetSlug) => void;
   /** Patch the SELECTED candidate's knobs. */
   readonly tweak: (patch: LabTweak) => void;
   /** Return the selected candidate to its shipped builtin values. */
@@ -50,10 +52,7 @@ export function useLabState(): LabState {
   );
 
   const reset = useCallback(
-    () =>
-      setCandidates((prev) =>
-        prev.map((c) => (c.id === selectedId ? seeded.find((s) => s.id === selectedId) ?? c : c)),
-      ),
+    () => setCandidates((prev) => resetCandidate(prev, seeded, selectedId)),
     [seeded, selectedId],
   );
 

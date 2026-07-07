@@ -13,6 +13,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { layoutCodexPage } from '@/engine/layout';
+import type { PresetSlug } from '@/engine/layout';
 import { useCardoFonts } from '@/draw/fonts';
 import { THEMES } from '@/draw/style';
 import { FONT_FAMILIES } from '@/db/settings';
@@ -114,13 +115,13 @@ export function PresetLab() {
         activePresetId={lab.selectedId}
         onClose={() => setPanelOpen(false)}
         onTheme={lab.setTheme}
-        onSelectPreset={lab.select}
+        onSelectPreset={(id) => lab.select(id as PresetSlug)}
         onFontFamily={(fontFamily) => lab.tweak({ fontFamily })}
         onFontSize={(fontSize) => lab.tweak({ fontSize })}
         onLineHeight={(lineHeight) => lab.tweak({ lineHeight })}
         onMeasure={(measure) => lab.tweak({ measure })}
         onMargin={(railWidth) => lab.tweak({ railWidth })}
-        onExport={() => void sharePresetSource(lab.selected.preset)}
+        onExport={() => void sharePresetSource(lab.selected.preset, lab.exportSelected())}
         onImport={lab.reset}
         importLabel="Reset"
       />
