@@ -17,6 +17,7 @@ import {
   type CascadeContext,
   type ResolvedRules,
 } from '@/engine/layout';
+import { THEMES, type Palette, type Theme } from '@/draw/style';
 
 /** Font faces offered by the adjust panel (demoted to a __DEV__ tuning tool
  * by #44). Only Cardo is bundled today; the knob is a plain string so more
@@ -36,4 +37,10 @@ export function resolveSettings(
 ): ResolvedRules {
   const preset = builtinPreset(activePresetId);
   return applyFontScale(resolveCascade(preset, preset.overrides, context), fontScale);
+}
+
+/** Resolve global theme inks over the active preset's paper tint. */
+export function settingsPalette(activePresetId: string | null, theme: Theme): Palette {
+  const preset = builtinPreset(activePresetId);
+  return { ...THEMES[theme], parchment: preset.paper[theme] };
 }

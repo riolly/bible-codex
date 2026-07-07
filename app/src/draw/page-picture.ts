@@ -14,7 +14,13 @@ import { Skia, type SkPicture } from '@shopify/react-native-skia';
 import type { PageLayout, ResolvedRules } from '../engine/layout';
 import { createFlowPainter } from './flow-paint';
 import type { DrawFonts } from './fonts';
-import { PALETTE, styleForBlock, type BlockStyle, type Palette } from './style';
+import {
+  PALETTE,
+  runningHeadStyle,
+  styleForBlock,
+  type BlockStyle,
+  type Palette,
+} from './style';
 
 export function buildPagePicture(
   page: PageLayout,
@@ -33,6 +39,22 @@ export function buildPagePicture(
   const bg = Skia.Paint();
   bg.setColor(Skia.Color(palette.parchment));
   canvas.drawRect(Skia.XYWHRect(0, 0, page.canvas.width * S, page.canvas.height * S), bg);
+
+  if (page.runningHead) {
+    const style = runningHeadStyle(page.runningHead.style, palette);
+    painter.paintAtBaseline(
+      canvas,
+      {
+        text: page.runningHead.text,
+        color: style.color,
+        bold: false,
+        italic: false,
+        sizePx: S * style.scale,
+      },
+      page.runningHead.x * S,
+      page.runningHead.baselineY * S,
+    );
+  }
 
   // The text region: Line.y is text-region-absolute (the engine's running
   // cursor) — block.y is already inside it, so the whole page shares one origin.

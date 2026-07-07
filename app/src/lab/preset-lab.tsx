@@ -52,7 +52,14 @@ export function PresetLab() {
       return {
         candidate,
         rules,
-        page: layoutCodexPage({ ...spread, rules, metrics: fonts.metrics }),
+        page: layoutCodexPage({
+          ...spread,
+          rules,
+          metrics: fonts.metrics,
+          verseNumberStyle: candidate.preset.verseNumber,
+          runningHead: `${candidate.label} lab`,
+          runningHeadStyle: candidate.preset.runningHead,
+        }),
         palette: labPalette(candidate, lab.theme),
       };
     });

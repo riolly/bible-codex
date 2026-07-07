@@ -1,9 +1,8 @@
 /**
  * The layout-adjust panel (#11) — presentational only. It renders the current
- * resolved rules and reports changes through callbacks; the container
- * (adjust-panel-container.tsx) binds live controls to mutations, which
- * re-typeset the page reactively (ADR-0004). Kept prop-driven so it unit-tests
- * without the expo-sqlite client.
+ * resolved rules and reports changes through callbacks. In release, the reader
+ * uses SettingsSurface instead; this panel is the __DEV__ preset lab tweaker.
+ * Kept prop-driven so it unit-tests without the expo-sqlite client.
  *
  * "Margin" is the Codex Margin-rail width (ADR-0016 pillar 4): widening it
  * grows the page canvas OUTWARD; the text measure and line breaks never change.

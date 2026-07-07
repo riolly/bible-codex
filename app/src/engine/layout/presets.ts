@@ -21,6 +21,7 @@
  */
 
 import type { LayoutOverride } from './cascade';
+import type { RunningHeadStyle, VerseNumberStyle } from './model';
 import type { ResolvedRules } from './rules';
 import { VERSE_NUM_SCALE } from './typeset';
 
@@ -31,16 +32,6 @@ export type PresetSlug = 'classic' | 'modern';
 export interface PaperTint {
   readonly light: string;
   readonly dark: string;
-}
-
-/** How this personality renders the quiet Codex verse numbers (#42 consumes). */
-export interface VerseNumberStyle {
-  /** Font-size multiplier over the body em. */
-  readonly scale: number;
-  /** Baseline raise above the body baseline, in em of the body size. */
-  readonly raiseEm: number;
-  /** Which palette ink the number takes. */
-  readonly tone: 'gilt' | 'muted';
 }
 
 /** How this personality renders a versal at its editorial placements (#43 consumes). */
@@ -56,6 +47,7 @@ export interface BuiltinPreset extends ResolvedRules {
   readonly slug: PresetSlug;
   readonly name: string;
   readonly verseNumber: VerseNumberStyle;
+  readonly runningHead: RunningHeadStyle;
   readonly versal: VersalStyle;
   readonly paper: PaperTint;
   /** The preset's own internal cascade refinements (genre/role/book). */
@@ -79,6 +71,7 @@ const CLASSIC: BuiltinPreset = {
   measure: 30,
   railWidth: 6,
   verseNumber: { scale: VERSE_NUM_SCALE, raiseEm: 0.33, tone: 'gilt' },
+  runningHead: { scale: 0.72, tone: 'gilt' },
   versal: { kind: 'drop', lines: 3 },
   paper: { light: '#F6F0E4', dark: '#211D18' },
   overrides: [
@@ -103,7 +96,8 @@ const MODERN: BuiltinPreset = {
   align: 'left',
   measure: 28,
   railWidth: 6,
-  verseNumber: { scale: VERSE_NUM_SCALE, raiseEm: 0.33, tone: 'muted' },
+  verseNumber: { scale: 0.58, raiseEm: 0.25, tone: 'muted' },
+  runningHead: { scale: 0.68, tone: 'muted' },
   versal: { kind: 'raised', lines: 2 },
   paper: { light: '#FAFAF8', dark: '#1B1D20' },
   overrides: [],

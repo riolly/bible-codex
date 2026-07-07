@@ -54,4 +54,11 @@ describe('layoutScrollColumns', () => {
     const genres = new Set(s.columns.flatMap((c) => c.lines.map((l) => l.genre)));
     expect(genres).toEqual(new Set(['heading', 'prose', 'poetry']));
   });
+
+  it('keeps Scroll clean: no verse-number slots and no running-head model', () => {
+    const s = scroll();
+    const items = s.columns.flatMap((c) => c.lines.flatMap((l) => l.runs.flatMap((r) => r.items)));
+    expect(items.some((i) => i.kind === 'verse-num')).toBe(false);
+    expect('runningHead' in s).toBe(false);
+  });
 });

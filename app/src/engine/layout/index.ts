@@ -28,17 +28,21 @@ export {
 export type {
   Direction,
   DropCap,
+  ApparatusTone,
   LayoutBlock,
   Line,
   LineItem,
   PageLayout,
   Region,
+  RunningHead,
+  RunningHeadStyle,
   ScrollColumn,
   ScrollLayout,
   ScrollLine,
   TokenItem,
   TokenRun,
   VerseNumItem,
+  VerseNumberStyle,
   Viewport,
 } from './model';
 export {
@@ -49,7 +53,6 @@ export {
   type PaperTint,
   type PresetSlug,
   type VersalStyle,
-  type VerseNumberStyle,
 } from './presets';
 export { DEFAULT_PRESET, applyFontScale, fontScaleFromDisplayedSize, resolveRules } from './rules';
 export type { Align, LayoutPresetInput, ResolvedRules } from './rules';

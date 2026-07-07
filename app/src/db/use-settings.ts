@@ -20,10 +20,10 @@ import {
   type CascadeContext,
   type ResolvedRules,
 } from '@/engine/layout';
-import { THEMES, type Palette, type Theme } from '@/draw/style';
+import type { Palette, Theme } from '@/draw/style';
 import { db } from './client';
 import { readingSettings } from './schema';
-import { resolveSettings } from './settings';
+import { resolveSettings, settingsPalette } from './settings';
 import { ensureSeed } from './settings-write';
 
 export interface ReadingSettings {
@@ -64,7 +64,7 @@ export function useReadingSettings(): ReadingSettings {
   return {
     ready: settingsRow !== null,
     theme,
-    palette: THEMES[theme],
+    palette: settingsPalette(activePresetId, theme),
     activeTranslation: settingsRow?.activeTranslation ?? 'KJV',
     activePreset: builtinPreset(activePresetId),
     fontScale,

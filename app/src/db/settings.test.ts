@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BUILTIN_PRESETS, DEFAULT_PRESET_SLUG } from '@/engine/layout';
 import type { CascadeContext } from '@/engine/layout';
-import { resolveSettings } from './settings';
+import { resolveSettings, settingsPalette } from './settings';
 
 const PROSE: CascadeContext = { genre: 'prose', role: null, bookSlug: 'Genesis' };
 const POETRY: CascadeContext = { genre: 'poetry', role: null, bookSlug: 'Psalms' };
@@ -38,5 +38,19 @@ describe('resolveSettings', () => {
     const scaled = resolveSettings('classic', 2, POETRY);
     expect(scaled.fontSize).toBe(unscaled.fontSize * 2);
     expect(scaled.indentStep).toBe(unscaled.indentStep);
+  });
+});
+
+describe('settingsPalette', () => {
+  it('uses global theme inks over preset-specific paper tint', () => {
+    expect(settingsPalette('classic', 'light').parchment).toBe(BUILTIN_PRESETS.classic.paper.light);
+    expect(settingsPalette('classic', 'dark').parchment).toBe(BUILTIN_PRESETS.classic.paper.dark);
+    expect(settingsPalette('modern', 'light').parchment).toBe(BUILTIN_PRESETS.modern.paper.light);
+    expect(settingsPalette('modern', 'dark').parchment).toBe(BUILTIN_PRESETS.modern.paper.dark);
+  });
+
+  it('keeps dark/light as a global ink toggle', () => {
+    expect(settingsPalette('classic', 'light').ink).not.toBe(settingsPalette('classic', 'dark').ink);
+    expect(settingsPalette('classic', 'dark').ink).toBe(settingsPalette('modern', 'dark').ink);
   });
 });

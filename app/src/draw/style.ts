@@ -11,7 +11,9 @@
  * learns about roles too.
  */
 
-import { VERSE_NUM_SCALE } from '../engine/layout';
+import { VERSE_NUM_SCALE, type ApparatusTone } from '../engine/layout';
+import type { RunningHeadStyle as LayoutRunningHeadStyle } from '../engine/layout';
+import type { VerseNumberStyle as LayoutVerseNumberStyle } from '../engine/layout';
 import type { BlockRole, Genre } from '../model/corpus';
 
 /** The manuscript palette — resolved per theme (light/dark). Same warm-ink /
@@ -104,6 +106,35 @@ export interface VerseNumStyle {
   readonly raiseEm: number;
 }
 
-export function verseNumStyle(palette: Palette = PALETTE): VerseNumStyle {
-  return { color: palette.gilt, scale: VERSE_NUM_SCALE, raiseEm: 0.33 };
+const DEFAULT_VERSE_NUMBER_STYLE: LayoutVerseNumberStyle = {
+  scale: VERSE_NUM_SCALE,
+  raiseEm: 0.33,
+  tone: 'gilt',
+};
+
+function apparatusColor(tone: ApparatusTone, palette: Palette): string {
+  return tone === 'gilt' ? palette.gilt : palette.muted;
+}
+
+export function verseNumStyle(
+  style: LayoutVerseNumberStyle = DEFAULT_VERSE_NUMBER_STYLE,
+  palette: Palette = PALETTE,
+): VerseNumStyle {
+  return {
+    color: apparatusColor(style.tone, palette),
+    scale: style.scale,
+    raiseEm: style.raiseEm,
+  };
+}
+
+export interface RunningHeadPaintStyle {
+  readonly color: string;
+  readonly scale: number;
+}
+
+export function runningHeadStyle(
+  style: LayoutRunningHeadStyle,
+  palette: Palette = PALETTE,
+): RunningHeadPaintStyle {
+  return { color: apparatusColor(style.tone, palette), scale: style.scale };
 }
