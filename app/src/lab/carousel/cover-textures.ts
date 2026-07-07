@@ -17,7 +17,14 @@
  * that is #48's work.
  */
 
-import { Skia, TileMode, matchFont, type SkFont, type SkImage } from '@shopify/react-native-skia';
+import {
+  Skia,
+  TileMode,
+  matchFont,
+  type SkFont,
+  type SkImage,
+  type SkSurface,
+} from '@shopify/react-native-skia';
 import { PixelRatio, Platform } from 'react-native';
 
 import { BOOK_GROUPS } from '@/model/book-groups';
@@ -133,8 +140,17 @@ function paintCover(book: CoverBook, k: number, font: SkFont, smallFont: SkFont)
   const f = book.name.length > 12 ? smallFont : font;
   canvas.drawText(book.name, 14 * k, 24 * k, textPaint, f);
 
-  const image = surface.makeImageSnapshot();
+  return snapshotForDisplay(surface);
+}
+
+/** Snapshot an offscreen surface as an image the ON-SCREEN canvas can draw.
+ * makeImageSnapshot() alone is texture-backed on the offscreen GrContext —
+ * the display context can't sample it and draws nothing. */
+function snapshotForDisplay(surface: SkSurface): SkImage {
+  const gpuImage = surface.makeImageSnapshot();
+  const image = gpuImage.makeNonTextureImage();
   surface.dispose();
+  if (!image) throw new Error('makeNonTextureImage failed');
   return image;
 }
 
@@ -151,9 +167,7 @@ function blurredVariant(sharp: SkImage, sigmaDp: number): SkImage {
     Skia.XYWHRect(0, 0, COVER_W, COVER_H),
     paint,
   );
-  const image = surface.makeImageSnapshot();
-  surface.dispose();
-  return image;
+  return snapshotForDisplay(surface);
 }
 
 /** One shared soft drop shadow: blurred dark rounded rect with padding. */
@@ -172,9 +186,7 @@ function shadowTexture(): SkImage {
     ),
     paint,
   );
-  const image = surface.makeImageSnapshot();
-  surface.dispose();
-  return image;
+  return snapshotForDisplay(surface);
 }
 
 export function buildCoverTextures(): CoverTextures {
