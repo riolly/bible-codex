@@ -1,7 +1,9 @@
 /**
  * Test-support corpus builders for the layout engine suites (#7). Not part of
- * the engine's public API. Shapes mirror app/src/model/corpus.ts exactly —
- * what the ingester (#6) writes.
+ * the engine's public API — the one sanctioned non-test consumer is the
+ * __DEV__ preset lab's fixed spread (#41, src/lab/lab-spread.ts), which is
+ * itself compiled out of release builds. Shapes mirror app/src/model/corpus.ts
+ * exactly — what the ingester (#6) writes.
  */
 
 import type { Block, BlockRole, Genre, Token, TokenKind } from '../../model/corpus';

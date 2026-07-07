@@ -48,6 +48,8 @@ export interface AdjustPanelProps {
   readonly onExport: () => void;
   /** Import a backup file, replacing local reading data (#13). */
   readonly onImport: () => void;
+  /** Rename the Import button — the preset lab rebinds it as "Reset" (#41). */
+  readonly importLabel?: string;
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -142,7 +144,12 @@ export function AdjustPanel(props: AdjustPanelProps) {
 
         <Segment label="Data">
           <Choice label="Export" selected={false} palette={palette} onPress={props.onExport} />
-          <Choice label="Import" selected={false} palette={palette} onPress={props.onImport} />
+          <Choice
+            label={props.importLabel ?? 'Import'}
+            selected={false}
+            palette={palette}
+            onPress={props.onImport}
+          />
         </Segment>
       </ScrollView>
     </View>
