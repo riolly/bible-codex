@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>bible-codex · design harness</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #2e2c29;
+        color: #d8d4cc;
+        font: 15px/1.5 ui-sans-serif, system-ui, sans-serif;
+      }
+      #app {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 24px 120px;
+      }
+      header.question h1 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+      header.question .meta {
+        color: #9a958a;
+        font-size: 13px;
+        margin-bottom: 24px;
+      }
+      header.question a {
+        color: #c9a55a;
+      }
+      .status {
+        color: #9a958a;
+      }
+      .error {
+        background: #3d2626;
+        border: 1px solid #7a4040;
+        border-radius: 8px;
+        padding: 12px 16px;
+        white-space: pre-wrap;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+      }
+      .state {
+        margin: 0 0 36px;
+      }
+      .state .bar {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+      .state h2 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0;
+        color: #b5b0a6;
+      }
+      .state button {
+        font: inherit;
+        font-size: 12px;
+        color: #c9a55a;
+        background: none;
+        border: 1px solid #5a5344;
+        border-radius: 6px;
+        padding: 2px 10px;
+        cursor: pointer;
+      }
+      .state button:hover {
+        border-color: #c9a55a;
+      }
+      .state img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border-radius: 3px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+      }
+      /* Floating variant switcher — deliberately NOT part of the design being judged. */
+      .pill {
+        position: fixed;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: #17161478;
+        backdrop-filter: blur(10px);
+        border: 1px solid #55504661;
+        border-radius: 999px;
+        padding: 6px 10px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+        z-index: 10;
+      }
+      .pill button {
+        font: inherit;
+        color: #d8d4cc;
+        background: none;
+        border: none;
+        border-radius: 999px;
+        padding: 4px 10px;
+        cursor: pointer;
+      }
+      .pill button:hover {
+        background: #3d3a34;
+      }
+      .pill .label {
+        min-width: 180px;
+        text-align: center;
+        font-size: 14px;
+      }
+      .pill .label b {
+        color: #c9a55a;
+      }
+      .pill select {
+        font: inherit;
+        font-size: 13px;
+        color: #d8d4cc;
+        background: #262421;
+        border: 1px solid #55504661;
+        border-radius: 6px;
+        padding: 2px 6px;
+        margin-left: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"><p class="status">Booting CanvasKit…</p></div>
+    <script type="module" src="/harness/main.ts"></script>
+  </body>
+</html>
