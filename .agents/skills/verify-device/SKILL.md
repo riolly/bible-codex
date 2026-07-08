@@ -53,6 +53,11 @@ Claude-visible defects. Report as a gallery with verdicts.
    smooth end to end.
 7. **Backup** — export produces a share sheet; import a previous export: confirm
    dialog → app reloads → settings + per-book positions restored.
+8. **Design spec** — for each surface this phase built through the design gate
+   (`design-approved` issues): hold the device/simulator screenshot against the
+   approved spec screenshots on the issue. Layout, tokens, and ornaments must
+   match; a deliberate deviation is only a pass if the spec comment was updated
+   first.
 
 ## Part B — Human, on the physical tablet
 

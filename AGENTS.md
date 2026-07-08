@@ -2,12 +2,17 @@
 
 Always use `$caveman full` skill except when you are done and reporting/answering back to me (make it easy to understand).
 
+## Workflow
+
+PRD → grill → **design** (`$design`, mandatory for new user-visible surfaces/features) → build → `$verify-device`. An issue labeled `needs-design` is not build-ready until its design spec is approved (`design-approved`).
+
 ## Agent skills
 
 Leverage these skills during development:
 `$tdd`
 `$domain-modeling`
 `$codebase-design`
+`$design` (design gate before building user-visible surfaces)
 
 And these skill when needed:
 `$research`

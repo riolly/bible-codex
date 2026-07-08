@@ -12,4 +12,16 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
 
+## Design-gate labels (`/design` skill)
+
+| Label             | Meaning                                                                   |
+| ----------------- | ------------------------------------------------------------------------- |
+| `needs-design`    | User-visible issue; design gate applies, spec not yet approved             |
+| `design-approved` | Approved design spec (screenshots + tokens) is on the issue; gate has run  |
+
+Gate rule: an issue may not carry `ready-for-agent` (for the build) while
+`needs-design` is present — the design phase itself IS the agent-actionable
+work. When the spec comment lands, swap `needs-design` → `design-approved`.
+Non-visual issues carry neither label.
+
 Edit the right-hand column to match whatever vocabulary you actually use.
